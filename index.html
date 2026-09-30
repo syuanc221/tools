@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Yoona 做過的所有小工具，按朋友、生活、旅遊分類，點了直接開啟。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Yoona 的小工具">
+<meta property="og:description" content="工時本、命盤、上課本、帳本、旅遊行程，全部收在這裡。">
+<meta property="og:url" content="https://syuanc221.github.io/tools/">
+<meta property="og:image" content="https://syuanc221.github.io/tools/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="小工具">
+<meta name="theme-color" content="#f2f2f3">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
+<title>Yoona 的小工具</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<style>
+/* Layout: one phone-width column — black summary card, segmented filter, stacked white rows on a soft grey ground */
+:root{
+  --ground:#f2f2f3;
+  --surface:#ffffff;
+  --ink:#0d0d0e;
+  --muted:#8a8a8f;
+  --line:#e6e6e8;
+  --chip:#ececee;
+  --inverse:#ffffff;
+  --hero:#0d0d0e;
+  --hero-muted:#8f8f94;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(0,0,0,.04);
+  --sans:"Geist","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0b0b0c;--surface:#18181a;--ink:#f4f4f5;--muted:#8d8d93;--line:#26262a;--chip:#222225;
+  --inverse:#0b0b0c;--hero:#f4f4f5;--hero-muted:#6b6b70;--shadow:none;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --ground:#0b0b0c;--surface:#18181a;--ink:#f4f4f5;--muted:#8d8d93;--line:#26262a;--chip:#222225;
+  --inverse:#0b0b0c;--hero:#f4f4f5;--hero-muted:#6b6b70;--shadow:none;color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:540px;margin:0 auto;padding-inline:16px;padding-block:28px 56px;display:flex;flex-direction:column;gap:20px}
+
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-inline:4px}
+.hello{margin:0;font-size:15px;color:var(--muted);font-weight:500}
+h1{margin:2px 0 0;font-size:30px;font-weight:900;letter-spacing:-.01em;text-wrap:balance}
+.avatar{width:44px;height:44px;border-radius:50%;background:var(--ink);color:var(--inverse);display:grid;place-items:center;font-weight:700;font-size:17px;flex:none}
+
+.hero{background:var(--hero);color:var(--inverse);border-radius:28px;padding:22px 22px 20px;display:flex;flex-direction:column;gap:18px}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.label{font-size:13px;color:var(--hero-muted);font-weight:500}
+.big{font-size:56px;font-weight:700;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:6px}
+.big small{font-size:18px;font-weight:500;letter-spacing:0;margin-left:6px;color:var(--hero-muted)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-top:1px solid color-mix(in srgb,var(--hero-muted) 35%,transparent);padding-top:14px}
+.stats b{display:block;font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.stats span{font-size:12px;color:var(--hero-muted)}
+.last{font-size:12px;color:var(--hero-muted);text-align:right;line-height:1.4}
+.last b{display:block;color:var(--inverse);font-size:14px;font-weight:600}
+
+.seg{display:flex;gap:4px;background:var(--chip);border-radius:999px;padding:4px}
+.seg button{flex:1;border:0;background:transparent;font:inherit;font-size:14px;font-weight:500;color:var(--muted);padding:9px 0;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow);font-weight:700}
+.seg button:focus-visible,.row:focus-visible,.pill:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+.group{display:flex;flex-direction:column;gap:10px}
+.group h2{margin:6px 4px 0;font-size:13px;font-weight:500;color:var(--muted);letter-spacing:.04em}
+.row{display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:14px;background:var(--surface);border-radius:22px;padding:14px 16px 14px 14px;text-decoration:none;color:inherit;box-shadow:var(--shadow);transition:transform .15s ease}
+.row:hover{transform:translateY(-1px)}
+.row:active{transform:scale(.99)}
+.ic{width:44px;height:44px;border-radius:14px;background:var(--chip);display:grid;place-items:center}
+.ic svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.row.primary .ic{background:var(--ink)}
+.row.primary .ic svg{stroke:var(--inverse)}
+.body{min-width:0}
+.name{font-weight:700;font-size:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.desc{font-size:13px;color:var(--muted);margin-top:1px}
+.meta{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.tag{font-size:11px;font-weight:500;padding:2px 8px;border-radius:999px;background:var(--chip);color:var(--muted);font-variant-numeric:tabular-nums}
+.tag.pub{background:var(--ink);color:var(--inverse)}
+.go{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;flex:none}
+.go svg{width:14px;height:14px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sub{display:flex;gap:8px;padding:0 4px 4px 58px;margin-top:-4px}
+.pill{font-size:12px;font-weight:600;color:var(--ink);text-decoration:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px}
+.note{font-size:12px;color:var(--muted);text-align:center;margin:8px 0 0}
+@media (prefers-reduced-motion:reduce){.row{transition:none}}
+@media (max-width:380px){.big{font-size:46px}.stats b{font-size:18px}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <p class="hello">Yoona · off-office</p>
+      <h1>我做的小工具</h1>
+    </div>
+    <div class="avatar" aria-hidden="true">Y</div>
+  </header>
+
+  <section class="hero" aria-label="總覽">
+    <div class="hero-top">
+      <div>
+        <div class="label">目前收錄</div>
+        <div class="big" id="count">8<small>個</small></div>
+      </div>
+      <div class="last" id="latest">最近更新<b>ZL 工時本 v18</b>9/29</div>
+    </div>
+    <div class="stats">
+      <div><b id="s-friend">2</b><span>幫朋友做的</span></div>
+      <div><b id="s-life">4</b><span>自己生活用</span></div>
+      <div><b id="s-travel">2</b><span>旅遊網站</span></div>
+          </div>
+  </section>
+
+  <div class="seg" role="group" aria-label="分類">
+    <button type="button" id="f-all" data-f="all" aria-pressed="true">全部</button>
+    <button type="button" id="f-friend" data-f="friend" aria-pressed="false">朋友</button>
+    <button type="button" id="f-life" data-f="life" aria-pressed="false">生活</button>
+    <button type="button" id="f-travel" data-f="travel" aria-pressed="false">旅遊</button>
+      </div>
+
+  <div id="list"></div>
+
+  <p class="note">「公開」任何人都能開；「私人」只有登入你的 Claude 帳號才看得到。</p>
+</div>
+
+<script>
+const I = {
+  clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
+  star:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3"/></svg>',
+  ticket:'<svg viewBox="0 0 24 24"><path d="M4 8a2 2 0 0 0 2-2h12a2 2 0 0 0 2 2v8a2 2 0 0 0-2 2H6a2 2 0 0 0-2-2z"/><path d="M10 9v6M14 10.5h2.5M14 13.5h2.5"/></svg>',
+  book:'<svg viewBox="0 0 24 24"><path d="M5 5.5A1.5 1.5 0 0 1 6.5 4H19v14H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19M9 8h6"/></svg>',
+  dumbbell:'<svg viewBox="0 0 24 24"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg>',
+  ledger:'<svg viewBox="0 0 24 24"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/></svg>',
+  plane:'<svg viewBox="0 0 24 24"><path d="M3.5 13.5 20 6.5l-4 13-4-5.5z"/><path d="m12 14 8-7.5"/></svg>',
+  grid:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>',
+  island:'<svg viewBox="0 0 24 24"><path d="M3.5 18.5c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 5 0"/><path d="M12 15.5V8"/><path d="M12 8c-2.5-3-6-2-6.5-1 2 .5 4 1.5 6.5 1zM12 8c2.5-3 6-2 6.5-1-2 .5-4 1.5-6.5 1zM12 8c-1-3 0-5 1-5.5"/></svg>',
+  maple:'<svg viewBox="0 0 24 24"><path d="M12 3.5v17"/><path d="m12 3.5-2 3.5-2.5-1 .8 3.5-3.8 1.2 2.5 2-1.5 2.5 4.2-.7L9 17h6l-.7-2.5 4.2.7-1.5-2.5 2.5-2-3.8-1.2.8-3.5-2.5 1z"/></svg>',
+  phone:'<svg viewBox="0 0 24 24"><rect x="6.5" y="3" width="11" height="18" rx="2.5"/><path d="M10 17.5h4M6.5 15h11" stroke-dasharray="1.5 1.5"/></svg>'
+};
+const SHEET_ID = '10KImEBVuPuwQza8iDnUeb71jAURsnzzwSlowatCcM6Y';
+const SHEET_CSV = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1`;
+let tools = [
+  {cat:'friend', icon:'clock', primary:true, name:'ZL 工時本', ver:'v18', desc:'地毯工時打卡、匯入備忘錄、月結表 PDF／Excel', pub:true, date:'9/29',
+   url:'https://syuanc221.github.io/timesheet/', extra:[{t:'Demo 版', u:'https://syuanc221.github.io/timesheet/demo/'}]},
+  {cat:'friend', icon:'star', name:'子良命盤', desc:'本命盤、宮位相位、小限與法達自動更新', pub:true, date:'9/9',
+   url:'https://syuanc221.github.io/ziliang/'},
+  {cat:'life', icon:'ticket', name:'萬聖節變裝夜', desc:'10/31 ONCOR 信義 · 一鍵報名與即時人數', pub:true, date:'9/22',
+   url:'https://syuanc221.github.io/halloween/'},
+  {cat:'life', icon:'book', name:'英語家教上課本', desc:'每堂重點、複習、學費紀錄', pub:true, date:'9/29',
+   url:'https://syuanc221.github.io/english-lessons/'},
+  {cat:'life', icon:'dumbbell', name:'教練課上課本', desc:'每週教練課與皮拉提斯紀錄', pub:false, date:'9/29',
+   url:'https://claude.ai/artifact/9at1AaLfV1nH6FsBamnYk8'},
+  {cat:'life', icon:'ledger', name:'迷因科技帳本', desc:'永達會計費與辦公室租金紀錄', pub:true, date:'9/29',
+   url:'https://syuanc221.github.io/accounting-fees/'},
+  {cat:'travel', icon:'island', name:'日本・石垣島 2026', desc:'石垣島遠端工作週與離島週末行程', pub:true, date:'9/30',
+   url:'https://ishigaki-2026-yoona.syuan-chen-221.chatgpt.site'},
+  {cat:'travel', icon:'maple', name:'加拿大・楓境遠征', desc:'溫哥華、多倫多與尼加拉瀑布婚禮之旅', pub:true, date:'9/30',
+   url:'https://canada-trip-site-latest-with-videos-zeta.vercel.app/'}
+];
+const CAT = {friend:'朋友', life:'生活', travel:'旅遊'};
+const arrow = '<svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg>';
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function row(t){
+  const tags = `<span class="tag ${t.pub?'pub':''}">${t.pub?'公開':'私人'}</span>${t.ver?`<span class="tag">${t.ver}</span>`:''}<span class="tag">更新 ${t.date}</span>`;
+  let h = `<a class="row${t.primary?' primary':''}" href="${esc(t.url)}" target="_blank" rel="noopener">
+    <div class="ic">${I[t.icon]}</div>
+    <div class="body"><div class="name">${esc(t.name)}</div><div class="desc">${esc(t.desc)}</div><div class="meta">${tags}</div></div>
+    <div class="go" aria-hidden="true">${arrow}</div></a>`;
+  if (t.extra) h += `<div class="sub">${t.extra.map(e=>`<a class="pill" href="${esc(e.u)}" target="_blank" rel="noopener">${esc(e.t)} ↗</a>`).join('')}</div>`;
+  return h;
+}
+function render(f){
+  const list = document.getElementById('list');
+  const cats = f==='all' ? ['friend','life','travel'] : [f];
+  list.innerHTML = cats.map(c=>{
+    const items = tools.filter(t=>t.cat===c);
+    return `<section class="group"><h2>${CAT[c]} · ${items.length}</h2>${items.map(row).join('')}</section>`;
+  }).join('<div style="height:14px"></div>');
+}
+const ICON_BY_NAME = {'工時本':'clock','命盤':'star','萬聖節':'ticket','英語':'book','教練':'dumbbell','帳本':'ledger','石垣':'island','加拿大':'maple','旅':'plane'};
+const CAT_KEY = {'朋友':'friend','生活':'life','旅遊':'travel'};
+function parseCSV(text){
+  const rows=[]; let row=[], cell='', q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else q=false; } else cell+=c; }
+    else if(c==='"') q=true;
+    else if(c===','){row.push(cell);cell='';}
+    else if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i+1]==='\n') i++; row.push(cell); rows.push(row); row=[]; cell=''; }
+    else cell+=c;
+  }
+  if(cell!==''||row.length){row.push(cell);rows.push(row);}
+  return rows;
+}
+function fromSheet(rows){
+  const h=rows[0].map(x=>x.trim()); const col=n=>h.indexOf(n);
+  const out=[];
+  for(const r of rows.slice(1)){
+    const g=n=>(r[col(n)]||'').trim();
+    if(!g('名稱')||!g('網址')) continue;
+    const d=g('更新日'); const m=d.match(/(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+    const t={cat:CAT_KEY[g('分類')]||'life', name:g('名稱'), desc:g('說明'), url:g('網址'), ver:g('版本')||undefined,
+      date:m?`${+m[2]}/${+m[3]}`:d, pub:g('公開')!=='否', icon:'grid'};
+    for(const k in ICON_BY_NAME) if(t.name.includes(k)) t.icon=ICON_BY_NAME[k];
+    if(g('額外連結網址')) t.extra=[{t:g('額外連結名稱')||'連結', u:g('額外連結網址')}];
+    out.push(t);
+  }
+  return out;
+}
+function refreshStats(){
+  document.getElementById('count').firstChild.nodeValue = tools.length;
+  ['friend','life','travel'].forEach(c=>document.getElementById('s-'+c).textContent = tools.filter(t=>t.cat===c).length);
+  const latest=[...tools].sort((a,b)=>b.date.localeCompare(a.date,undefined,{numeric:true}))[0];
+  if(latest) document.getElementById('latest').innerHTML=`最近更新<b>${esc(latest.name)}${latest.ver?' '+esc(latest.ver):''}</b>${esc(latest.date)}`;
+}
+refreshStats();
+fetch(SHEET_CSV,{cache:'no-store'}).then(r=>r.ok?r.text():Promise.reject(r.status)).then(t=>{
+  const list=fromSheet(parseCSV(t));
+  if(list.length){ tools.splice(0,tools.length,...list); tools[0].primary=true; refreshStats();
+    render(document.querySelector('.seg button[aria-pressed="true"]').dataset.f); }
+}).catch(()=>{});
+document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed', x===b));
+  render(b.dataset.f);
+  try{localStorage.setItem('tools-filter', b.dataset.f)}catch(e){}
+}));
+let start='all'; try{start=localStorage.getItem('tools-filter')||'all'}catch(e){}
+const sb=document.querySelector(`.seg button[data-f="${start}"]`)||document.getElementById('f-all');
+document.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed', x===sb));
+render(sb.dataset.f);
+</script>
+
+</body>
+</html>
