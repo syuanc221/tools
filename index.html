@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Yoona 做過的所有小工具，按朋友、生活、旅遊分類，點了直接開啟。">
+<meta name="description" content="Yoona 做過的所有小工具，按生活、旅遊、朋友分類，點了直接開啟。">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Yoona 的小工具">
-<meta property="og:description" content="工時本、命盤、上課本、帳本、旅遊行程，全部收在這裡。">
+<meta property="og:description" content="上課本、帳本、活動報名、旅遊行程，全部收在這裡。">
 <meta property="og:url" content="https://syuanc221.github.io/tools/">
 <meta property="og:image" content="https://syuanc221.github.io/tools/og.png">
 <meta property="og:image:width" content="1200">
@@ -112,27 +112,27 @@ h1{margin:2px 0 0;font-size:30px;font-weight:900;letter-spacing:-.01em;text-wrap
     <div class="hero-top">
       <div>
         <div class="label">目前收錄</div>
-        <div class="big" id="count">8<small>個</small></div>
+        <div class="big" id="count">6<small>個</small></div>
       </div>
-      <div class="last" id="latest">最近更新<b>ZL 工時本 v18</b>9/29</div>
+      <div class="last" id="latest">最近更新<b>加拿大・楓境遠征</b>9/30</div>
     </div>
     <div class="stats">
-      <div><b id="s-friend">2</b><span>幫朋友做的</span></div>
-      <div><b id="s-life">4</b><span>自己生活用</span></div>
+      <div><b id="s-life">4</b><span>生活紀錄</span></div>
       <div><b id="s-travel">2</b><span>旅遊網站</span></div>
+      <div><b id="s-friend">2</b><span>幫朋友做的</span></div>
           </div>
   </section>
 
   <div class="seg" role="group" aria-label="分類">
     <button type="button" id="f-all" data-f="all" aria-pressed="true">全部</button>
-    <button type="button" id="f-friend" data-f="friend" aria-pressed="false">朋友</button>
     <button type="button" id="f-life" data-f="life" aria-pressed="false">生活</button>
     <button type="button" id="f-travel" data-f="travel" aria-pressed="false">旅遊</button>
+    <button type="button" id="f-friend" data-f="friend" aria-pressed="false">朋友</button>
       </div>
 
   <div id="list"></div>
 
-  <p class="note">「公開」任何人都能開；「私人」只有登入你的 Claude 帳號才看得到。</p>
+  <p class="note">清單來自 Google Sheet，在表格加一列就會出現；「私人」是只有登入才開得了的頁面。</p>
 </div>
 
 <script>
@@ -152,11 +152,11 @@ const I = {
 const SHEET_ID = '10KImEBVuPuwQza8iDnUeb71jAURsnzzwSlowatCcM6Y';
 const SHEET_CSV = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1`;
 let tools = [
-  {cat:'friend', icon:'clock', primary:true, name:'ZL 工時本', ver:'v18', desc:'地毯工時打卡、匯入備忘錄、月結表 PDF／Excel', pub:true, date:'9/29',
+  {cat:'friend', icon:'clock', name:'ZL 工時本', ver:'v18', desc:'地毯工時打卡、匯入備忘錄、月結表 PDF／Excel', pub:false, date:'9/29',
    url:'https://syuanc221.github.io/timesheet/', extra:[{t:'Demo 版', u:'https://syuanc221.github.io/timesheet/demo/'}]},
-  {cat:'friend', icon:'star', name:'子良命盤', desc:'本命盤、宮位相位、小限與法達自動更新', pub:true, date:'9/9',
+  {cat:'friend', icon:'star', name:'子良命盤', desc:'本命盤、宮位相位、小限與法達自動更新', pub:false, date:'9/9',
    url:'https://syuanc221.github.io/ziliang/'},
-  {cat:'life', icon:'ticket', name:'萬聖節變裝夜', desc:'10/31 ONCOR 信義 · 一鍵報名與即時人數', pub:true, date:'9/22',
+  {cat:'life', icon:'ticket', name:'萬聖節變裝夜', desc:'10/31 ONCOR 信義 · 一鍵報名與即時人數', pub:true, primary:true, date:'9/22',
    url:'https://syuanc221.github.io/halloween/'},
   {cat:'life', icon:'book', name:'英語家教上課本', desc:'每堂重點、複習、學費紀錄', pub:true, date:'9/29',
    url:'https://syuanc221.github.io/english-lessons/'},
@@ -169,12 +169,13 @@ let tools = [
   {cat:'travel', icon:'maple', name:'加拿大・楓境遠征', desc:'溫哥華、多倫多與尼加拉瀑布婚禮之旅', pub:true, date:'9/30',
    url:'https://canada-trip-site-latest-with-videos-zeta.vercel.app/'}
 ];
-const CAT = {friend:'朋友', life:'生活', travel:'旅遊'};
+const CAT = {life:'生活', travel:'旅遊', friend:'朋友'};
+const PUBLIC_CATS = ['life','travel'];   // 「全部」只列這些；朋友的東西只在自己的分頁
 const arrow = '<svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg>';
 const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 function row(t){
-  const tags = `<span class="tag ${t.pub?'pub':''}">${t.pub?'公開':'私人'}</span>${t.ver?`<span class="tag">${t.ver}</span>`:''}<span class="tag">更新 ${t.date}</span>`;
+  const tags = `${t.pub?'':'<span class="tag pub">私人</span>'}${t.ver?`<span class="tag">${t.ver}</span>`:''}<span class="tag">更新 ${t.date}</span>`;
   let h = `<a class="row${t.primary?' primary':''}" href="${esc(t.url)}" target="_blank" rel="noopener">
     <div class="ic">${I[t.icon]}</div>
     <div class="body"><div class="name">${esc(t.name)}</div><div class="desc">${esc(t.desc)}</div><div class="meta">${tags}</div></div>
@@ -184,9 +185,10 @@ function row(t){
 }
 function render(f){
   const list = document.getElementById('list');
-  const cats = f==='all' ? ['friend','life','travel'] : [f];
+  const cats = f==='all' ? PUBLIC_CATS : [f];
   list.innerHTML = cats.map(c=>{
     const items = tools.filter(t=>t.cat===c);
+    if(!items.length) return '';
     return `<section class="group"><h2>${CAT[c]} · ${items.length}</h2>${items.map(row).join('')}</section>`;
   }).join('<div style="height:14px"></div>');
 }
@@ -221,15 +223,16 @@ function fromSheet(rows){
   return out;
 }
 function refreshStats(){
-  document.getElementById('count').firstChild.nodeValue = tools.length;
-  ['friend','life','travel'].forEach(c=>document.getElementById('s-'+c).textContent = tools.filter(t=>t.cat===c).length);
-  const latest=[...tools].sort((a,b)=>b.date.localeCompare(a.date,undefined,{numeric:true}))[0];
+  const shown=tools.filter(t=>PUBLIC_CATS.includes(t.cat));
+  document.getElementById('count').firstChild.nodeValue = shown.length;
+  ['life','travel','friend'].forEach(c=>document.getElementById('s-'+c).textContent = tools.filter(t=>t.cat===c).length);
+  const latest=[...shown].sort((a,b)=>b.date.localeCompare(a.date,undefined,{numeric:true}))[0];
   if(latest) document.getElementById('latest').innerHTML=`最近更新<b>${esc(latest.name)}${latest.ver?' '+esc(latest.ver):''}</b>${esc(latest.date)}`;
 }
 refreshStats();
 fetch(SHEET_CSV,{cache:'no-store'}).then(r=>r.ok?r.text():Promise.reject(r.status)).then(t=>{
   const list=fromSheet(parseCSV(t));
-  if(list.length){ tools.splice(0,tools.length,...list); tools[0].primary=true; refreshStats();
+  if(list.length){ tools.splice(0,tools.length,...list); const fv=tools.find(t=>PUBLIC_CATS.includes(t.cat)); if(fv) fv.primary=true; refreshStats();
     render(document.querySelector('.seg button[aria-pressed="true"]').dataset.f); }
 }).catch(()=>{});
 document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{
