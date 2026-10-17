@@ -62,4 +62,7 @@ if [ ! -f resources/DATA.INI ]; then
   } > resources/DATA.INI
   echo "已自動產生 client/DATA.INI："; cat resources/DATA.INI
 fi
+# 背景音樂是選用的，有 client/BGM 才開
+[ -d resources/BGM ] && export BGM_PATH=/app/resources/BGM
+
 exec node start-prod.js

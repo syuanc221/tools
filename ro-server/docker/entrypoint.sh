@@ -20,6 +20,11 @@ write_conf() {
       "$p" "$DB_HOST" "$p" "$DB_USER" "$p" "$DB_PASS" "$p" "$DB_NAME" >> conf/import/inter_conf.txt
   done
 
+  # 網頁版玩家都經由 WebSocket 轉接從 127.0.0.1 連進來，關掉同 IP 連線過多的防護
+  cat > conf/import/packet_conf.txt <<CONF
+enable_ip_rules: no
+CONF
+
   cat > conf/import/login_conf.txt <<CONF
 new_account: ${ALLOW_REGISTER}
 CONF

@@ -1,15 +1,13 @@
-# PvP 模式下，一般玩家（group 0）可以用的指令：自己拿裝備、精煉、傳送、找朋友
+# PvP 模式下，一般玩家（group 0）額外可以用的指令：自己拿裝備、精煉、傳送、找朋友
 # 例：@item 1162（拿武器）、@refine 0 10（全身 +10）、@go 0（回普隆德拉）、@jumpto 朋友名字
+# 這裡的設定會加在 rAthena 原本的 group 0 上
 Header:
   Type: PLAYER_GROUP_DB
   Version: 1
 
 Body:
   - Id: 0
-    Name: Player
-    Level: 0
     Commands:
-      changedress: true
       item: true
       item2: true
       refine: true
@@ -19,7 +17,3 @@ Body:
       jumpto: true
       who: true
       where: true
-    Permissions:
-      can_trade: true
-      can_party: true
-      attendance: true

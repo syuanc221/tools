@@ -54,7 +54,7 @@ cd ro-server
 | `@jumpto 名字` | 傳送到朋友身邊 |
 | `@who` / `@where 名字` | 看誰在線上、在哪 |
 
-競技場死掉不會扣經驗，1.5 秒後自動在普隆德拉復活補滿。
+普隆德拉也有治療師、傳送師、造型師 NPC。競技場死掉不會扣經驗，1.5 秒後自動在普隆德拉復活補滿。
 想改 NPC 或可用的指令：改 `pvp/pvp.txt`、`pvp/groups.yml`，再 `./ro.sh restart`（不用重新編譯）。
 不想要 PvP 模式：`.env` 裡 `PVP_MODE=no`。
 

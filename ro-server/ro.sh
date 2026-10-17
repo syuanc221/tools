@@ -6,7 +6,7 @@ cd "$(dirname "$0")"
 dc() { docker compose "$@"; }
 die() { echo "錯誤：$*" >&2; exit 1; }
 need_env() { [ -f .env ] || die "還沒有 .env，先執行 ./ro.sh setup"; }
-sql() { dc exec -T db sh -c 'mariadb -uragnarok -p"$MARIADB_PASSWORD" ragnarok' "$@"; }
+sql() { dc exec -T db sh -c 'mariadb -uragnarok -p"$MARIADB_PASSWORD" ragnarok "$@"' sh "$@"; }
 
 usage() {
   cat <<USAGE
@@ -30,7 +30,8 @@ case "$cmd" in
   setup)
     [ -f .env ] && die ".env 已存在；要重來請先刪除它"
     command -v docker >/dev/null || die "找不到 docker，請先安裝 OrbStack 或 Docker Desktop"
-    awk -v db="$(openssl rand -hex 16)" -v inter="$(openssl rand -hex 12)" '
+    # 伺服器互連密碼最多 23 個字元，所以用 22 個十六進位字
+    awk -v db="$(openssl rand -hex 16)" -v inter="$(openssl rand -hex 11)" '
       /^DB_PASS=/ { print "DB_PASS=" db; next }
       /^INTER_PASS=/ { print "INTER_PASS=" inter; next }
       { print }' .env.example > .env
@@ -60,8 +61,9 @@ case "$cmd" in
     user="$1"; level="${2:-99}"
     [[ "$user" =~ ^[A-Za-z0-9_]{4,23}$ ]] || die "帳號格式不對"
     [[ "$level" =~ ^[0-9]{1,2}$ ]] || die "等級要是 0–99"
-    n="$(echo "UPDATE login SET group_id=$level WHERE userid='$user' AND sex<>'S'; SELECT ROW_COUNT();" | sql -N)"
+    n="$(echo "SELECT COUNT(*) FROM login WHERE userid='$user' AND sex<>'S';" | sql -N)"
     [ "$n" = "1" ] || die "找不到帳號 $user"
+    echo "UPDATE login SET group_id=$level WHERE userid='$user' AND sex<>'S';" | sql
     echo "$user 現在是 group $level（角色要重新登入才會生效）"
     ;;
   sql) dc exec db sh -c 'mariadb -uragnarok -p"$MARIADB_PASSWORD" ragnarok' ;;

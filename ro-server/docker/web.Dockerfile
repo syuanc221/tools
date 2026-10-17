@@ -31,6 +31,5 @@ RUN chmod +x /web-entrypoint.sh
 ENV NODE_ENV=production \
     ENABLE_WSPROXY=true \
     ENABLE_STATIC_SERVE=true \
-    ROBROWSER_PATH=/robrowser \
-    BGM_PATH=/app/resources/BGM
+    ROBROWSER_PATH=/robrowser
 ENTRYPOINT ["/web-entrypoint.sh"]
