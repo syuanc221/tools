@@ -1,0 +1,50 @@
+# 自架 RO（rAthena）伺服器：資料庫 + login / char / map 三個伺服器
+x-rathena: &rathena
+  image: myro-rathena:local
+  build:
+    context: ./docker
+    args:
+      PACKETVER: ${PACKETVER:-20211103}
+  env_file: .env
+  restart: unless-stopped
+  init: true
+
+services:
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ragnarok
+      MARIADB_USER: ragnarok
+      MARIADB_PASSWORD: ${DB_PASS:?先執行 ./ro.sh setup}
+      MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+    volumes:
+      - rodb:/var/lib/mysql
+
+  init:
+    <<: *rathena
+    command: init
+    restart: "no"
+    depends_on: [db]
+
+  login:
+    <<: *rathena
+    command: login
+    ports: ["${BIND_ADDR:-127.0.0.1}:6900:6900"]
+    depends_on:
+      init: { condition: service_completed_successfully }
+
+  char:
+    <<: *rathena
+    command: char
+    ports: ["${BIND_ADDR:-127.0.0.1}:6121:6121"]
+    depends_on: [login]
+
+  map:
+    <<: *rathena
+    command: map
+    ports: ["${BIND_ADDR:-127.0.0.1}:5121:5121"]
+    depends_on: [char]
+
+volumes:
+  rodb:
