@@ -7,14 +7,16 @@ RUN apt-get update \
 
 ARG RATHENA_REPO=https://github.com/rathena/rathena.git
 ARG RATHENA_REF=d4b8e7b8f16061cc2496d377ac8f777ce72a4f39
-# 必須跟你的客戶端 exe 日期一致（例如 2021-11-03 的客戶端 => 20211103）
-ARG PACKETVER=20211103
+# 封包版本（客戶端日期）。網頁客戶端會自動用同一個值
+ARG PACKETVER=20130618
+# yes = 經典版（復興前），no = 復興後
+ARG PRERE=yes
 
 WORKDIR /rathena
 RUN git init -q . \
  && git fetch -q --depth 1 "$RATHENA_REPO" "$RATHENA_REF" \
  && git checkout -q FETCH_HEAD \
- && ./configure --enable-packetver="$PACKETVER" \
+ && ./configure --enable-packetver="$PACKETVER" --enable-prere="$PRERE" \
  && make server -j"$(nproc)" \
  && rm -rf .git src 3rdparty/*/src
 

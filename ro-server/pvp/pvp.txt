@@ -1,0 +1,111 @@
+//===== MyRO 純 PvP 模式 =====================================
+// 普隆德拉噴水池旁的「PvP 大師」：
+//   一鍵轉成轉生二轉並練到 99/70、領補給品、傳送到 PvP 競技場。
+// 裝備自己用指令拿：@item <物品ID>、@refine 0 10（見 pvp/groups.yml）。
+// 改完這個檔案後執行 ./ro.sh restart 就會生效，不用重新編譯。
+//============================================================
+
+prontera,150,185,5	script	PvP 大師	4_M_KNIGHT_GOLD,{
+	mes "[PvP 大師]";
+	mes "歡迎來到純 PvP 伺服器！";
+	mes "想打架就找我。";
+	next;
+	switch (select("一鍵轉職並練滿:前往 PvP 競技場:領取補給品:重新分配素質與技能:離開")) {
+	case 1:
+		mes "[PvP 大師]";
+		mes "選一個職業（轉生二轉，等級 99 / 職業 70）。";
+		mes "原本的素質和技能會全部重置。";
+		next;
+		.@menu$ = "";
+		for (.@i = 0; .@i < getarraysize(.job_name$); .@i++)
+			.@menu$ += .job_name$[.@i] + ":";
+		.@i = select(.@menu$ + "取消") - 1;
+		if (.@i >= getarraysize(.job_name$))
+			close;
+		.@job = .job_id[.@i];
+		if (.@job == Job_Clown && Sex == SEX_FEMALE)
+			.@job = Job_Gypsy;
+
+		jobchange .@job;
+		BaseLevel = 99;
+		JobLevel = 70;
+		resetstatus;
+		resetskill;
+		// 初心者基本技能 9 級（坐下、交易、組隊要用）
+		skill "NV_BASIC", 9, SKILL_PERM;
+		// 轉生初心者 9 點用在基本技能，一轉 49 點 + 轉生二轉 69 點
+		SkillPoint = 49 + 69;
+		percentheal 100, 100;
+		mes "[PvP 大師]";
+		mes "完成！記得按 Alt+S 點技能、Alt+A 點素質。";
+		mes "裝備用 @item 自己拿，精煉用 @refine 0 10。";
+		close;
+
+	case 2:
+		.@i = select("競技場 1（小）:競技場 2:競技場 3:競技場 4:競技場 5（大）:取消") - 1;
+		if (.@i >= getarraysize(.arena$))
+			close;
+		percentheal 100, 100;
+		warp .arena$[.@i], 0, 0;
+		end;
+
+	case 3:
+		getitem 504, 100;	// 白色藥水
+		getitem 505, 50;	// 藍色藥水
+		getitem 607, 10;	// 世界樹果實
+		getitem 678, 5;		// 毒瓶
+		getitem 7135, 50;	// 火瓶
+		getitem 7136, 50;	// 酸瓶
+		getitem 7137, 50;	// 植物瓶
+		getitem 7138, 50;	// 海洋球
+		getitem 7139, 50;	// 包裝用藥
+		getitem 1065, 200;	// 誘捕陷阱
+		getitem 717, 100;	// 藍色魔力礦石
+		getitem 716, 100;	// 紅色魔力礦石
+		getitem 715, 100;	// 黃色魔力礦石
+		mes "[PvP 大師]";
+		mes "補給品放進你的包包了。";
+		close;
+
+	case 4:
+		resetstatus;
+		resetskill;
+		skill "NV_BASIC", 9, SKILL_PERM;
+		SkillPoint = (Upper == 1) ? 49 + 69 : 49 + 49;
+		mes "[PvP 大師]";
+		mes "素質和技能點數都還給你了。";
+		close;
+
+	default:
+		close;
+	}
+
+OnInit:
+	setarray .job_name$,
+		"騎士領主", "聖殿十字軍", "超魔導士", "智者", "神射手", "搞笑藝人 / 冷豔舞姬",
+		"神官", "武術宗師", "十字刺客", "神行太保", "神工匠", "創造者";
+	setarray .job_id,
+		Job_Lord_Knight, Job_Paladin, Job_High_Wizard, Job_Professor, Job_Sniper, Job_Clown,
+		Job_High_Priest, Job_Champion, Job_Assassin_Cross, Job_Stalker, Job_Whitesmith, Job_Creator;
+	setarray .arena$, "pvp_y_1-1", "pvp_y_1-2", "pvp_y_1-3", "pvp_y_1-4", "pvp_y_1-5";
+	// 競技場裡死掉不扣經驗、不掉東西，不能記錄傳點
+	for (.@i = 0; .@i < getarraysize(.arena$); .@i++) {
+		setmapflag .arena$[.@i], MF_NOPENALTY;
+		setmapflag .arena$[.@i], MF_NOMEMO;
+	}
+	end;
+}
+
+// 在競技場裡死掉，自動在普隆德拉復活補滿
+-	script	PvPRespawn	-1,{
+OnPCDieEvent:
+	for (.@i = 1; .@i <= 5; .@i++) {
+		if (strcharinfo(3) == "pvp_y_1-" + .@i) {
+			sleep2 1500;
+			recovery 0;
+			warp "prontera", 156, 180;
+			end;
+		}
+	}
+	end;
+}

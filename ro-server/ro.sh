@@ -15,13 +15,12 @@ usage() {
   setup                      第一次使用：產生 .env（含隨機密碼）
   start                      編譯（第一次約 5–15 分鐘）並啟動伺服器
   stop | restart | status
-  logs [login|char|map]      看伺服器輸出（Ctrl+C 離開）
+  logs [login|char|map|web]  看伺服器輸出（Ctrl+C 離開）
   rebuild                    改了 PACKETVER 之後重新編譯
   account <帳號> <密碼> [M|F] 建立遊戲帳號
   gm <帳號> [等級]            把帳號設成 GM（預設 99 = 最高管理員）
   sql                        進入資料庫命令列
-  launcher <Ragexe.exe 路徑> [CrossOver 容器名稱]
-                             產生 ~/Applications/MyRO.app，可加進 Steam
+  open                       用瀏覽器打開遊戲
   reset                      刪除所有資料（角色、帳號全部清空）
 USAGE
 }
@@ -37,7 +36,11 @@ case "$cmd" in
       { print }' .env.example > .env
     echo "已產生 .env。接著執行：./ro.sh start"
     ;;
-  start)   need_env; dc up -d --build; echo "啟動中，用 ./ro.sh logs map 看到 'Server is ready' 就可以登入了" ;;
+  start)
+    need_env
+    dc up -d --build
+    echo "啟動中…用 ./ro.sh logs map 看到 'Server is ready' 後，執行 ./ro.sh open 開始玩"
+    ;;
   stop)    dc down ;;
   restart) need_env; dc up -d --force-recreate ;;
   status)  dc ps ;;
@@ -62,40 +65,12 @@ case "$cmd" in
     echo "$user 現在是 group $level（角色要重新登入才會生效）"
     ;;
   sql) dc exec db sh -c 'mariadb -uragnarok -p"$MARIADB_PASSWORD" ragnarok' ;;
-  launcher)
-    [ $# -ge 1 ] || die "用法：./ro.sh launcher <Ragexe.exe 的完整路徑> [CrossOver 容器名稱]"
-    exe="$1"; bottle="${2:-}"
-    [ -f "$exe" ] || die "找不到 $exe"
-    exe_dir="$(cd "$(dirname "$exe")" && pwd)"; exe_name="$(basename "$exe")"
-    server_dir="$(pwd)"
-    app="$HOME/Applications/MyRO.app"
-    mkdir -p "$app/Contents/MacOS"
-    cat > "$app/Contents/Info.plist" <<PLIST
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0"><dict>
-  <key>CFBundleName</key><string>MyRO</string>
-  <key>CFBundleIdentifier</key><string>local.myro.launcher</string>
-  <key>CFBundleExecutable</key><string>MyRO</string>
-  <key>CFBundlePackageType</key><string>APPL</string>
-</dict></plist>
-PLIST
-    cat > "$app/Contents/MacOS/MyRO" <<LAUNCH
-#!/bin/bash
-# 由 ro.sh launcher 產生：先確保伺服器開著，再用 Wine 開客戶端
-export PATH="/opt/homebrew/bin:/usr/local/bin:\$HOME/.orbstack/bin:/Applications/Docker.app/Contents/Resources/bin:\$PATH"
-"$server_dir/ro.sh" start >/dev/null 2>&1 || true
-cd "$exe_dir"
-CX="/Applications/CrossOver.app/Contents/SharedSupport/CrossOver/bin/wine"
-if [ -x "\$CX" ]; then
-  exec "\$CX" ${bottle:+--bottle "$bottle"} "$exe_name"
-else
-  exec wine "$exe_name"
-fi
-LAUNCH
-    chmod +x "$app/Contents/MacOS/MyRO"
-    echo "已建立 $app"
-    echo "Steam → 遊戲 → 新增非 Steam 遊戲到我的收藏庫 → 瀏覽 → 選 MyRO.app"
+  open)
+    need_env
+    port="$(awk -F= '$1=="WEB_PORT"{print $2}' .env)"
+    url="http://localhost:${port:-3338}"
+    echo "$url"
+    command -v open >/dev/null && open "$url"
     ;;
   reset)
     read -r -p "會刪除所有帳號和角色，確定嗎？輸入 yes：" ans

@@ -1,13 +1,18 @@
-# 自架 RO（rAthena）伺服器：資料庫 + login / char / map 三個伺服器
+# 自架 RO（rAthena）伺服器 + 網頁版客戶端
+# 所有服務共用 db 的網路，彼此用 127.0.0.1 互連；對外只開下面列的埠
 x-rathena: &rathena
   image: myro-rathena:local
   build:
     context: ./docker
     args:
-      PACKETVER: ${PACKETVER:-20211103}
+      PACKETVER: ${PACKETVER:-20130618}
+      PRERE: ${PRERE:-yes}
   env_file: .env
   restart: unless-stopped
   init: true
+  network_mode: service:db
+  volumes:
+    - ./pvp:/rathena/npc/myro:ro
 
 services:
   db:
@@ -20,6 +25,11 @@ services:
       MARIADB_RANDOM_ROOT_PASSWORD: "yes"
     volumes:
       - rodb:/var/lib/mysql
+    ports:
+      - "${BIND_ADDR:-127.0.0.1}:${WEB_PORT:-3338}:${WEB_PORT:-3338}"  # 網頁客戶端
+      - "${BIND_ADDR:-127.0.0.1}:6900:6900"  # login（給 Windows 原版客戶端用，網頁版不需要）
+      - "${BIND_ADDR:-127.0.0.1}:6121:6121"  # char
+      - "${BIND_ADDR:-127.0.0.1}:5121:5121"  # map
 
   init:
     <<: *rathena
@@ -30,21 +40,31 @@ services:
   login:
     <<: *rathena
     command: login
-    ports: ["${BIND_ADDR:-127.0.0.1}:6900:6900"]
     depends_on:
       init: { condition: service_completed_successfully }
 
   char:
     <<: *rathena
     command: char
-    ports: ["${BIND_ADDR:-127.0.0.1}:6121:6121"]
     depends_on: [login]
 
   map:
     <<: *rathena
     command: map
-    ports: ["${BIND_ADDR:-127.0.0.1}:5121:5121"]
     depends_on: [char]
+
+  web:
+    image: myro-web:local
+    build:
+      context: ./docker
+      dockerfile: web.Dockerfile
+    env_file: .env
+    restart: unless-stopped
+    init: true
+    network_mode: service:db
+    volumes:
+      - ./client:/app/resources
+    depends_on: [map]
 
 volumes:
   rodb:
