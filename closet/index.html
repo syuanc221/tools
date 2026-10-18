@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
 <style>
-/* Layout: phone-first single column with a fixed bottom tab bar; closet pieces sit on a concrete-grey "board" like a flat-lay; lookbook pages scroll sideways like a book */
+/* Layout: phone-first single column with a fixed bottom tab bar; pieces sit on white product-shot cards; the closet has a left category rail; outfits are flat-lay tiles in a 3-up grid */
 :root{
   --ground:#f2f2f3;
   --surface:#ffffff;
@@ -88,27 +88,66 @@ h2.sec{margin:4px 4px 0;font-size:13px;font-weight:500;color:var(--muted);letter
 .wx-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;border-top:1px solid color-mix(in srgb,var(--inverse) 18%,transparent);padding-top:12px}
 .wx-stats b{display:block;font-family:var(--mono);font-weight:500;font-size:15px;font-variant-numeric:tabular-nums}
 .wx-stats span{font-size:11px;opacity:.6}
-.wx-day{display:flex;gap:4px;background:color-mix(in srgb,var(--inverse) 12%,transparent);border-radius:999px;padding:3px;align-self:flex-start}
-.wx-day button{border:0;background:transparent;color:var(--inverse);opacity:.65;font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px}
-.wx-day button[aria-pressed="true"]{background:var(--inverse);color:var(--ink);opacity:1}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.week button{border:0;background:transparent;color:var(--inverse);opacity:.62;border-radius:14px;padding:7px 0 6px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;min-width:0}
+.week button svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.week button span{font-family:var(--mono);font-weight:400;font-size:10px;white-space:nowrap}
+.week button[aria-pressed="true"]{opacity:1;background:color-mix(in srgb,var(--inverse) 16%,transparent)}
 .wx-hint{font-size:13px;line-height:1.55;opacity:.85}
 
 /* closet grid */
-.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-@media (max-width:360px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.piece{position:relative;aspect-ratio:3/4;max-width:100%;background:var(--board);border-radius:18px;border:0;padding:10px;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.piece img{max-height:100%;object-fit:contain;filter:drop-shadow(0 6px 10px rgba(0,0,0,.18))}
-.piece .lbl{position:absolute;left:8px;bottom:7px;right:8px;font-size:11px;font-weight:600;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
-.piece .dot{position:absolute;top:9px;right:9px;width:10px;height:10px;border-radius:50%;border:1px solid color-mix(in srgb,var(--ink) 20%,transparent)}
-.piece.sel{outline:2.5px solid var(--denim);outline-offset:-2px}
-.piece .tick{position:absolute;top:8px;left:8px;width:22px;height:22px;border-radius:50%;background:var(--denim);color:var(--inverse);display:none;place-items:center;font-size:13px;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px}
+@media (max-width:340px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.piece{display:flex;flex-direction:column;gap:5px;background:none;border:0;padding:0;text-align:left;min-width:0;color:var(--ink)}
+.piece .ph{position:relative;aspect-ratio:1/1;max-width:100%;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.piece .ph img{max-height:100%;object-fit:contain;filter:drop-shadow(0 4px 6px rgba(0,0,0,.12))}
+.piece .lbl{font-size:12px;font-weight:500;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;padding-inline:2px}
+.piece .dot{position:absolute;top:7px;right:7px;width:9px;height:9px;border-radius:50%;border:1px solid color-mix(in srgb,var(--ink) 20%,transparent)}
+.piece.sel .ph{outline:2.5px solid var(--denim);outline-offset:-2px}
+.piece .tick{position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:50%;background:var(--denim);color:var(--inverse);display:none;place-items:center;font-size:13px;font-weight:700}
 .piece.sel .tick{display:grid}
+
+/* closet: left category rail + content */
+.closet{display:grid;grid-template-columns:62px minmax(0,1fr);gap:12px;align-items:start}
+.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 10px);display:flex;flex-direction:column;background:var(--surface);border-radius:18px;padding:6px 0;box-shadow:var(--shadow)}
+.rail button{border:0;background:none;padding:12px 2px 12px 0;font-size:13px;color:var(--muted);display:flex;justify-content:center;gap:1px;line-height:1.2}
+.rail button sup{font-size:9px;font-family:var(--mono);color:var(--muted);margin-top:-4px}
+.rail button[aria-pressed="true"]{color:var(--denim);font-weight:700;background:var(--ground);box-shadow:inset 3px 0 0 var(--denim)}
+.shelf{background:var(--surface);border-radius:20px;padding:12px 12px 14px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow);min-width:0}
+.shelf-head{display:flex;justify-content:space-between;align-items:center;border:0;background:none;padding:0;font-size:14px;font-weight:700;color:var(--ink)}
+.shelf-head span{font-weight:400;color:var(--muted);font-size:12px;margin-left:4px}
+.shelf-head i{font-style:normal;font-size:12px;color:var(--muted);font-weight:500}
+.shelf-row{display:grid;grid-auto-flow:column;grid-auto-columns:30%;gap:8px;overflow-x:auto;scrollbar-width:none}
+.shelf-row::-webkit-scrollbar{display:none}
+.shelf .piece .ph{border:0;background:var(--ground);padding:8%}
+
+/* outfit tiles */
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tiles.scroll{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:31%;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.tiles.scroll::-webkit-scrollbar{display:none}
+.tile{display:flex;flex-direction:column;gap:4px;background:none;border:0;padding:0;color:var(--ink);text-align:center;min-width:0}
+.tile .cap{font-size:12px;font-weight:600;font-style:italic}
+.tile .sub{font-size:11px;font-family:var(--mono);color:var(--muted);display:flex;gap:4px;justify-content:center;align-items:center}
+.tile .sub svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tile.on .board{outline:2px solid var(--denim);outline-offset:-2px}
+
+/* analysis */
+.bar{display:flex;height:16px;border-radius:8px;overflow:hidden;gap:2px}
+.bar span{display:block;min-width:4px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted)}
+.legend b{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:0;border:1px solid var(--line)}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat-grid div{background:var(--ground);border-radius:14px;padding:10px 12px}
+.stat-grid b{display:block;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat-grid span{font-size:11px;color:var(--muted)}
+.mini-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.mini-row .piece{flex:0 0 64px}
 .empty{text-align:center;padding:36px 20px;border:1.5px dashed var(--line);border-radius:24px;color:var(--muted);display:flex;flex-direction:column;gap:12px;align-items:center}
 .empty b{color:var(--ink);font-size:16px}
 
 /* outfit board (flat-lay collage) */
-.board{position:relative;aspect-ratio:3/4;max-width:100%;background:var(--board);border-radius:20px;overflow:hidden}
-.board img{position:absolute;object-fit:contain;filter:drop-shadow(0 8px 12px rgba(0,0,0,.2))}
+.board{position:relative;aspect-ratio:3/4;max-width:100%;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.board img{position:absolute;object-fit:contain;filter:drop-shadow(0 3px 5px rgba(0,0,0,.12))}
 .look{display:flex;flex-direction:column;gap:12px}
 .look h3{margin:0;font-size:18px;font-weight:800;text-wrap:balance}
 .look p{margin:0;font-size:14px;line-height:1.6}
@@ -116,12 +155,6 @@ h2.sec{margin:4px 4px 0;font-size:13px;font-weight:500;color:var(--muted);letter
 .tagline{display:flex;gap:6px;flex-wrap:wrap}
 .tag{font-size:11px;font-weight:500;padding:2px 9px;border-radius:999px;background:var(--chip);color:var(--muted);font-family:var(--mono)}
 .tag.ai{background:var(--denim-soft);color:var(--denim)}
-
-/* lookbook spread */
-.book{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;scrollbar-width:thin}
-.page{flex:0 0 86%;scroll-snap-align:center;background:var(--surface);border-radius:24px;box-shadow:var(--shadow);padding:14px;display:flex;flex-direction:column;gap:10px}
-.page .meta{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted);gap:8px}
-.page h3{margin:0;font-size:16px;font-weight:800}
 
 /* care label (item detail) */
 .label-card{border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px;font-family:var(--mono)}
@@ -213,10 +246,7 @@ details summary{cursor:pointer;font-weight:600;font-size:14px}
         </div>
         <div class="wx-desc"><svg class="wx-icon" id="wxIcon" viewBox="0 0 24 24"></svg><b id="wxCond">讀取天氣</b><span id="wxRange"></span></div>
       </div>
-      <div class="wx-day" role="group" aria-label="哪一天">
-        <button type="button" data-day="0" aria-pressed="true">今天</button>
-        <button type="button" data-day="1" aria-pressed="false">明天</button>
-      </div>
+      <div class="week" id="week" role="group" aria-label="選哪一天"></div>
       <div class="wx-stats">
         <div><b id="wxRain">--</b><span>降雨機率</span></div>
         <div><b id="wxHum">--</b><span>濕度</span></div>
@@ -226,7 +256,14 @@ details summary{cursor:pointer;font-weight:600;font-size:14px}
       <div class="wx-hint" id="wxHint"></div>
     </div>
 
-    <h2 class="sec">場合</h2>
+    <div class="row" style="justify-content:space-between">
+      <h2 class="sec" style="margin:0 4px">未來一週展望</h2>
+      <div class="row" style="gap:6px"><button class="btn small ghost" id="btnWeekShuffle" type="button">換一批</button><button class="btn small soft" id="btnWeekAI" type="button">AI 排一週</button></div>
+    </div>
+    <div class="tiles scroll" id="weekPlan"></div>
+    <p class="tiny muted" id="weekState" style="margin:-8px 4px 0"></p>
+
+    <h2 class="sec">指定場合，多給幾套</h2>
     <div class="chips" id="occasions"></div>
     <input class="input" id="askNote" placeholder="想補充的，例如：晚上要去冷氣很強的餐廳、想穿那件白色繞頸">
     <div class="row">
@@ -239,7 +276,6 @@ details summary{cursor:pointer;font-weight:600;font-size:14px}
 
   <!-- CLOSET -->
   <section id="v-closet" class="stack" hidden>
-    <div class="chips" id="catFilter"></div>
     <div id="closetGrid"></div>
   </section>
 
@@ -325,9 +361,11 @@ details summary{cursor:pointer;font-weight:600;font-size:14px}
 
 <script type="module">
 /* ---------- constants ---------- */
-const CATS = {top:'上衣', outer:'外套', bottom:'下身', dress:'洋裝', shoes:'鞋', bag:'包', acc:'配件'};
-const CAT_ORDER = ['top','outer','bottom','dress','shoes','bag','acc'];
-const DEFAULT_WARMTH = {top:2, outer:4, bottom:3, dress:2, shoes:2, bag:0, acc:0};
+const CATS = {outer:'外套', top:'上衣', pants:'褲子', skirt:'裙子', dress:'連身裙', shoes:'鞋子', bag:'包包', socks:'襪子', acc:'飾品'};
+const CAT_ORDER = ['outer','top','pants','skirt','dress','shoes','bag','socks','acc'];
+const BOTTOMS = ['pants','skirt'];
+const LEGACY_CAT = {bottom:'pants'};
+const DEFAULT_WARMTH = {outer:4, top:2, pants:3, skirt:2, dress:2, shoes:2, bag:0, socks:1, acc:0};
 const SEASONS = ['春','夏','秋','冬'];
 const OCCASIONS = ['日常','上班','約會','逛街','聚餐','運動','旅行','派對'];
 const MODEL = 'claude-opus-5-5';
@@ -335,7 +373,7 @@ const SEG_MODEL = 'Xenova/segformer_b2_clothes';
 const RMBG_MODEL = 'briaai/RMBG-1.4';
 const TRANSFORMERS = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1';
 // SegFormer (ATR) labels → closet category; skin/hair/face are dropped
-const SEG_MAP = {'upper-clothes':'top','skirt':'bottom','pants':'bottom','dress':'dress','left-shoe':'shoes','right-shoe':'shoes','bag':'bag','hat':'acc','scarf':'acc','belt':'acc','sunglasses':'acc'};
+const SEG_MAP = {'upper-clothes':'top','skirt':'skirt','pants':'pants','dress':'dress','left-shoe':'shoes','right-shoe':'shoes','bag':'bag','hat':'acc','scarf':'acc','belt':'acc','sunglasses':'acc'};
 const SEG_GROUP = {'left-shoe':'shoes','right-shoe':'shoes'};
 const SEG_NAME = {'upper-clothes':'上衣','skirt':'裙子','pants':'褲子','dress':'洋裝','shoes':'鞋子','bag':'包包','hat':'帽子','scarf':'圍巾','belt':'腰帶','sunglasses':'墨鏡'};
 const COLOR_NAMES = [
@@ -390,6 +428,7 @@ function imgURL(item){
 function dropURL(id){ if (urlCache.has(id)){ URL.revokeObjectURL(urlCache.get(id)); urlCache.delete(id); } }
 async function loadAll(){
   items = (await DB.all('items')).sort((a, b) => b.created - a.created);
+  items.forEach(i => { if (LEGACY_CAT[i.cat]) i.cat = LEGACY_CAT[i.cat]; if (!CATS[i.cat]) i.cat = 'acc'; });
   outfits = (await DB.all('outfits')).sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.created - a.created);
 }
 
@@ -449,7 +488,7 @@ async function fetchWeather(force = false){
     + '&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,precipitation'
     + '&hourly=temperature_2m,apparent_temperature,precipitation_probability,weather_code'
     + '&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,precipitation_probability_max,uv_index_max,wind_speed_10m_max'
-    + '&timezone=auto&forecast_days=2';
+    + '&timezone=auto&forecast_days=7';
   try{
     const r = await fetch(u); if (!r.ok) throw new Error(r.status);
     wx = await r.json();
@@ -527,12 +566,108 @@ function renderWeather(){
   $('#wxRain').textContent = `${w.rain ?? 0}%`;
   $('#wxUv').textContent = Math.round(w.uv ?? 0);
   $('#wxHint').textContent = weatherAdvice(w).join('。') + '。';
+  renderWeek();
+  ensurePlan(); renderPlan();
 }
-document.querySelectorAll('.wx-day button').forEach(b => b.addEventListener('click', () => {
-  wxDay = +b.dataset.day;
-  document.querySelectorAll('.wx-day button').forEach(x => x.setAttribute('aria-pressed', x === b));
-  renderWeather();
-}));
+function dayLabel(i){
+  if (i === 0) return '今天';
+  if (i === 1) return '明天';
+  const d = new Date(wx.daily.time[i] + 'T12:00');
+  return '週' + '日一二三四五六'[d.getDay()];
+}
+const dayIcon = i => WXI[(WMO[wx.daily.weather_code[i]] || [, 'cloud'])[1]];
+function renderWeek(){
+  const d = wx.daily;
+  $('#week').innerHTML = d.time.map((t, i) => `<button type="button" data-day="${i}" aria-pressed="${i === wxDay}">${dayLabel(i)}<svg viewBox="0 0 24 24">${dayIcon(i)}</svg><span>${Math.round(d.temperature_2m_max[i])}°</span><span style="opacity:.7">${Math.round(d.temperature_2m_min[i])}°</span></button>`).join('');
+  $('#week').querySelectorAll('button').forEach(b => b.onclick = () => selectDay(+b.dataset.day));
+}
+function selectDay(i){ wxDay = i; renderWeather(); $('#results').innerHTML = ''; }
+
+/* ---------- week plan: one outfit per forecast day ---------- */
+let plan = store.get('plan', {});
+function planValid(p){ return p && p.itemIds?.length && p.itemIds.every(id => items.some(i => i.id === id)); }
+function ensurePlan(force = false){
+  if (!wx || items.length < 2) return;
+  const days = wx.daily.time;
+  Object.keys(plan).forEach(k => { if (!days.includes(k)) delete plan[k]; });
+  const used = new Set();
+  days.forEach(d => { if (!force && planValid(plan[d])) plan[d].itemIds.forEach(id => used.add(id)); });
+  days.forEach((d, i) => {
+    if (!force && planValid(plan[d])) return;
+    const o = quickOutfits(dayWeather(i), 1, used)[0];
+    if (!o) return;
+    // only the main pieces count as "used" so shoes and bags can repeat across the week
+    o.itemIds.forEach(id => { const it = items.find(x => x.id === id); if (it && !['shoes','bag','socks','acc'].includes(it.cat)) used.add(id); });
+    plan[d] = {itemIds:o.itemIds, title:o.title, why:o.why, tips:o.tips, source:'quick'};
+  });
+  store.set('plan', plan);
+}
+function renderPlan(){
+  const host = $('#weekPlan');
+  if (!wx) return;
+  if (items.length < 2){ host.innerHTML = ''; $('#weekState').textContent = '衣櫥有上衣和下身之後，這裡會每天幫你配好一套。'; return; }
+  $('#weekState').textContent = '';
+  host.innerHTML = wx.daily.time.map((d, i) => `<button type="button" class="tile${i === wxDay ? ' on' : ''}" data-day="${i}">
+      ${plan[d] ? boardHTML(plan[d].itemIds) : '<div class="board"></div>'}
+      <span class="cap">${dayLabel(i)}${plan[d]?.source === 'ai' ? ' ✦' : ''}</span>
+      <span class="sub"><svg viewBox="0 0 24 24">${dayIcon(i)}</svg>${Math.round(wx.daily.temperature_2m_min[i])}–${Math.round(wx.daily.temperature_2m_max[i])}°C</span>
+    </button>`).join('');
+  host.querySelectorAll('.tile').forEach(t => t.onclick = () => { selectDay(+t.dataset.day); openPlanDay(+t.dataset.day); });
+}
+function openPlanDay(i){
+  const d = wx.daily.time[i], p = plan[d]; if (!p) return;
+  const its = p.itemIds.map(id => items.find(x => x.id === id)).filter(Boolean);
+  const sh = openSheet(`${head(`${dayLabel(i)}・${d.slice(5).replace('-', '/')}`)}
+    ${boardHTML(p.itemIds)}
+    <div class="tagline"><span class="tag${p.source === 'ai' ? ' ai' : ''}">${p.source === 'ai' ? 'AI 排的' : '自動配'}</span><span class="tag">${Math.round(wx.daily.temperature_2m_min[i])}–${Math.round(wx.daily.temperature_2m_max[i])}°C・降雨 ${wx.daily.precipitation_probability_max[i] ?? 0}%</span></div>
+    <b>${esc(p.title)}</b>
+    ${p.why ? `<p class="small" style="margin:0">${esc(p.why)}</p>` : ''}${p.tips ? `<p class="tiny muted" style="margin:0">${esc(p.tips)}</p>` : ''}
+    <div class="grid">${its.map(it => pieceHTML(it)).join('')}</div>
+    <div class="row"><button class="btn" type="button" data-wear style="flex:1">${i === 0 ? '今天' : '這天'}穿這套</button><button class="btn soft" type="button" data-re>換一套</button></div>`);
+  sh.el.querySelectorAll('.grid .piece').forEach(b => b.onclick = () => { sh.close(); openItem(b.dataset.id); });
+  sh.el.querySelector('[data-re]').onclick = () => {
+    const others = new Set(Object.entries(plan).filter(([k]) => k !== d).flatMap(([, v]) => v.itemIds).concat(p.itemIds));
+    const o = quickOutfits(dayWeather(i), 1, others)[0];
+    if (!o) return toast('衣櫥裡沒有別的組合了');
+    plan[d] = {itemIds:o.itemIds, title:o.title, why:o.why, tips:o.tips, source:'quick'}; store.set('plan', plan);
+    renderPlan(); sh.close(); openPlanDay(i);
+  };
+  sh.el.querySelector('[data-wear]').onclick = async () => { await saveOutfit({...p, occasion:''}, d, true); sh.close(); };
+}
+$('#btnWeekShuffle').onclick = () => { if (!wx) return; ensurePlan(true); renderPlan(); toast('換了一批'); };
+const WEEK_SCHEMA = {type:'object', additionalProperties:false, required:['days'], properties:{days:{type:'array', items:{type:'object', additionalProperties:false, required:['date','title','item_ids','why','tips'], properties:{
+  date:{type:'string'}, title:{type:'string'}, item_ids:{type:'array', items:{type:'string'}}, why:{type:'string'}, tips:{type:'string'}}}}}};
+$('#btnWeekAI').onclick = async () => {
+  if (!wx) return toast('天氣還沒讀到');
+  if (items.length < 2) return toast('先放幾件衣服進來');
+  const days = wx.daily.time.map((d, i) => `- ${d}（${dayLabel(i)}）：${weatherText(dayWeather(i))}`).join('\n');
+  const prompt = `幫我排未來 7 天每天的穿搭。
+
+【每天天氣】
+${days}
+【我的身形】${profileText()}
+【我的風格】${getProfile().style || DEFAULT_STYLE}
+${$('#askNote').value.trim() ? `【這週的安排】${$('#askNote').value.trim()}\n` : ''}
+【我的衣櫥】（只能用這些 id）
+${wardrobeText()}
+
+規則：每天一套，date 填上面的日期；上身＋下身或一件連身裙，天氣需要時加外套，配鞋和包。7 天之間主要單品盡量不重複，但可以一件單品穿出兩種風格。title 一句話，why 講天氣和搭配理由（1–2 句），tips 講穿法細節。`;
+  if (!getKey()) return copy(prompt);
+  const btn = $('#btnWeekAI'); btn.disabled = true; $('#weekState').innerHTML = '<span class="spinner"></span> AI 正在排這一週…';
+  try{
+    const r = await askClaude({system:'你是很懂天氣和穿搭的私人造型師，用台灣繁體中文。只使用使用者衣櫥裡提供的 id。', content:[{type:'text', text:prompt}], schema:WEEK_SCHEMA, effort:'medium', maxTokens:12000});
+    const ids = new Set(items.map(i => i.id));
+    let n = 0;
+    for (const day of r.days || []){
+      const itemIds = (day.item_ids || []).filter(id => ids.has(id));
+      if (!wx.daily.time.includes(day.date) || !itemIds.length) continue;
+      plan[day.date] = {itemIds, title:day.title, why:day.why, tips:day.tips, source:'ai'}; n++;
+    }
+    store.set('plan', plan); renderPlan();
+    $('#weekState').textContent = n ? `AI 排好了 ${n} 天，點一天看理由` : 'AI 沒排出結果，再試一次';
+  }catch(err){ $('#weekState').textContent = err.message; }
+  btn.disabled = false;
+};
 $('#wxPlace').addEventListener('click', () => go('me'));
 
 /* ---------- Claude API ---------- */
@@ -850,10 +985,10 @@ async function addJob(host, file){
     job.cands.forEach((c, i) => {
       const d = document.createElement('div'); d.className = 'cand';
       const prev = composite(c);
-      d.innerHTML = `<button type="button" class="piece${c.keep ? ' sel' : ''}" aria-label="修邊"><span class="tick">✓</span></button>
+      d.innerHTML = `<button type="button" class="piece${c.keep ? ' sel' : ''}" aria-label="修邊"><span class="ph"><span class="tick">✓</span></span></button>
         <select class="input" aria-label="分類">${CAT_ORDER.map(k => `<option value="${k}"${k === c.cat ? ' selected' : ''}>${CATS[k]}</option>`).join('')}</select>
         <div class="row"><button type="button" class="btn soft" data-k>${c.keep ? '不要' : '要'}</button><button type="button" class="btn soft" data-e>修邊</button></div>`;
-      const im = new Image(); im.alt = c.name; im.src = prev.toDataURL('image/png'); d.querySelector('.piece').prepend(im);
+      const im = new Image(); im.alt = c.name; im.src = prev.toDataURL('image/png'); d.querySelector('.ph').prepend(im);
       d.querySelector('select').onchange = e => { c.cat = e.target.value; c.name = CATS[c.cat]; };
       d.querySelector('[data-k]').onclick = () => { c.keep = !c.keep; renderCands(); };
       d.querySelector('[data-e]').onclick = d.querySelector('.piece').onclick = () => openEditor(c, renderCands);
@@ -896,25 +1031,65 @@ function openEditor(c, done){
 
 /* ---------- closet view ---------- */
 let catFilter = 'all';
-function renderCatFilter(){
-  const counts = {}; items.forEach(i => counts[i.cat] = (counts[i.cat] || 0) + 1);
-  $('#catFilter').innerHTML = [['all', `全部 ${items.length}`], ...CAT_ORDER.filter(k => counts[k]).map(k => [k, `${CATS[k]} ${counts[k]}`])]
-    .map(([k, t]) => `<button type="button" class="chip" data-c="${k}" aria-pressed="${k === catFilter}">${t}</button>`).join('');
-  $('#catFilter').querySelectorAll('.chip').forEach(b => b.onclick = () => { catFilter = b.dataset.c; renderCloset(); });
-}
 function pieceHTML(it, sel){
-  return `<button type="button" class="piece${sel ? ' sel' : ''}" data-id="${it.id}"><span class="tick">✓</span><img src="${imgURL(it)}" alt="${esc(it.name)}" loading="lazy"><span class="dot" style="background:${esc(it.color || '#888')}"></span><span class="lbl">${esc(it.name)}</span></button>`;
+  return `<button type="button" class="piece${sel ? ' sel' : ''}" data-id="${it.id}"><span class="ph"><span class="tick">✓</span><img src="${imgURL(it)}" alt="" loading="lazy"><span class="dot" style="background:${esc(it.color || '#888')}"></span></span><span class="lbl">${esc(it.name)}</span></button>`;
 }
 function renderCloset(){
-  renderCatFilter();
-  const list = items.filter(i => catFilter === 'all' || i.cat === catFilter);
   const g = $('#closetGrid');
   if (!items.length){
     g.innerHTML = `<div class="empty"><b>衣櫥還是空的</b>按下方的 ＋ 上傳穿搭照，例如電梯鏡子自拍。<br>上衣、褲子、鞋、包會自動分開去背，排進這裡。<button class="btn" type="button" id="emptyAdd">上傳第一張</button></div>`;
     $('#emptyAdd').onclick = openAdd; return;
   }
-  g.innerHTML = `<div class="grid">${list.map(it => pieceHTML(it)).join('')}</div>`;
+  const counts = {}; items.forEach(i => counts[i.cat] = (counts[i.cat] || 0) + 1);
+  if (catFilter !== 'all' && !counts[catFilter]) catFilter = 'all';
+  const rail = [['all', '全部', items.length], ...CAT_ORDER.filter(k => counts[k]).map(k => [k, CATS[k], counts[k]])]
+    .map(([k, t, n]) => `<button type="button" data-c="${k}" aria-pressed="${k === catFilter}">${t}<sup>${n > 99 ? '99+' : n}</sup></button>`).join('');
+  let body;
+  if (catFilter === 'all'){
+    body = `<button type="button" class="btn soft small" id="btnAnalyze" style="align-self:flex-start">衣櫥分析</button>` + CAT_ORDER.filter(k => counts[k]).map(k => `<section class="shelf">
+      <button type="button" class="shelf-head" data-c="${k}">${CATS[k]}<span>・${counts[k]} 個</span><i style="margin-left:auto">全部 ›</i></button>
+      <div class="shelf-row">${items.filter(i => i.cat === k).map(it => pieceHTML(it)).join('')}</div></section>`).join('');
+  } else body = `<div class="grid">${items.filter(i => i.cat === catFilter).map(it => pieceHTML(it)).join('')}</div>`;
+  g.innerHTML = `<div class="closet"><nav class="rail" aria-label="分類">${rail}</nav><div class="stack" style="min-width:0">${body}</div></div>`;
+  g.querySelectorAll('[data-c]').forEach(b => b.onclick = () => { catFilter = b.dataset.c; renderCloset(); window.scrollTo(0, 0); });
   g.querySelectorAll('.piece').forEach(b => b.onclick = () => openItem(b.dataset.id));
+  $('#btnAnalyze')?.addEventListener('click', openAnalysis);
+}
+function openAnalysis(){
+  const counts = {}; items.forEach(i => counts[i.cat] = (counts[i.cat] || 0) + 1);
+  const colors = {}; items.forEach(i => { const k = i.colorName || '其他'; (colors[k] ||= {n:0, hex:i.color || '#888'}).n++; });
+  const colorList = Object.entries(colors).sort((a, b) => b[1].n - a[1].n);
+  const worn = items.filter(i => i.wearCount).sort((a, b) => b.wearCount - a.wearCount);
+  const never = items.filter(i => !i.wearCount && Date.now() - i.created > 14 * 864e5);
+  const neutral = items.filter(i => NEUTRALS.has(i.colorName)).length;
+  const tops = (counts.top || 0) + (counts.outer || 0), bottoms = (counts.pants || 0) + (counts.skirt || 0);
+  const combos = (counts.top || 0) * bottoms + (counts.dress || 0);
+  const notes = [];
+  if (!counts.outer) notes.push('還沒有外套，冷氣房和早晚溫差會比較難配');
+  if (bottoms && tops / bottoms > 3) notes.push(`上衣 ${tops} 件、下身只有 ${bottoms} 件，多一條百搭褲或裙子，組合會多很多`);
+  if (items.length >= 8 && neutral / items.length > .8) notes.push('八成以上是黑白灰，想換個心情可以加一個顏色小物');
+  if (!items.some(i => (i.warmth || 0) >= 4)) notes.push('沒有保暖度 4 以上的單品，冬天要補');
+  const sh = openSheet(`${head('衣櫥分析')}
+    <div class="stat-grid"><div><b>${items.length}</b><span>件單品</span></div><div><b>${combos}</b><span>種上下身組合</span></div><div><b>${outfits.filter(o => o.date).length}</b><span>天有紀錄</span></div></div>
+    <div class="card stack"><b class="small">顏色分布</b>
+      <div class="bar">${colorList.map(([n, c]) => `<span style="flex:${c.n};background:${esc(c.hex)}" title="${esc(n)}"></span>`).join('')}</div>
+      <div class="legend">${colorList.map(([n, c]) => `<span><b style="background:${esc(c.hex)}"></b>${esc(n)} ${c.n}</span>`).join('')}</div></div>
+    <div class="card stack"><b class="small">各分類</b>
+      <div class="legend" style="color:var(--ink)">${CAT_ORDER.map(k => `<span>${CATS[k]} <span class="muted">${counts[k] || 0}</span></span>`).join('')}</div></div>
+    ${worn.length ? `<div class="card stack"><b class="small">最常穿</b><div class="mini-row">${worn.slice(0, 8).map(it => pieceHTML(it)).join('')}</div></div>` : ''}
+    ${never.length ? `<div class="card stack"><b class="small">兩週以上沒穿過・${never.length} 件</b><div class="mini-row">${never.slice(0, 12).map(it => pieceHTML(it)).join('')}</div></div>` : ''}
+    ${notes.length ? `<div class="note-box">${notes.map(esc).join('<br>')}</div>` : ''}
+    <button class="btn denim" type="button" id="aiAnalyze">${getKey() ? 'AI 深度分析' : '複製給 Claude 分析'}</button>
+    <div class="ai-text" id="aiAnalyzeOut"></div>`);
+  sh.el.querySelectorAll('.mini-row .piece').forEach(b => b.onclick = () => { sh.close(); openItem(b.dataset.id); });
+  sh.el.querySelector('#aiAnalyze').onclick = async e => {
+    const prompt = `幫我分析我的衣櫥。\n【我的身形】${profileText()}\n【我的風格】${getProfile().style || DEFAULT_STYLE}\n【衣櫥】\n${wardrobeText()}\n\n請用條列回答：1. 我的衣櫥風格輪廓（2–3 句）2. 最好用的 3 件單品和原因 3. 很少穿的單品可以怎麼穿出新搭法 4. 缺口：建議補的 3 件單品，附顏色、版型和依我的數據該挑的尺碼方向 5. 以台灣四季來看，哪個季節最難配`;
+    if (!getKey()) return copy(prompt);
+    const out = sh.el.querySelector('#aiAnalyzeOut'); e.target.disabled = true; out.innerHTML = '<span class="spinner"></span> 分析中…';
+    try{ out.textContent = await askClaude({system:'你是專業的個人造型師和衣櫥整理顧問，用台灣繁體中文，具體、直接、不客套。', content:[{type:'text', text:prompt}], effort:'medium'}); }
+    catch(err){ out.textContent = err.message; }
+    e.target.disabled = false;
+  };
 }
 function openItem(id){
   const it = items.find(i => i.id === id); if (!it) return;
@@ -969,41 +1144,42 @@ function openItem(id){
 
 /* ---------- outfit board (flat-lay) ---------- */
 // slots in % of a 3:4 board: [left, top, width, height]
-const SLOTS = {
-  outer:[46,3,50,44], top:[6,4,48,38], dress:[10,3,52,70], bottom:[8,38,46,60],
-  shoes:[58,74,36,22], bag:[58,46,38,28], acc:[64,4,30,20], acc2:[4,80,22,16]
+// flat-lay layout in % of a 3:4 board: [left, top, width, height]; clothes on the left, small things down the right
+const LAYOUT = {
+  plain:{top:[4,4,56,38], outer:[4,4,56,38], pants:[8,40,48,58], skirt:[6,42,52,40], dress:[4,4,58,90], bag:[62,38,36,28], shoes:[60,74,38,24], socks:[66,60,26,14], acc:[[66,4,30,15],[66,21,28,13],[4,84,20,14]]},
+  layered:{outer:[2,3,48,42], top:[44,6,30,30], pants:[6,44,44,54], skirt:[6,46,46,38], dress:[40,6,34,60], bag:[62,40,36,26], shoes:[60,74,38,24], socks:[66,62,24,13], acc:[[78,4,20,14],[4,86,20,12],[78,20,20,12]]}
 };
 function boardHTML(ids, extra = ''){
   const its = ids.map(id => items.find(i => i.id === id)).filter(Boolean);
   if (!its.length) return `<div class="board" ${extra}><div class="empty" style="position:absolute;inset:12px;border:0">這套的衣服已經刪掉了</div></div>`;
-  const used = {}; let html = '';
-  const hasOuter = its.some(i => i.cat === 'outer');
-  for (const it of its.sort((a, b) => CAT_ORDER.indexOf(b.cat) - CAT_ORDER.indexOf(a.cat))){
-    let k = it.cat;
-    if (k === 'acc' && used.acc) k = 'acc2';
-    if (used[k]) continue; used[k] = 1;
-    let [l, t, w, h] = SLOTS[k];
-    if (k === 'top' && !hasOuter){ l = 18; w = 56; }
-    if (k === 'dress' && !hasOuter){ l = 16; }
+  const L = its.some(i => i.cat === 'outer') && its.some(i => i.cat === 'top' || i.cat === 'dress') ? LAYOUT.layered : LAYOUT.plain;
+  const used = {}; let html = '', acc = 0;
+  // draw back-to-front: small things first, then bottoms, then tops on top
+  const z = ['acc','socks','shoes','bag','pants','skirt','dress','outer','top'];
+  for (const it of its.sort((a, b) => z.indexOf(a.cat) - z.indexOf(b.cat))){
+    let box;
+    if (it.cat === 'acc'){ box = L.acc[acc++]; if (!box) continue; }
+    else { if (used[it.cat] || (BOTTOMS.includes(it.cat) && (used.pants || used.skirt))) continue; box = L[it.cat]; used[it.cat] = 1; }
+    const [l, t, w, h] = box;
     html += `<img src="${imgURL(it)}" alt="${esc(it.name)}" style="left:${l}%;top:${t}%;width:${w}%;height:${h}%">`;
   }
   return `<div class="board" ${extra}>${html}</div>`;
 }
 
 /* ---------- outfit generation: local rules ---------- */
-function quickOutfits(w, n = 3){
+function quickOutfits(w, n = 3, avoid = new Set()){
   const target = targetWarmth(w);
   const needOuter = target >= 4 || (w.max - w.min) >= 7 || (w.night?.feel ?? w.feelMin) <= 21;
   const by = c => items.filter(i => i.cat === c);
   const recent = new Set(outfits.filter(o => o.date && o.date >= todayISO(-4)).flatMap(o => o.itemIds));
-  const score = (it, want) => -Math.abs((it.warmth || 0) - want) * 2 - (recent.has(it.id) ? 1.5 : 0) + Math.random() * 1.2
+  const score = (it, want) => -Math.abs((it.warmth || 0) - want) * 2 - (recent.has(it.id) ? 1.5 : 0) - (avoid.has(it.id) ? 3 : 0) + Math.random() * 1.2
     - (w.rain >= 50 && it.cat === 'shoes' && ['白','米白','淺灰'].includes(it.colorName) ? 2 : 0);
   const pick = (list, want, avoid = []) => list.filter(i => !avoid.includes(i.id)).map(i => [i, score(i, want)]).sort((a, b) => b[1] - a[1]).map(x => x[0]);
   const harmony = (a, b) => NEUTRALS.has(a?.colorName) || NEUTRALS.has(b?.colorName) || a?.colorName === b?.colorName;
   const res = [], usedBase = new Set();
   for (let k = 0; k < n * 3 && res.length < n; k++){
     let base = [];
-    const dresses = pick(by('dress'), target), tops = pick(by('top'), target - (needOuter ? 1 : 0)), bottoms = pick(by('bottom'), Math.max(2, target));
+    const dresses = pick(by('dress'), target), tops = pick(by('top'), target - (needOuter ? 1 : 0)), bottoms = pick(items.filter(i => BOTTOMS.includes(i.cat)), Math.max(2, target));
     const useDress = dresses.length && (!tops.length || !bottoms.length || Math.random() < .3);
     if (useDress) base = [dresses[k % dresses.length]];
     else if (tops.length && bottoms.length){
@@ -1043,7 +1219,7 @@ function weatherText(w){
 }
 function outfitPrompt(w, occasion, note){
   const recent = outfits.filter(o => o.date && o.date >= todayISO(-6)).map(o => `${o.date}：${o.itemIds.map(id => items.find(i => i.id === id)?.name).filter(Boolean).join('、')}`).join('\n');
-  return `幫我搭 ${wxDay ? '明天' : '今天'} 的衣服。
+  return `幫我搭${dayLabel(wxDay)}（${w.date}）的衣服。
 
 【天氣】${weatherText(w)}
 【場合】${occasion}${note ? `\n【補充】${note}` : ''}
@@ -1083,18 +1259,21 @@ function lookCard(o, i){
     <div class="tagline"><span class="tag${o.source === 'ai' ? ' ai' : ''}">${o.source === 'ai' ? 'AI 搭配' : '快速搭'} ${i + 1}</span><span class="tag">${occasion}</span></div>
     <h3>${esc(o.title)}</h3>
     <p>${esc(o.why)}</p>${o.tips ? `<p class="tip">${esc(o.tips)}</p>` : ''}
-    <div class="row"><button class="btn small" type="button" data-wear>${wxDay ? '明天就穿這套' : '今天穿這套'}</button><button class="btn small soft" type="button" data-save>收進搭配書</button></div>`;
-  const save = async worn => {
-    const rec = {id:uid(), created:Date.now(), itemIds:o.itemIds, title:o.title, why:o.why, tips:o.tips, source:o.source, occasion,
-      date:worn ? todayISO(wxDay) : '', weather:(() => { const w = dayWeather(); return w ? {place:getPlace()?.name, code:w.code, min:w.min, max:w.max, rain:w.rain} : null; })()};
-    await DB.put('outfits', rec);
-    if (worn) for (const id of o.itemIds){ const it = items.find(x => x.id === id); if (it){ it.wearCount = (it.wearCount || 0) + 1; it.lastWorn = rec.date; await DB.put('items', it); } }
-    await loadAll(); renderAll();
-    toast(worn ? '記下來了，已收進搭配書' : '已收進搭配書');
-  };
-  d.querySelector('[data-wear]').onclick = e => { e.target.disabled = true; save(true); };
-  d.querySelector('[data-save]').onclick = e => { e.target.disabled = true; save(false); };
+    <div class="row"><button class="btn small" type="button" data-wear>${dayLabel(wxDay)}穿這套</button><button class="btn small soft" type="button" data-save>收進搭配書</button><button class="btn small ghost" type="button" data-plan>排進${dayLabel(wxDay)}</button></div>`;
+  const date = wx.daily.time[wxDay];
+  d.querySelector('[data-wear]').onclick = e => { e.target.disabled = true; saveOutfit({...o, occasion}, date, true); };
+  d.querySelector('[data-save]').onclick = e => { e.target.disabled = true; saveOutfit({...o, occasion}, date, false); };
+  d.querySelector('[data-plan]').onclick = e => { e.target.disabled = true; plan[date] = {itemIds:o.itemIds, title:o.title, why:o.why, tips:o.tips, source:o.source}; store.set('plan', plan); renderPlan(); toast(`已排進${dayLabel(wxDay)}`); };
   return d;
+}
+async function saveOutfit(o, date, worn){
+  const i = wx ? wx.daily.time.indexOf(date) : -1, w = i >= 0 ? dayWeather(i) : null;
+  const rec = {id:uid(), created:Date.now(), itemIds:o.itemIds, title:o.title, why:o.why, tips:o.tips, source:o.source, occasion:o.occasion || '',
+    date:worn ? date : '', weather:w ? {place:getPlace()?.name, code:w.code, min:w.min, max:w.max, rain:w.rain} : null};
+  await DB.put('outfits', rec);
+  if (worn) for (const id of o.itemIds){ const it = items.find(x => x.id === id); if (it){ it.wearCount = (it.wearCount || 0) + 1; if (!it.lastWorn || date > it.lastWorn) it.lastWorn = date; await DB.put('items', it); } }
+  await loadAll(); renderAll();
+  toast(worn ? '記下來了，已收進搭配書' : '已收進搭配書');
 }
 function needItems(){
   if (items.length >= 2) return false;
@@ -1147,15 +1326,10 @@ function renderBook(){
   }
   const byMonth = {};
   outfits.forEach(o => { const m = (o.date || new Date(o.created).toLocaleDateString('sv-SE')).slice(0, 7); (byMonth[m] ||= []).push(o); });
-  host.innerHTML = Object.entries(byMonth).map(([m, list]) => `<h2 class="sec">${m.replace('-', ' / ')}・${list.length} 套</h2><div class="book">${list.map(o => {
-    const wxs = o.weather ? `${esc(o.weather.place || '')} ${Math.round(o.weather.min)}–${Math.round(o.weather.max)}°` : '';
-    return `<article class="page" data-id="${o.id}">
-      <div class="meta"><span>${o.date ? '穿於 ' + o.date : '收藏'}</span><span>${wxs}</span></div>
-      ${boardHTML(o.itemIds)}
-      <h3>${esc(o.title || '我的搭配')}</h3>
-      <div class="tagline">${o.occasion ? `<span class="tag">${esc(o.occasion)}</span>` : ''}<span class="tag${o.source === 'ai' ? ' ai' : ''}">${o.source === 'ai' ? 'AI' : o.source === 'quick' ? '快速搭' : '自己搭'}</span></div>
-    </article>`; }).join('')}</div>`).join('');
-  host.querySelectorAll('.page').forEach(p => p.onclick = () => openLook(p.dataset.id));
+  host.innerHTML = Object.entries(byMonth).map(([m, list]) => `<h2 class="sec">${m.replace('-', ' / ')}・${list.length} 套</h2><div class="tiles">${list.map(o => `
+    <button type="button" class="tile" data-id="${o.id}">${boardHTML(o.itemIds)}
+      <span class="sub">${o.date ? o.date.slice(5).replace('-', '/') : '收藏'}${o.weather ? `・${Math.round(o.weather.min)}–${Math.round(o.weather.max)}°` : ''}${o.source === 'ai' ? ' ✦' : ''}</span></button>`).join('')}</div>`).join('');
+  host.querySelectorAll('.tile').forEach(p => p.onclick = () => openLook(p.dataset.id));
 }
 function openLook(id){
   const o = outfits.find(x => x.id === id); if (!o) return;
@@ -1290,6 +1464,7 @@ document.querySelectorAll('nav.tabs [data-view]').forEach(b => b.addEventListene
 function renderAll(){
   $('#countTop').textContent = items.length ? `${items.length} 件・${outfits.length} 套` : '';
   renderCloset(); renderBook();
+  if (wx){ ensurePlan(); renderPlan(); }
 }
 
 /* ---------- boot ---------- */
