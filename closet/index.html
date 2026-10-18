@@ -878,6 +878,28 @@ async function autoSplit(job){
   }
   return cands.sort((a, b) => CAT_ORDER.indexOf(a.cat) - CAT_ORDER.indexOf(b.cat));
 }
+function whiteCut(job){
+  // product shots on a plain light background: flood-fill the background in from the edges, no model needed
+  const c = job.canvas, w = c.width, h = c.height;
+  const d = c.getContext('2d').getImageData(0, 0, w, h).data;
+  const n = w * h, bg = new Uint8Array(n), q = new Int32Array(n);
+  let sr = 0, sg = 0, sb = 0, sn = 0;
+  for (let x = 0; x < w; x++) for (const y of [0, h - 1]){ const i = (y * w + x) * 4; sr += d[i]; sg += d[i + 1]; sb += d[i + 2]; sn++; }
+  const R = sr / sn, G = sg / sn, B = sb / sn;
+  const isBg = p => { const i = p * 4; return Math.abs(d[i] - R) + Math.abs(d[i + 1] - G) + Math.abs(d[i + 2] - B) < 54; };
+  let qh = 0, qt = 0;
+  const push = p => { if (!bg[p] && isBg(p)){ bg[p] = 1; q[qt++] = p; } };
+  for (let x = 0; x < w; x++){ push(x); push((h - 1) * w + x); }
+  for (let y = 0; y < h; y++){ push(y * w); push(y * w + w - 1); }
+  while (qh < qt){ const p = q[qh++], x = p % w; if (x > 0) push(p - 1); if (x < w - 1) push(p + 1); if (p >= w) push(p - w); if (p < n - w) push(p + w); }
+  const mask = document.createElement('canvas'); mask.width = w; mask.height = h;
+  const id = new ImageData(w, h);
+  for (let p = 0; p < n; p++){ id.data[p * 4] = id.data[p * 4 + 1] = id.data[p * 4 + 2] = 255; id.data[p * 4 + 3] = bg[p] ? 0 : 255; }
+  mask.getContext('2d').putImageData(id, 0, 0);
+  cleanMask(mask);
+  const box = bboxOf(mask); if (!box) throw new Error('找不到主體，背景可能不是素色');
+  return {...cropPair(c, mask, box, .02), cat:'top', name:'', keep:true};
+}
 async function rectCut(job, r){
   const {model, processor} = await getRmbg(job.bar);
   job.setState('正在去背…');
@@ -891,7 +913,7 @@ async function rectCut(job, r){
   const mask = maskToCanvas(raw, r.w, r.h);
   cleanMask(mask);
   const box = bboxOf(mask) || {x:0, y:0, w:r.w, h:r.h};
-  return {...cropPair(crop, mask, box, .02), cat:'top', name:'新單品', keep:true};
+  return {...cropPair(crop, mask, box, .02), cat:'top', name:'', keep:true};
 }
 
 /* ---------- sheets ---------- */
@@ -914,7 +936,7 @@ const head = t => `<div class="sheet-head"><h2>${t}</h2><button class="x" type="
 $('#btnAdd').addEventListener('click', openAdd);
 function openAdd(){
   const sh = openSheet(`${head('新增衣服')}
-    <p class="small muted" style="margin:0">上傳穿搭照或單品照。<b>自動拆解</b>會把上衣、褲子、鞋、包分開去背；外套拿在手上或疊穿時，用<b>框選</b>圈出那一件再去背。</p>
+    <p class="small muted" style="margin:0">上傳穿搭照或單品照。<b>自動拆解</b>會把上衣、褲子、鞋、包分開去背；外套拿在手上或疊穿時，用<b>框選</b>圈出那一件再去背。白底的商品照或官網圖用<b>白底商品照</b>，一秒去背、不用下載模型。</p>
     <label class="btn" for="addFiles" style="cursor:pointer"><svg viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="14" rx="2.5"/><circle cx="12" cy="12.5" r="3.5"/><path d="M8.5 5.5l1.5-2h4l1.5 2"/></svg>選照片</label>
     <input type="file" id="addFiles" accept="image/*" multiple hidden>
     <div class="tiny muted">第一次去背會下載辨識模型（約 30–45 MB，之後會留在手機裡），建議連 Wi-Fi。照片只在你的手機上處理，不會上傳。</div>
@@ -928,7 +950,7 @@ async function addJob(host, file){
   const canvas = await fileToCanvas(file);
   const el = document.createElement('div'); el.className = 'photo-job';
   el.innerHTML = `<div class="photo-wrap"><img alt="上傳的照片"><div class="rect" hidden></div></div>
-    <div class="row"><button class="btn small" data-a="auto" type="button">自動拆解</button><button class="btn small soft" data-a="rect" type="button">框選一件</button><button class="btn small soft" data-a="whole" type="button">整張去背</button><button class="btn small ghost" data-a="remove" type="button">移除</button></div>
+    <div class="row"><button class="btn small" data-a="auto" type="button">自動拆解</button><button class="btn small soft" data-a="rect" type="button">框選一件</button><button class="btn small soft" data-a="whole" type="button">整張去背</button><button class="btn small soft" data-a="white" type="button">白底商品照</button><button class="btn small ghost" data-a="remove" type="button">移除</button></div>
     <div class="tiny muted" data-state></div><div class="progress" hidden><i></i></div>
     <div class="cands"></div>
     <button class="btn denim" data-a="save" type="button" hidden>存進衣櫥</button>`;
@@ -963,6 +985,7 @@ async function addJob(host, file){
   el.querySelector('[data-a="auto"]').onclick = () => run(() => autoSplit(job));
   el.querySelector('[data-a="rect"]').onclick = () => { rectMode = true; wrap.classList.add('drawing'); job.setState('在照片上拖曳，框住要去背的那一件'); };
   el.querySelector('[data-a="whole"]').onclick = () => run(() => rectCut(job, {x:0, y:0, w:canvas.width, h:canvas.height}));
+  el.querySelector('[data-a="white"]').onclick = () => run(async () => whiteCut(job));
   el.querySelector('[data-a="remove"]').onclick = () => el.remove();
   el.querySelector('[data-a="save"]').onclick = async e => {
     e.target.disabled = true;
@@ -971,7 +994,7 @@ async function addJob(host, file){
     for (const c of keep){
       const blob = await finalizeCand(c); if (!blob) continue;
       const col = await analyzeColor(blob);
-      const item = {id:uid(), created:Date.now(), cat:c.cat, name:`${col.name}${c.name}`, color:col.hex, colorName:col.name,
+      const item = {id:uid(), created:Date.now(), cat:c.cat, name:`${col.name}${c.name || CATS[c.cat]}`, color:col.hex, colorName:col.name,
         warmth:DEFAULT_WARMTH[c.cat], seasons:[], tags:[], notes:'', brand:'', size:'', img:blob, wearCount:0, lastWorn:''};
       await DB.put('items', item); saved.push(item);
     }
@@ -988,8 +1011,8 @@ async function addJob(host, file){
       d.innerHTML = `<button type="button" class="piece${c.keep ? ' sel' : ''}" aria-label="修邊"><span class="ph"><span class="tick">✓</span></span></button>
         <select class="input" aria-label="分類">${CAT_ORDER.map(k => `<option value="${k}"${k === c.cat ? ' selected' : ''}>${CATS[k]}</option>`).join('')}</select>
         <div class="row"><button type="button" class="btn soft" data-k>${c.keep ? '不要' : '要'}</button><button type="button" class="btn soft" data-e>修邊</button></div>`;
-      const im = new Image(); im.alt = c.name; im.src = prev.toDataURL('image/png'); d.querySelector('.ph').prepend(im);
-      d.querySelector('select').onchange = e => { c.cat = e.target.value; c.name = CATS[c.cat]; };
+      const im = new Image(); im.alt = c.name || CATS[c.cat]; im.src = prev.toDataURL('image/png'); d.querySelector('.ph').prepend(im);
+      d.querySelector('select').onchange = e => { c.cat = e.target.value; c.name = ''; };
       d.querySelector('[data-k]').onclick = () => { c.keep = !c.keep; renderCands(); };
       d.querySelector('[data-e]').onclick = d.querySelector('.piece').onclick = () => openEditor(c, renderCands);
       box.appendChild(d);
