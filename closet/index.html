@@ -331,6 +331,17 @@ details summary{cursor:pointer;font-weight:600;font-size:14px}
     </div>
 
     <div class="card stack">
+      <b>AI 拉平（OpenAI 生圖）</b>
+      <p class="small muted" style="margin:0">把穿搭照裡的衣服直接生成成白底平拍商品照，用的是 ChatGPT 背後的圖片模型。這要另外申請 OpenAI API 金鑰（platform.openai.com，跟 ChatGPT Plus 訂閱分開計費），照片會從這支手機直接傳給 OpenAI。</p>
+      <div class="field"><label for="oKey">OpenAI API 金鑰</label><input class="input" id="oKey" type="password" autocomplete="off" placeholder="sk-…"></div>
+      <div class="two">
+        <div class="field"><label for="oModel">模型</label><input class="input" id="oModel" placeholder="gpt-image-2"></div>
+        <div class="field"><label for="oQuality">品質</label><select class="input" id="oQuality"><option value="low">省錢</option><option value="medium" selected>標準</option><option value="high">最清楚</option></select></div>
+      </div>
+      <div class="row"><button class="btn small" id="btnSaveOKey" type="button">儲存</button><button class="btn small ghost" id="btnClearOKey" type="button">清除金鑰</button><span class="tiny muted" id="oKeyState"></span></div>
+    </div>
+
+    <div class="card stack">
       <b>地點</b>
       <div class="row"><input class="input" id="citySearch" placeholder="搜尋城市，例：台北、東京、Vancouver" style="flex:1"><button class="btn small soft" id="btnCity" type="button">搜尋</button></div>
       <div id="cityResults" class="stack"></div>
@@ -878,6 +889,54 @@ async function autoSplit(job){
   }
   return cands.sort((a, b) => CAT_ORDER.indexOf(a.cat) - CAT_ORDER.indexOf(b.cat));
 }
+/* ---------- AI flatten: OpenAI image edit turns a worn garment into a flat-lay product shot ---------- */
+const FLAT_EN = {top:'top (the upper garment; if it is layered under a jacket, the inner top)', outer:'jacket or outer layer (including one carried in the hand or over the arm)', pants:'pants or jeans', skirt:'skirt', dress:'dress', shoes:'pair of shoes', bag:'bag', socks:'socks', acc:'small accessories such as the necklace and hair clip, arranged together'};
+const FLAT_TALL = ['pants','skirt','dress'];
+function flatPrompt(cat, note){
+  return `Look at the outfit in this photo. Recreate ONLY the ${FLAT_EN[cat]} as a clean e-commerce flat-lay product photo: laid perfectly flat and smoothed, front view from directly above, centered, on a pure white seamless background, soft even studio lighting, faint natural shadow. Match the exact color, wash and fade pattern, fabric texture, neckline, straps, sleeves, length, hardware and every design detail visible in the photo; reconstruct parts hidden by hands, hair, the phone or other clothes in the most plausible way. No person, no body parts, no mannequin, no hanger, no other clothing items, no text, no logo.${note ? ' Extra details: ' + note : ''}`;
+}
+function flatPromptZh(cats, note){
+  return `請看我附上的穿搭照，把照片裡的${cats.map(c => CATS[c]).join('、')}分別做成「白底平拍商品照」，一件一張圖：
+- 衣服平放、攤平拉整齊，正面從正上方拍，置中
+- 純白背景、柔和平均的光、淡淡的自然陰影
+- 顏色、水洗刷色、布料質感、領口、肩帶、袖子、長度、金屬配件等細節都要跟照片一模一樣；被手、頭髮、手機或其他衣服擋住的地方，照最合理的樣子補完整
+- 不要出現人、身體、假人、衣架、其他衣服、文字或 logo${note ? `\n- 補充：${note}` : ''}`;
+}
+async function flatGen(job, cat, note){
+  const key = store.get('okey', '');
+  if (!key) throw new Error('還沒設定 OpenAI API 金鑰，到「我」→ AI 拉平 貼上');
+  const src = document.createElement('canvas'), s = Math.min(1, 1536 / Math.max(job.canvas.width, job.canvas.height));
+  src.width = Math.round(job.canvas.width * s); src.height = Math.round(job.canvas.height * s);
+  src.getContext('2d').drawImage(job.canvas, 0, 0, src.width, src.height);
+  const photo = await new Promise(r => src.toBlob(r, 'image/jpeg', .9));
+  const send = async withFidelity => {
+    const fd = new FormData();
+    fd.append('model', store.get('omodel', 'gpt-image-2'));
+    fd.append('image', photo, 'outfit.jpg');
+    fd.append('prompt', flatPrompt(cat, note));
+    fd.append('size', FLAT_TALL.includes(cat) ? '1024x1536' : '1024x1024');
+    fd.append('quality', store.get('oquality', 'medium'));
+    fd.append('n', '1');
+    if (withFidelity) fd.append('input_fidelity', 'high');
+    return fetch('https://api.openai.com/v1/images/edits', {method:'POST', headers:{Authorization:'Bearer ' + key}, body:fd});
+  };
+  let r = await send(true);
+  if (r.status === 400){
+    const t = await r.text();
+    if (/input_fidelity/i.test(t)) r = await send(false);
+    else if (/safety|policy|moderation/i.test(t)) throw new Error(`${CATS[cat]}被 OpenAI 的安全檢查擋下，換一張照片或先把臉裁掉再試`);
+    else throw new Error(`${CATS[cat]}：${(JSON.parse(t).error?.message || t).slice(0, 120)}`);
+  }
+  if (r.status === 401) throw new Error('OpenAI 金鑰無效，到「我」重新貼上');
+  if (r.status === 429) throw new Error('OpenAI 額度用完或太頻繁，稍後再試或到 platform.openai.com 儲值');
+  if (!r.ok) throw new Error(`OpenAI 暫時連不上（${r.status}）`);
+  const j = await r.json();
+  const b64 = j.data?.[0]?.b64_json; if (!b64) throw new Error('OpenAI 沒有回傳圖片');
+  const bmp = await createImageBitmap(await (await fetch('data:image/png;base64,' + b64)).blob());
+  const c = document.createElement('canvas'); c.width = bmp.width; c.height = bmp.height; c.getContext('2d').drawImage(bmp, 0, 0);
+  const cand = whiteCut({canvas:c});
+  return {...cand, cat};
+}
 function whiteCut(job){
   // product shots on a plain light background: flood-fill the background in from the edges, no model needed
   const c = job.canvas, w = c.width, h = c.height;
@@ -950,7 +1009,14 @@ async function addJob(host, file){
   const canvas = await fileToCanvas(file);
   const el = document.createElement('div'); el.className = 'photo-job';
   el.innerHTML = `<div class="photo-wrap"><img alt="上傳的照片"><div class="rect" hidden></div></div>
-    <div class="row"><button class="btn small" data-a="auto" type="button">自動拆解</button><button class="btn small soft" data-a="rect" type="button">框選一件</button><button class="btn small soft" data-a="whole" type="button">整張去背</button><button class="btn small soft" data-a="white" type="button">白底商品照</button><button class="btn small ghost" data-a="remove" type="button">移除</button></div>
+    <div class="row"><button class="btn small denim" data-a="flat" type="button">AI 拉平</button><button class="btn small" data-a="auto" type="button">自動拆解</button><button class="btn small soft" data-a="rect" type="button">框選一件</button><button class="btn small soft" data-a="whole" type="button">整張去背</button><button class="btn small soft" data-a="white" type="button">白底商品照</button><button class="btn small ghost" data-a="remove" type="button">移除</button></div>
+    <div class="stack" data-flatbox hidden style="gap:8px">
+      <span class="small">要把哪幾件做成平拍商品照？</span>
+      <div class="chips" style="flex-wrap:wrap">${CAT_ORDER.map(k => `<button type="button" class="chip" data-fc="${k}" aria-pressed="${k === 'top' || k === 'pants'}">${CATS[k]}</button>`).join('')}</div>
+      <input class="input" data-fnote placeholder="補充細節（選填），例：外套是深灰色水洗、褲子是低腰">
+      <div class="row"><button class="btn small denim" data-a="flatgo" type="button" style="flex:1">開始生成</button><button class="btn small ghost" data-a="flatcopy" type="button">複製給 ChatGPT</button></div>
+      <span class="tiny muted">每件約 1 分鐘，照 OpenAI 計價。也可以按「複製給 ChatGPT」，把指令和照片一起貼到 ChatGPT App，生成後存圖，再用「白底商品照」放進來。</span>
+    </div>
     <div class="tiny muted" data-state></div><div class="progress" hidden><i></i></div>
     <div class="cands"></div>
     <button class="btn denim" data-a="save" type="button" hidden>存進衣櫥</button>`;
@@ -961,8 +1027,8 @@ async function addJob(host, file){
     setState(t){ el.querySelector('[data-state]').textContent = t; }};
   let rectMode = false, rect = null, start = null;
   const busy = on => { el.querySelectorAll('.row .btn').forEach(b => b.disabled = on); el.querySelector('.progress').hidden = !on; };
-  const run = async fn => {
-    busy(true); job.setState('載入模型中…第一次會比較久');
+  const run = async (fn, msg = '載入模型中…第一次會比較久') => {
+    busy(true); job.setState(msg);
     try{ const r = await fn(); job.cands.push(...(Array.isArray(r) ? r : [r])); renderCands(); job.setState(job.cands.length ? '點縮圖可以修邊，取消勾選的不會存' : '沒有找到衣服，試試「框選一件」'); }
     catch(err){ console.error(err); job.setState('去背失敗：' + (err.message || err) + '。網路不穩的話再試一次。'); }
     busy(false);
@@ -986,6 +1052,25 @@ async function addJob(host, file){
   el.querySelector('[data-a="rect"]').onclick = () => { rectMode = true; wrap.classList.add('drawing'); job.setState('在照片上拖曳，框住要去背的那一件'); };
   el.querySelector('[data-a="whole"]').onclick = () => run(() => rectCut(job, {x:0, y:0, w:canvas.width, h:canvas.height}));
   el.querySelector('[data-a="white"]').onclick = () => run(async () => whiteCut(job));
+  const flatBox = el.querySelector('[data-flatbox]');
+  const flatCats = () => [...flatBox.querySelectorAll('[data-fc][aria-pressed="true"]')].map(b => b.dataset.fc);
+  flatBox.querySelectorAll('[data-fc]').forEach(b => b.onclick = () => b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true'));
+  el.querySelector('[data-a="flat"]').onclick = () => { flatBox.hidden = !flatBox.hidden; };
+  el.querySelector('[data-a="flatcopy"]').onclick = () => copy(flatPromptZh(flatCats(), flatBox.querySelector('[data-fnote]').value.trim()));
+  el.querySelector('[data-a="flatgo"]').onclick = () => {
+    const cats = flatCats(); if (!cats.length) return job.setState('先選要做哪幾件');
+    if (!store.get('okey', '')) return job.setState('還沒設定 OpenAI API 金鑰：到「我」→ AI 拉平 貼上。或按「複製給 ChatGPT」改用 ChatGPT App。');
+    const note = flatBox.querySelector('[data-fnote]').value.trim();
+    flatBox.hidden = true;
+    run(async () => {
+      const res = await Promise.allSettled(cats.map(c => flatGen(job, c, note)));
+      const ok = res.filter(x => x.status === 'fulfilled').map(x => x.value);
+      const bad = res.filter(x => x.status === 'rejected').map(x => x.reason.message);
+      if (bad.length && !ok.length) throw new Error(bad[0]);
+      if (bad.length) setTimeout(() => job.setState(`完成 ${ok.length} 件；${bad.join('；')}`), 0);
+      return ok;
+    }, `AI 正在把 ${cats.map(c => CATS[c]).join('、')} 拉平，約 1 分鐘…`);
+  };
   el.querySelector('[data-a="remove"]').onclick = () => el.remove();
   el.querySelector('[data-a="save"]').onclick = async e => {
     e.target.disabled = true;
@@ -1396,6 +1481,8 @@ function renderMe(){
   PROFILE_FIELDS.forEach(f => { const el = $('#p-' + f); if (el) el.value = p[f] ?? ''; });
   $('#profDate').textContent = p.measured ? `腰臀 ${p.measured} 量` : '';
   const k = getKey(); $('#keyState').textContent = k ? `已設定（…${k.slice(-4)}）` : '未設定';
+  const ok = store.get('okey', ''); $('#oKeyState').textContent = ok ? `已設定（…${ok.slice(-4)}）` : '未設定';
+  $('#oKey').value = ''; $('#oModel').value = store.get('omodel', 'gpt-image-2'); $('#oQuality').value = store.get('oquality', 'medium');
   $('#apiKey').value = '';
   if (navigator.storage?.estimate) navigator.storage.estimate().then(e => { $('#storageInfo').textContent = `${items.length} 件衣服、${outfits.length} 套搭配，約用了 ${(e.usage / 1048576).toFixed(1)} MB`; });
 }
@@ -1405,6 +1492,14 @@ $('#btnSaveProf').onclick = () => {
 };
 $('#btnSaveKey').onclick = () => { const v = $('#apiKey').value.trim(); if (!/^sk-ant-/.test(v)) return toast('金鑰應該是 sk-ant- 開頭'); store.set('key', v); renderMe(); toast('金鑰已存在這台裝置'); };
 $('#btnClearKey').onclick = () => { store.set('key', ''); renderMe(); toast('已清除金鑰'); };
+$('#btnSaveOKey').onclick = () => {
+  const v = $('#oKey').value.trim();
+  if (v && !/^sk-/.test(v)) return toast('OpenAI 金鑰應該是 sk- 開頭');
+  if (v) store.set('okey', v);
+  store.set('omodel', $('#oModel').value.trim() || 'gpt-image-2'); store.set('oquality', $('#oQuality').value);
+  renderMe(); toast('已儲存');
+};
+$('#btnClearOKey').onclick = () => { store.set('okey', ''); renderMe(); toast('已清除 OpenAI 金鑰'); };
 $('#btnCity').onclick = async () => {
   const q = $('#citySearch').value.trim(); if (!q) return;
   const box = $('#cityResults'); box.innerHTML = '<span class="tiny muted">搜尋中…</span>';
