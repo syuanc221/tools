@@ -148,6 +148,7 @@ const I = {
   island:'<svg viewBox="0 0 24 24"><path d="M3.5 18.5c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 5 0"/><path d="M12 15.5V8"/><path d="M12 8c-2.5-3-6-2-6.5-1 2 .5 4 1.5 6.5 1zM12 8c2.5-3 6-2 6.5-1-2 .5-4 1.5-6.5 1zM12 8c-1-3 0-5 1-5.5"/></svg>',
   maple:'<svg viewBox="0 0 24 24"><path d="M12 3.5v17"/><path d="m12 3.5-2 3.5-2.5-1 .8 3.5-3.8 1.2 2.5 2-1.5 2.5 4.2-.7L9 17h6l-.7-2.5 4.2.7-1.5-2.5 2.5-2-3.8-1.2.8-3.5-2.5 1z"/></svg>',
   hanger:'<svg viewBox="0 0 24 24"><path d="M12 6.5a2 2 0 1 1 2-2"/><path d="M12 6.5v1.2L3.3 14a1.4 1.4 0 0 0 .8 2.5h15.8a1.4 1.4 0 0 0 .8-2.5L12 7.7"/></svg>',
+  heart:'<svg viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/><path d="m12.8 9.5-1.8 3h2.2l-1.6 3"/></svg>',
   phone:'<svg viewBox="0 0 24 24"><rect x="6.5" y="3" width="11" height="18" rx="2.5"/><path d="M10 17.5h4M6.5 15h11" stroke-dasharray="1.5 1.5"/></svg>'
 };
 const SHEET_ID = '10KImEBVuPuwQza8iDnUeb71jAURsnzzwSlowatCcM6Y';
@@ -165,6 +166,8 @@ let tools = [
    url:'https://claude.ai/artifact/9at1AaLfV1nH6FsBamnYk8'},
   {cat:'life', icon:'hanger', name:'Yoona 衣櫥書', desc:'穿搭照自動去背、看天氣 AI 搭配、尺碼建議', pub:false, date:'10/18',
    url:'https://syuanc221.github.io/tools/closet/'},
+  {cat:'life', icon:'heart', name:'總裁，您的多益只有 450 分', desc:'AI 互動霸總劇情，邊攻略總裁邊背多益單字', pub:true, date:'10/20',
+   url:'https://syuanc221.github.io/tools/toeic/'},
   {cat:'life', icon:'ledger', name:'迷因科技帳本', desc:'永達會計費與辦公室租金紀錄', pub:true, date:'9/29',
    url:'https://syuanc221.github.io/accounting-fees/'},
   {cat:'travel', icon:'island', name:'日本・石垣島 2026', desc:'石垣島遠端工作週與離島週末行程', pub:true, date:'9/30',
@@ -195,7 +198,7 @@ function render(f){
     return `<section class="group"><h2>${CAT[c]} · ${items.length}</h2>${items.map(row).join('')}</section>`;
   }).join('<div style="height:14px"></div>');
 }
-const ICON_BY_NAME = {'工時本':'clock','命盤':'star','萬聖節':'ticket','英語':'book','教練':'dumbbell','帳本':'ledger','石垣':'island','加拿大':'maple','旅':'plane','衣櫥':'hanger'};
+const ICON_BY_NAME = {'工時本':'clock','命盤':'star','萬聖節':'ticket','英語':'book','教練':'dumbbell','帳本':'ledger','石垣':'island','加拿大':'maple','旅':'plane','衣櫥':'hanger','總裁':'heart','多益':'heart'};
 const CAT_KEY = {'朋友':'friend','生活':'life','旅遊':'travel'};
 function parseCSV(text){
   const rows=[]; let row=[], cell='', q=false;

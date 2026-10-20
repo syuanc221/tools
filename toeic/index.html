@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="霸總狗血愛情 × 多益單字。你是多益 990 的特助，AI 演那個只考 450 分的總裁，你的每個選擇都會改寫劇情。">
+<meta property="og:title" content="總裁，您的多益只有 450 分">
+<meta property="og:description" content="AI 互動劇情：用多益單字攻略霸道總裁。">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="450 分總裁">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f2f2f3">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="icon" type="image/png" href="../favicon.png">
+<title>總裁，您的多益只有 450 分</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;900&display=swap">
+<style>
+/* Layout: phone column — black status card (three meters), a Threads-like story feed, choices + free-text bar docked at the bottom; vocab and settings open as bottom sheets */
+:root{
+  --ground:#f2f2f3;
+  --surface:#ffffff;
+  --ink:#0d0d0e;
+  --muted:#85858c;
+  --line:#e4e4e7;
+  --chip:#eaeaec;
+  --inverse:#ffffff;
+  --rose:#c0344d;
+  --rose-soft:#f8e3e7;
+  --gold:#9a6b12;
+  --gold-soft:#f5ecd9;
+  --ok:#3c7a55;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(0,0,0,.05);
+  --sans:"Geist","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --serif:"Noto Serif TC","Songti TC",serif;
+  --mono:"Geist Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0b0b0c;--surface:#18181a;--ink:#f4f4f5;--muted:#8d8d93;--line:#29292d;--chip:#232326;--inverse:#0b0b0c;
+  --rose:#f07d92;--rose-soft:#3a1d24;--gold:#e2b765;--gold-soft:#2e2615;--ok:#7cc29a;--shadow:none;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --ground:#0b0b0c;--surface:#18181a;--ink:#f4f4f5;--muted:#8d8d93;--line:#29292d;--chip:#232326;--inverse:#0b0b0c;
+  --rose:#f07d92;--rose-soft:#3a1d24;--gold:#e2b765;--gold-soft:#2e2615;--ok:#7cc29a;--shadow:none;color-scheme:dark}
+:root{padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--rose);outline-offset:2px}
+
+.wrap{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 24px;display:flex;flex-direction:column;gap:16px}
+header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-inline:4px}
+.hello{margin:0;font-size:13px;color:var(--muted);font-weight:500;letter-spacing:.02em}
+h1{margin:2px 0 0;font-family:var(--serif);font-size:24px;font-weight:900;letter-spacing:-.01em;line-height:1.25;text-wrap:balance}
+.tools{display:flex;gap:6px;flex:none}
+.icon-btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;position:relative}
+.icon-btn svg{width:19px;height:19px;stroke:var(--ink);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.icon-btn .badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--rose);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;font-family:var(--mono)}
+
+.hero{background:var(--ink);color:var(--inverse);border-radius:26px;padding:18px 20px 16px;display:flex;flex-direction:column;gap:14px}
+.hero-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.ep{font-size:12px;opacity:.6;font-family:var(--mono);letter-spacing:.04em}
+.ep-title{font-family:var(--serif);font-weight:900;font-size:17px;line-height:1.35;margin-top:2px}
+.turn{font-family:var(--mono);font-size:12px;opacity:.6;white-space:nowrap}
+.meters{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;border-top:1px solid color-mix(in srgb,var(--inverse) 18%,transparent);padding-top:12px}
+.meter b{display:flex;align-items:baseline;gap:4px;font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;font-family:var(--mono)}
+.meter b small{font-size:11px;opacity:.55;font-weight:400}
+.meter span{font-size:11px;opacity:.6}
+.bar{height:3px;border-radius:2px;background:color-mix(in srgb,var(--inverse) 16%,transparent);margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--inverse);border-radius:2px;transition:width .5s ease}
+.meter.heart .bar i{background:#f07d92}
+.delta{font-size:11px;font-family:var(--mono);margin-left:2px}
+.delta.up{color:#7cc29a}.delta.down{color:#f07d92}
+
+/* story feed */
+.feed{display:flex;flex-direction:column;gap:12px}
+.post{display:grid;grid-template-columns:36px minmax(0,1fr);gap:10px;align-items:start}
+.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-family:var(--serif);font-weight:900;font-size:15px;background:var(--chip);color:var(--ink)}
+.av.ceo{background:var(--ink);color:var(--inverse)}
+.av.you{background:var(--rose);color:#fff}
+.bubble{background:var(--surface);border-radius:4px 20px 20px 20px;padding:11px 14px;box-shadow:var(--shadow);min-width:0}
+.bubble .who{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:2px}
+.bubble p{margin:0;overflow-wrap:anywhere}
+.post.narr{display:block;padding:2px 6px}
+.post.narr p{margin:0;color:var(--ink);opacity:.85;font-size:14.5px;overflow-wrap:anywhere}
+.post.you{grid-template-columns:minmax(0,1fr) 36px}
+.post.you .bubble{border-radius:20px 4px 20px 20px;background:var(--ink);color:var(--inverse)}
+.post.you .bubble .who{color:color-mix(in srgb,var(--inverse) 60%,transparent);text-align:right}
+.post.you .av{grid-column:2;grid-row:1}
+.post.you .bubble{grid-column:1;grid-row:1}
+.ep-divider{text-align:center;font-family:var(--serif);font-weight:900;font-size:16px;padding:18px 0 6px;line-height:1.4}
+.ep-divider small{display:block;font-family:var(--mono);font-weight:400;font-size:11px;color:var(--muted);letter-spacing:.08em}
+
+.w{display:inline;border:0;background:var(--gold-soft);color:var(--gold);font-weight:700;border-radius:6px;padding:0 4px;margin:0 1px;font-family:var(--sans);font-size:inherit;line-height:inherit}
+.w small{font-weight:500;font-size:.82em;opacity:.85;margin-left:2px}
+.post.you .w{background:color-mix(in srgb,var(--inverse) 16%,transparent);color:var(--inverse)}
+
+.callout{border-radius:18px;padding:12px 14px;font-size:14px;display:flex;flex-direction:column;gap:4px}
+.callout .h{font-size:12px;font-weight:700;letter-spacing:.04em}
+.callout.mistake{background:var(--rose-soft)}
+.callout.mistake .h{color:var(--rose)}
+.callout.coach{background:var(--gold-soft)}
+.callout.coach .h{color:var(--gold)}
+.callout s{opacity:.6}
+.callout p{margin:0}
+
+/* dock */
+.dock{display:flex;flex-direction:column;gap:8px;padding-top:6px}
+.say-wrap{position:sticky;bottom:0;background:linear-gradient(to bottom,transparent,var(--ground) 14px);padding-top:14px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+.choice{width:100%;color:var(--ink);display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;align-items:start;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:18px;padding:11px 14px;box-shadow:var(--shadow);font-size:14.5px;transition:transform .12s ease}
+.choice:active{transform:scale(.99)}
+.choice:disabled{opacity:.5;cursor:default}
+.choice .n{width:26px;height:26px;border-radius:50%;background:var(--chip);display:grid;place-items:center;font-size:12px;font-weight:700;font-family:var(--mono)}
+.choice .tag{display:inline-block;font-size:11px;font-weight:700;color:var(--rose);margin-bottom:1px}
+.say{display:flex;gap:8px;align-items:flex-end;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:6px 6px 6px 14px;box-shadow:var(--shadow)}
+.say textarea{flex:1;border:0;background:none;resize:none;outline:none;font-size:15px;line-height:1.45;padding:7px 0;max-height:120px;min-height:22px}
+.send{width:36px;height:36px;border-radius:50%;border:0;background:var(--ink);display:grid;place-items:center;flex:none}
+.send svg{width:16px;height:16px;stroke:var(--inverse);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.send:disabled{opacity:.35;cursor:default}
+.hint{font-size:12px;color:var(--muted);text-align:center;margin:0}
+.thinking{display:flex;align-items:center;gap:10px;padding:10px 6px;color:var(--muted);font-size:13px}
+.dots{display:flex;gap:4px}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:b 1s infinite ease-in-out}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+.err{background:var(--rose-soft);color:var(--rose);border-radius:16px;padding:10px 14px;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+
+.btn{border:0;border-radius:999px;padding:11px 18px;font-weight:700;font-size:14px;background:var(--ink);color:var(--inverse);display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.soft{background:var(--chip);color:var(--ink)}
+.btn.rose{background:var(--rose);color:#fff}
+.btn.small{padding:7px 12px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:default}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+/* sheets */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--ground);width:100%;max-width:600px;max-height:90vh;max-height:90dvh;overflow-y:auto;border-radius:26px 26px 0 0;padding:14px max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:14px;overscroll-behavior:contain}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 4px}
+.sheet h2{margin:0;font-size:20px;font-weight:900}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.card{background:var(--surface);border-radius:20px;box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:10px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;font-weight:600;color:var(--muted)}
+.input{border:1px solid var(--line);background:var(--ground);border-radius:14px;padding:10px 12px;font-size:15px;width:100%}
+.seg{display:flex;gap:4px;background:var(--chip);border-radius:999px;padding:4px}
+.seg button{flex:1;border:0;background:transparent;font-size:13px;font-weight:500;color:var(--muted);padding:8px 0;border-radius:999px}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow);font-weight:700}
+
+.vlist{display:flex;flex-direction:column;gap:8px}
+.vrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;background:var(--surface);border-radius:16px;padding:11px 14px;box-shadow:var(--shadow);text-align:left;border:0;width:100%}
+.vrow .en{font-weight:700;font-size:15.5px}
+.vrow .en small{font-weight:400;color:var(--muted);font-size:12px;margin-left:6px;font-family:var(--mono)}
+.vrow .zh{font-size:13px;color:var(--muted);grid-column:1}
+.vrow .score{grid-row:1/3;grid-column:2;font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right}
+.word-big{font-size:30px;font-weight:700;letter-spacing:-.01em;line-height:1.1}
+.ex{font-size:14px;line-height:1.55;border-left:3px solid var(--gold);padding-left:10px}
+.ex .zh{color:var(--muted);font-size:13px;display:block}
+
+.quiz-q{font-size:32px;font-weight:700;text-align:center;padding:14px 0 4px}
+.quiz-ops{display:grid;gap:8px}
+.quiz-ops button{border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:13px 14px;text-align:left;font-size:15px}
+.quiz-ops button.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,var(--surface));font-weight:700}
+.quiz-ops button.wrong{border-color:var(--rose);background:var(--rose-soft)}
+
+.intro{display:flex;flex-direction:column;gap:12px}
+.intro .card p{margin:0}
+.cast{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:center}
+.cast .av{width:44px;height:44px;font-size:18px}
+.cast b{display:block}
+
+.toast{position:fixed;left:50%;bottom:calc(140px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--inverse);padding:10px 16px;border-radius:999px;font-size:13px;font-weight:600;z-index:60;max-width:calc(100% - 32px);text-align:center;box-shadow:var(--shadow)}
+@media (prefers-reduced-motion:reduce){.choice,.bar i{transition:none}.dots i{animation:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="hello">霸總狗血愛情 × 職場商戰 × 多益單字</p>
+      <h1>總裁，您的多益只有 450 分</h1>
+    </div>
+    <div class="tools">
+      <button class="icon-btn" id="btnVocab" aria-label="單字本">
+        <svg viewBox="0 0 24 24"><path d="M5 5.5A1.5 1.5 0 0 1 6.5 4H19v14H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19M9 8h6"/></svg>
+        <span class="badge" id="vocabCount" hidden>0</span>
+      </button>
+      <button class="icon-btn" id="btnSettings" aria-label="設定">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="hero" aria-label="狀態">
+    <div class="hero-top">
+      <div>
+        <div class="ep" id="epNo">EP01</div>
+        <div class="ep-title" id="epTitle">總裁，這份簡報不對</div>
+      </div>
+      <div class="turn" id="turnNo">第 1 / 8 幕</div>
+    </div>
+    <div class="meters">
+      <div class="meter heart"><b id="mHeart">10<small>/100</small></b><span>心動值</span><div class="bar"><i id="bHeart"></i></div></div>
+      <div class="meter"><b id="mPower">50<small>/100</small></b><span>職場主導權</span><div class="bar"><i id="bPower"></i></div></div>
+      <div class="meter"><b id="mCeo">450</b><span>總裁多益分數</span><div class="bar"><i id="bCeo"></i></div></div>
+    </div>
+  </section>
+
+  <div class="feed" id="feed" aria-live="polite"></div>
+
+  <div class="dock" id="dock">
+    <div id="choices" class="feed" style="gap:8px"></div>
+    <div class="say-wrap"><div class="say">
+      <textarea id="say" rows="1" placeholder="或自己說一句（夾英文單字有加分）" aria-label="自己回覆"></textarea>
+      <button class="send" id="btnSend" aria-label="送出" disabled><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    </div></div>
+  </div>
+</div>
+
+<!-- intro -->
+<div class="scrim" id="introSheet" hidden>
+  <div class="sheet intro" role="dialog" aria-label="開始遊戲">
+    <div class="grab"></div>
+    <h2>📖 開局設定</h2>
+    <div class="card">
+      <div class="cast"><div class="av you" id="introAv">夏</div><div><b id="introYou">你・許知夏</b><span class="small muted">新到任的總裁特助，多益 990。冷靜、毒舌、專業到讓人害怕。</span></div></div>
+      <div class="cast"><div class="av ceo">顧</div><div><b>顧司寒・宸遠集團總裁</b><span class="small muted">32 歲，商場上從沒輸過。多益 450 分，英文常用錯，但死不承認。</span></div></div>
+    </div>
+    <div class="card">
+      <div class="field"><label for="inName">你的名字</label><input class="input" id="inName" maxlength="8" placeholder="許知夏"></div>
+      <div class="field"><label>單字難度</label>
+        <div class="seg" id="levelSeg"><button data-l="550" aria-pressed="false">550+</button><button data-l="730" aria-pressed="true">730+</button><button data-l="900" aria-pressed="false">900+</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <b>怎麼玩</b>
+      <p class="small muted" style="margin:0">每一幕選一個回應，或自己打一句。劇情由 AI 即時寫，選擇會改變心動值、主導權，糾正總裁的英文會讓他的多益分數上升。<span style="color:var(--gold);font-weight:700">黃色的字</span>點一下看解釋、聽發音，自動收進單字本。一集 8 幕。</p>
+    </div>
+    <button class="btn rose" id="btnStart">開始第一集</button>
+  </div>
+</div>
+
+<!-- settings -->
+<div class="scrim" id="setSheet" hidden>
+  <div class="sheet" role="dialog" aria-label="設定">
+    <div class="grab"></div>
+    <div class="sheet-head"><h2>設定</h2><button class="btn soft small" data-close>完成</button></div>
+    <div class="card">
+      <b>Claude API 金鑰</b>
+      <p class="small muted" style="margin:0" id="keyState">第一幕是寫好的，之後的劇情由 Claude 即時生成，需要 API 金鑰（console.anthropic.com）。金鑰只存在這台裝置。</p>
+      <div class="field"><label for="apiKey">金鑰</label><input class="input" id="apiKey" type="password" autocomplete="off" placeholder="sk-ant-…"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" id="btnSaveKey">儲存金鑰</button><button class="btn ghost small" id="btnClearKey">清除</button></div>
+    </div>
+    <div class="card">
+      <div class="field"><label>單字難度</label>
+        <div class="seg" id="levelSeg2"><button data-l="550" aria-pressed="false">550+</button><button data-l="730" aria-pressed="false">730+</button><button data-l="900" aria-pressed="false">900+</button></div>
+      </div>
+      <p class="small muted" style="margin:0">下一幕開始套用。</p>
+    </div>
+    <div class="card">
+      <b>重新開始</b>
+      <p class="small muted" style="margin:0">劇情和數值會清空，單字本保留。</p>
+      <div><button class="btn ghost small" id="btnReset" style="color:var(--rose)">從 EP01 重來</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- vocab -->
+<div class="scrim" id="vocabSheet" hidden>
+  <div class="sheet" role="dialog" aria-label="單字本">
+    <div class="grab"></div>
+    <div class="sheet-head"><h2>單字本 <span class="muted small" id="vocabSub"></span></h2><button class="btn soft small" data-close>完成</button></div>
+    <button class="btn rose" id="btnQuiz">小考 10 題</button>
+    <div class="vlist" id="vlist"></div>
+  </div>
+</div>
+
+<!-- word detail -->
+<div class="scrim" id="wordSheet" hidden>
+  <div class="sheet" role="dialog" aria-label="單字">
+    <div class="grab"></div>
+    <div class="card" id="wordCard"></div>
+    <div style="display:flex;gap:8px"><button class="btn soft" id="btnSpeak" style="flex:1">🔊 聽發音</button><button class="btn" data-close style="flex:1">好</button></div>
+  </div>
+</div>
+
+<!-- quiz -->
+<div class="scrim" id="quizSheet" hidden>
+  <div class="sheet" role="dialog" aria-label="小考">
+    <div class="grab"></div>
+    <div class="sheet-head"><h2>小考 <span class="muted small" id="quizProg"></span></h2><button class="btn soft small" data-close>結束</button></div>
+    <div id="quizBody"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script>
+const MODEL = 'claude-sonnet-5-5';
+const TURNS_PER_EP = 8;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem('toeic.' + k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem('toeic.' + k, JSON.stringify(v)); }catch(e){} }
+};
+let toastT;
+function toast(msg, ms = 2600){ const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, ms); }
+
+/* ---------- opening scene (works without a key) ---------- */
+const OPENING = {
+  episode_title:'總裁，這份簡報不對',
+  beats:[
+    {who:'narration', text:'週一早上九點，宸遠集團頂樓。你是新到任的總裁特助，履歷上寫著：多益 990。'},
+    {who:'narration', text:'長桌盡頭的男人頭也沒抬，修長的手指翻著一份 [[quarterly report|季度報告]]。'},
+    {who:'ceo', text:'「妳就是新來的特助？我不需要人幫忙。這家公司的每一份 [[contract|合約]]，我都親自 [[review|審查]]。」'},
+    {who:'narration', text:'你瞄了一眼他螢幕上的簡報，第一頁斗大的標題寫著：「Our company is very expensive in the market.」'},
+    {who:'narration', text:'十點，這份簡報要給美國 [[investor|投資人]] 看。'}
+  ],
+  ceo_mistake:{wrong:'expensive', right:'competitive', why:'expensive 是「很貴」，想說「在市場上很有競爭力」要用 competitive。'},
+  coach:'',
+  choices:[
+    {tag:'糾正他', text:'「總裁，第一頁的 expensive 應該改成 [[competitive|有競爭力的]]，不然投資人會以為我們很貴。」'},
+    {tag:'毒舌', text:'「好的。我只負責 [[assist|協助]]，不負責拯救。」轉身就走。'},
+    {tag:'默默守護', text:'趁他去開會，悄悄把投影片改好，什麼都不說，等他自己 [[notice|注意到]]。'}
+  ],
+  vocab:[
+    {word:'quarterly report', pos:'n.', zh:'季度報告', example:'The quarterly report shows a 12% increase in sales.', example_zh:'季度報告顯示銷售成長 12%。'},
+    {word:'contract', pos:'n.', zh:'合約', example:'Please review the contract before signing it.', example_zh:'簽約前請先審閱合約。'},
+    {word:'review', pos:'v.', zh:'審查；檢閱', example:'Our lawyers will review the terms tomorrow.', example_zh:'律師明天會審查條款。'},
+    {word:'investor', pos:'n.', zh:'投資人', example:'The investors were impressed by the proposal.', example_zh:'投資人對這份提案印象深刻。'},
+    {word:'competitive', pos:'adj.', zh:'有競爭力的', example:'We offer competitive prices.', example_zh:'我們提供有競爭力的價格。'},
+    {word:'assist', pos:'v.', zh:'協助', example:'I will assist you with the presentation.', example_zh:'我會協助你準備簡報。'},
+    {word:'notice', pos:'v.', zh:'注意到', example:'Did you notice any errors in the report?', example_zh:'你有注意到報告裡的錯誤嗎？'}
+  ],
+  delta:{heart:0, power:0, ceo_toeic:0},
+  episode_end:false, recap:''
+};
+
+/* ---------- state ---------- */
+const fresh = () => ({ep:1, turn:1, title:OPENING.episode_title, heart:10, power:50, ceo:450, feed:[], history:[], recap:'', last:null, started:false});
+let S = Object.assign(fresh(), store.get('state', {}));
+let profile = Object.assign({name:'許知夏', level:'730'}, store.get('profile', {}));
+let vocab = store.get('vocab', {});
+let busy = false, lastErr = null;
+const save = () => { store.set('state', S); store.set('vocab', vocab); store.set('profile', profile); };
+
+/* ---------- rendering ---------- */
+// tag='span' inside choice buttons, since a button can't nest another button
+function rich(text, tag = 'button'){
+  return esc(text).replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, (_, en, zh) => `<${tag} class="w" data-w="${en.trim()}">${en.trim()}<small>(${zh.trim()})</small></${tag}>`);
+}
+const plain = t => String(t || '').replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, '$1');
+const initial = n => (n || '我').trim().slice(-1);
+
+function postHTML(item){
+  if (item.kind === 'divider') return `<div class="ep-divider"><small>EP${String(item.ep).padStart(2,'0')}</small>${esc(item.title)}</div>`;
+  if (item.kind === 'mistake') return `<div class="callout mistake"><span class="h">總裁英文出包</span><p><s>${esc(item.wrong)}</s> → <b>${esc(item.right)}</b></p><p class="small">${esc(item.why)}</p></div>`;
+  if (item.kind === 'coach') return `<div class="callout coach"><span class="h">英文小教練</span><p class="small">${rich(item.text)}</p></div>`;
+  if (item.who === 'narration') return `<div class="post narr"><p>${rich(item.text)}</p></div>`;
+  if (item.who === 'you') return `<div class="post you"><div class="av you">${esc(initial(profile.name))}</div><div class="bubble"><div class="who">${esc(profile.name)}</div><p>${rich(item.text)}</p></div></div>`;
+  const ceo = item.who === 'ceo';
+  const name = ceo ? '顧司寒' : (item.name || '路人');
+  return `<div class="post"><div class="av${ceo ? ' ceo' : ''}">${esc(name.slice(0,1))}</div><div class="bubble"><div class="who">${esc(name)}</div><p>${rich(item.text)}</p></div></div>`;
+}
+function renderFeed(){
+  $('#feed').innerHTML = S.feed.map(postHTML).join('') + (busy ? `<div class="thinking"><div class="dots"><i></i><i></i><i></i></div>顧司寒正在思考怎麼回你…</div>` : '')
+    + (lastErr ? `<div class="err"><span>${esc(lastErr)}</span><button class="btn small rose" id="btnRetry">再試一次</button></div>` : '');
+  const r = $('#btnRetry'); if (r) r.onclick = () => act(pending);
+}
+function renderChoices(){
+  const box = $('#choices');
+  const ch = (!busy && !lastErr && S.last) ? S.last.choices : [];
+  if (S.last?.episode_end && !busy){
+    box.innerHTML = `<button class="btn rose" id="btnNextEp">下一集：EP${String(S.ep + 1).padStart(2,'0')} →</button>`;
+    $('#btnNextEp').onclick = nextEpisode;
+  } else {
+    box.innerHTML = ch.map((c, i) => `<button class="choice" data-i="${i}"><span class="n">${i + 1}</span><span><span class="tag">${esc(c.tag)}</span><br>${rich(c.text, 'span')}</span></button>`).join('');
+  }
+  $('#say').disabled = busy || !!S.last?.episode_end;
+  updateSend();
+}
+function renderHUD(d){
+  $('#epNo').textContent = 'EP' + String(S.ep).padStart(2,'0');
+  $('#epTitle').textContent = S.title;
+  $('#turnNo').textContent = `第 ${Math.min(S.turn, TURNS_PER_EP)} / ${TURNS_PER_EP} 幕`;
+  const dl = v => v ? `<span class="delta ${v > 0 ? 'up' : 'down'}">${v > 0 ? '+' : ''}${v}</span>` : '';
+  $('#mHeart').innerHTML = `${S.heart}<small>/100</small>${dl(d?.heart)}`;
+  $('#mPower').innerHTML = `${S.power}<small>/100</small>${dl(d?.power)}`;
+  $('#mCeo').innerHTML = `${S.ceo}${dl(d?.ceo_toeic)}`;
+  $('#bHeart').style.width = S.heart + '%';
+  $('#bPower').style.width = S.power + '%';
+  $('#bCeo').style.width = ((S.ceo - 10) / 980 * 100) + '%';
+  const n = Object.keys(vocab).length; const b = $('#vocabCount'); b.hidden = !n; b.textContent = n;
+}
+function render(d){ renderHUD(d); renderFeed(); renderChoices(); }
+function scrollEnd(){ requestAnimationFrame(() => window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'})); }
+
+/* ---------- applying a scene ---------- */
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function applyScene(sc){
+  if (sc.coach) S.feed.push({kind:'coach', text:sc.coach});
+  for (const b of sc.beats) S.feed.push({who:b.who, name:b.name, text:b.text});
+  if (sc.ceo_mistake?.wrong) S.feed.push({kind:'mistake', ...sc.ceo_mistake});
+  for (const v of sc.vocab || []){
+    const k = v.word.trim().toLowerCase();
+    vocab[k] = Object.assign({right:0, wrong:0, ep:S.ep, added:Date.now()}, vocab[k] || {}, {word:v.word.trim(), pos:v.pos, zh:v.zh, example:v.example, example_zh:v.example_zh});
+  }
+  const d = sc.delta || {};
+  S.heart = clamp(S.heart + (d.heart || 0), 0, 100);
+  S.power = clamp(S.power + (d.power || 0), 0, 100);
+  S.ceo = clamp(S.ceo + (d.ceo_toeic || 0), 10, 990);
+  if (sc.episode_end) S.recap = sc.recap || S.recap;
+  S.last = sc;
+  return d;
+}
+
+/* ---------- Claude ---------- */
+const SCENE_SCHEMA = {type:'object', additionalProperties:false,
+  required:['episode_title','coach','beats','ceo_mistake','choices','vocab','delta','episode_end','recap'],
+  properties:{
+    episode_title:{type:'string'},
+    coach:{type:'string'},
+    beats:{type:'array', items:{type:'object', additionalProperties:false, required:['who','name','text'], properties:{
+      who:{type:'string', enum:['narration','ceo','other']}, name:{type:'string'}, text:{type:'string'}}}},
+    ceo_mistake:{type:'object', additionalProperties:false, required:['wrong','right','why'], properties:{
+      wrong:{type:'string'}, right:{type:'string'}, why:{type:'string'}}},
+    choices:{type:'array', items:{type:'object', additionalProperties:false, required:['tag','text'], properties:{tag:{type:'string'}, text:{type:'string'}}}},
+    vocab:{type:'array', items:{type:'object', additionalProperties:false, required:['word','pos','zh','example','example_zh'], properties:{
+      word:{type:'string'}, pos:{type:'string'}, zh:{type:'string'}, example:{type:'string'}, example_zh:{type:'string'}}}},
+    delta:{type:'object', additionalProperties:false, required:['heart','power','ceo_toeic'], properties:{
+      heart:{type:'integer'}, power:{type:'integer'}, ceo_toeic:{type:'integer'}}},
+    episode_end:{type:'boolean'},
+    recap:{type:'string'}
+  }};
+
+function systemPrompt(){
+  return `你是互動文字戀愛遊戲《總裁，您的多益只有 450 分》的編劇兼男主角。類型：霸總狗血愛情 × 職場商戰 × 多益單字。用繁體中文（台灣用語）。
+
+角色
+- 玩家：${profile.name}，宸遠集團新到任的總裁特助，多益 990，冷靜、專業、嘴很毒。玩家永遠有主導權，劇情不得替玩家做決定或寫玩家的台詞。
+- 男主：顧司寒，宸遠集團總裁，32 歲，冷面、霸道、商業手腕一流，講話充滿霸總台詞（「女人，妳成功引起了我的注意」這一類，但要寫新的，不要重複）。多益只有 450 分，英文常常用錯卻死不承認，被糾正時耳根會泛紅。他的多益分數目前是 ${S.ceo}。
+- 可以加入配角：情敵千金、腹黑副總、八卦秘書、外國客戶等，推動職場商戰支線。
+
+寫法
+- 節奏像 Threads 連載：每回合 3–6 個 beats，每個 beat 不超過 70 字，有畫面、有張力、要好笑。who=ceo 是顧司寒，who=other 要填 name，who=narration 是旁白（name 填空字串）。對白用「」。
+- 每回合自然嵌入 4–7 個多益單字或片語（難度約 TOEIC ${profile.level}+，職場、商務、合約、會議、人資、財務等主題），每一個都用 [[英文|中文]] 標記，例如 [[negotiate|談判]]。choices 和 coach 裡的英文也要這樣標記。
+- vocab 列出這回合 beats 和 choices 裡所有標記的字（不要列已經在「已收錄」清單裡的字），附詞性、中文、一句簡單的商務例句和中文翻譯。
+- 大約每 2–3 回合，讓顧司寒講一句用錯英文的話（用錯的字不要用 [[ ]] 標記），並填 ceo_mistake（wrong 錯的字、right 正確的字、why 一句中文說明）；沒有就三個欄位都填空字串。
+- choices 給 3 個玩家可以採取的行動或台詞，風格要明顯不同（例如：強勢反擊、溫柔試探、毒舌、糾正英文、搞商戰），tag 是 2–4 個字的風格標籤。每個選項裡至少有一個 [[英文|中文]]。這回合有 ceo_mistake 時，其中一個選項要是糾正他。
+- 玩家自己打字時：照玩家的行動推進劇情。如果玩家用了英文，在 coach 用一兩句中文說明用得對不對、給更道地的說法；用對了給 power 或 ceo_toeic 加分。沒用英文就 coach 填空字串。選選項時 coach 也填空字串。
+- delta：這回合造成的變化。heart（心動值）-10~+15，power（職場主導權）-10~+15，ceo_toeic（玩家糾正或教了他英文才加，+5~+30；否則 0）。要照劇情合理給，不要每次都加。
+- 一集 ${TURNS_PER_EP} 回合。episode_title 是這一集的標題（像「總裁，這份合約我不簽了」這種）。第 ${TURNS_PER_EP} 回合要收在一個狗血的懸念上，episode_end=true，recap 寫 2–3 句這一集發生了什麼（給下一集當前情提要）；其他回合 episode_end=false、recap 空字串。
+- 感情線保持 PG-13：曖昧、心動、吃醋可以，不寫露骨內容，也不寫違反玩家意願的肢體接觸。
+
+只回傳符合 schema 的 JSON。`;
+}
+
+function getKey(){
+  const own = store.get('key', '');
+  if (own) return own;
+  try{ return JSON.parse(localStorage.getItem('closet.key') || '""'); }catch(e){ return ''; }  // same origin as 衣櫥書
+}
+async function askClaude({system, messages, schema, maxTokens = 3000}){
+  const key = getKey();
+  if (!key) throw Object.assign(new Error('劇情要接上 AI 才能繼續：到右上角設定貼上 Claude API 金鑰。'), {code:'NO_KEY'});
+  const body = {model:MODEL, max_tokens:maxTokens, system, messages, output_config:{effort:'low', format:{type:'json_schema', schema}}, fallbacks:'default'};
+  const headers = {'content-type':'application/json', 'x-api-key':key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true', 'anthropic-beta':'server-side-fallback-2026-07-01'};
+  const call = () => fetch('https://api.anthropic.com/v1/messages', {method:'POST', headers, body:JSON.stringify(body)});
+  let r = await call();
+  if (r.status === 400){
+    const t = await r.text();
+    if (/fallback/i.test(t)){ delete body.fallbacks; delete headers['anthropic-beta']; r = await call(); }
+    else throw new Error('AI 請求格式有誤：' + t.slice(0, 160));
+  }
+  if (r.status === 401) throw new Error('API 金鑰無效，到設定重新貼上。');
+  if (r.status === 429) throw new Error('AI 忙線中（用量上限），等一分鐘再試。');
+  if (!r.ok) throw new Error(`AI 暫時連不上（${r.status}），稍後再試。`);
+  const j = await r.json();
+  if (j.stop_reason === 'refusal') throw new Error('AI 這次沒有接戲，換個說法再試一次。');
+  const text = j.content.filter(b => b.type === 'text').map(b => b.text).join('');
+  try{ return {data:JSON.parse(text), raw:text}; }
+  catch(e){ const m = text.match(/\{[\s\S]*\}/); if (m) return {data:JSON.parse(m[0]), raw:m[0]}; throw new Error('AI 回覆看不懂，再試一次。'); }
+}
+
+/* ---------- turns ---------- */
+let pending = null;
+function userTurnText(a){
+  const known = Object.values(vocab).map(v => v.word).slice(-80).join(', ');
+  const lines = [
+    `第 ${S.ep} 集，第 ${S.turn} / ${TURNS_PER_EP} 回合。`,
+    `目前數值：心動值 ${S.heart}、職場主導權 ${S.power}、總裁多益 ${S.ceo}。`,
+    a.kind === 'choice' ? `玩家選擇（${a.tag}）：${plain(a.text)}` : `玩家自己說／做：${a.text}`,
+    known ? `已收錄的單字（vocab 不要再列）：${known}` : ''
+  ];
+  if (S.turn >= TURNS_PER_EP) lines.push('這是本集最後一回合，請收尾在懸念上並 episode_end=true。');
+  return lines.filter(Boolean).join('\n');
+}
+function epOpenText(){
+  const parts = [`第 ${S.ep} 集開始，第 1 / ${TURNS_PER_EP} 回合。請寫開場（沒有玩家動作）。`,
+    `目前數值：心動值 ${S.heart}、職場主導權 ${S.power}、總裁多益 ${S.ceo}。`];
+  if (S.recap) parts.push(`前情提要：${S.recap}`);
+  const known = Object.values(vocab).map(v => v.word).slice(-80).join(', ');
+  if (known) parts.push(`已收錄的單字（vocab 不要再列）：${known}`);
+  return parts.join('\n');
+}
+
+async function act(a){
+  if (busy || !a) return;
+  pending = a; lastErr = null;
+  if (a.kind !== 'open' && !a.retry) S.feed.push({who:'you', text:a.text});
+  busy = true; render(); scrollEnd();
+  const msgText = a.kind === 'open' ? epOpenText() : userTurnText(a);
+  try{
+    const messages = [...S.history, {role:'user', content:msgText}];
+    const {data, raw} = await askClaude({system:systemPrompt(), messages, schema:SCENE_SCHEMA});
+    S.history = [...messages, {role:'assistant', content:raw}];
+    if (a.kind === 'open' && data.episode_title){ S.title = data.episode_title; S.feed.push({kind:'divider', ep:S.ep, title:S.title}); }
+    if (a.kind !== 'open') S.turn++;
+    busy = false; pending = null;
+    const d = applyScene(data); save(); render(d); scrollEnd();
+  }catch(err){
+    busy = false; lastErr = err.message; pending = {...a, retry:true};
+    save(); render(); scrollEnd();
+    if (err.code === 'NO_KEY') openSheet('#setSheet');
+  }
+}
+
+/* The first scene of EP01 is hand-written; seed the history so Claude continues from it. */
+function seedOpening(){
+  S.feed.push({kind:'divider', ep:1, title:OPENING.episode_title});
+  S.history = [{role:'user', content:epOpenText()}, {role:'assistant', content:JSON.stringify(OPENING)}];
+  applyScene(OPENING);
+  S.started = true; save(); render();
+}
+function nextEpisode(){
+  S.ep++; S.turn = 1; S.history = []; S.last = null; S.title = '…';
+  save(); act({kind:'open'});
+}
+
+$('#choices').addEventListener('click', e => {
+  const b = e.target.closest('.choice'); if (!b || busy) return;
+  const c = S.last.choices[+b.dataset.i];
+  act({kind:'choice', tag:c.tag, text:c.text});
+});
+function updateSend(){ $('#btnSend').disabled = busy || !$('#say').value.trim() || !!S.last?.episode_end; }
+$('#say').addEventListener('input', e => { const t = e.target; t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 120) + 'px'; updateSend(); });
+$('#say').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing){ e.preventDefault(); $('#btnSend').click(); } });
+$('#btnSend').onclick = () => {
+  const t = $('#say').value.trim(); if (!t || busy) return;
+  $('#say').value = ''; $('#say').style.height = 'auto';
+  act({kind:'free', text:t});
+};
+
+/* ---------- sheets ---------- */
+function openSheet(id){ $(id).hidden = false; }
+document.querySelectorAll('.scrim').forEach(s => s.addEventListener('click', e => {
+  if ((e.target === s || e.target.closest('[data-close]')) && s.id !== 'introSheet') s.hidden = true;
+}));
+
+// tap a highlighted word anywhere
+document.addEventListener('click', e => {
+  const w = e.target.closest('.w'); if (!w) return;
+  e.stopPropagation(); showWord(w.dataset.w);
+}, true);
+let speakWord = '';
+function showWord(word){
+  const v = vocab[word.toLowerCase()];
+  speakWord = word;
+  $('#wordCard').innerHTML = v
+    ? `<div><div class="word-big">${esc(v.word)}</div><span class="muted small">${esc(v.pos)} ${esc(v.zh)}</span></div>
+       <div class="ex">${esc(v.example)}<span class="zh">${esc(v.example_zh)}</span></div>
+       <span class="small muted">EP${String(v.ep).padStart(2,'0')} 收錄・小考 ✓${v.right} ✗${v.wrong}</span>`
+    : `<div class="word-big">${esc(word)}</div><span class="small muted">這個字還沒有解釋。</span>`;
+  openSheet('#wordSheet');
+}
+function speak(t){
+  try{ speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'en-US'; u.rate = .92; speechSynthesis.speak(u); }
+  catch(e){ toast('這台裝置不支援發音'); }
+}
+$('#btnSpeak').onclick = () => speak(speakWord);
+
+$('#btnVocab').onclick = () => { renderVocab(); openSheet('#vocabSheet'); };
+function renderVocab(){
+  const list = Object.values(vocab).sort((a, b) => (b.wrong - b.right) - (a.wrong - a.right) || b.added - a.added);
+  $('#vocabSub').textContent = list.length ? `· ${list.length} 個` : '';
+  $('#btnQuiz').disabled = list.length < 4;
+  $('#vlist').innerHTML = list.length
+    ? list.map(v => `<button class="vrow" data-v="${esc(v.word)}"><span class="en">${esc(v.word)}<small>${esc(v.pos)}</small></span><span class="zh">${esc(v.zh)}</span><span class="score">EP${String(v.ep).padStart(2,'0')}<br>✓${v.right} ✗${v.wrong}</span></button>`).join('')
+    : `<p class="muted small" style="text-align:center">劇情裡黃色的字會自動收進來。</p>`;
+}
+$('#vlist').addEventListener('click', e => { const r = e.target.closest('.vrow'); if (r) showWord(r.dataset.v); });
+
+/* ---------- quiz: word → pick the meaning; words you miss come up first ---------- */
+let Q = null;
+$('#btnQuiz').onclick = () => {
+  const all = Object.values(vocab);
+  const pool = [...all].sort((a, b) => ((b.wrong - b.right) - (a.wrong - a.right)) || Math.random() - .5);
+  Q = {items:pool.slice(0, Math.min(10, pool.length)).sort(() => Math.random() - .5), i:0, score:0, all};
+  $('#vocabSheet').hidden = true; openSheet('#quizSheet'); quizStep();
+};
+function quizStep(){
+  if (Q.i >= Q.items.length){
+    $('#quizProg').textContent = '';
+    $('#quizBody').innerHTML = `<div class="card" style="text-align:center"><div class="quiz-q">${Q.score} / ${Q.items.length}</div><p class="muted small" style="margin:0">${Q.score === Q.items.length ? '全對，總裁應該向妳請教。' : '錯的字下次會先考。'}</p></div>
+      <button class="btn" data-close style="width:100%;margin-top:12px">回去攻略總裁</button>`;
+    save(); renderHUD(); return;
+  }
+  const v = Q.items[Q.i];
+  const others = Q.all.filter(x => x.zh !== v.zh).sort(() => Math.random() - .5).slice(0, 3).map(x => x.zh);
+  const ops = [v.zh, ...others].sort(() => Math.random() - .5);
+  $('#quizProg').textContent = `· ${Q.i + 1} / ${Q.items.length}`;
+  $('#quizBody').innerHTML = `<div class="quiz-q">${esc(v.word)}</div><p class="muted small" style="text-align:center;margin:0 0 12px">${esc(v.pos)}　<button class="btn soft small" id="qSpeak">🔊</button></p>
+    <div class="quiz-ops">${ops.map(o => `<button data-o="${esc(o)}">${esc(o)}</button>`).join('')}</div>`;
+  $('#qSpeak').onclick = () => speak(v.word);
+  speak(v.word);
+  $('#quizBody .quiz-ops').onclick = e => {
+    const b = e.target.closest('button'); if (!b || Q.locked) return;
+    Q.locked = true;
+    const ok = b.dataset.o === v.zh;
+    vocab[v.word.toLowerCase()][ok ? 'right' : 'wrong']++;
+    if (ok) Q.score++;
+    $('#quizBody').querySelectorAll('.quiz-ops button').forEach(x => { if (x.dataset.o === v.zh) x.classList.add('right'); else if (x === b) x.classList.add('wrong'); });
+    setTimeout(() => { Q.locked = false; Q.i++; quizStep(); }, ok ? 650 : 1400);
+  };
+}
+
+/* ---------- settings ---------- */
+function syncSeg(sel){ document.querySelectorAll(sel + ' button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === profile.level)); }
+['#levelSeg', '#levelSeg2'].forEach(sel => $(sel).addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  profile.level = b.dataset.l; syncSeg('#levelSeg'); syncSeg('#levelSeg2'); save();
+}));
+function renderKey(){
+  const own = store.get('key', ''), k = getKey();
+  $('#keyState').textContent = k
+    ? (own ? `已設定金鑰（…${k.slice(-4)}），只存在這台裝置。` : `沿用衣櫥書的金鑰（…${k.slice(-4)}）。`)
+    : '第一幕是寫好的，之後的劇情由 Claude 即時生成，需要 API 金鑰（console.anthropic.com）。金鑰只存在這台裝置。';
+}
+$('#btnSettings').onclick = () => { syncSeg('#levelSeg2'); renderKey(); openSheet('#setSheet'); };
+$('#btnSaveKey').onclick = () => {
+  const v = $('#apiKey').value.trim();
+  if (!/^sk-ant-/.test(v)) return toast('金鑰應該是 sk-ant- 開頭');
+  store.set('key', v); $('#apiKey').value = ''; renderKey(); toast('金鑰已存在這台裝置');
+  if (lastErr && pending){ $('#setSheet').hidden = true; act(pending); }
+};
+$('#btnClearKey').onclick = () => { store.set('key', ''); renderKey(); toast('已清除金鑰'); };
+$('#btnReset').onclick = () => {
+  if (!confirm('確定從 EP01 重來？單字本會保留。')) return;
+  S = fresh(); lastErr = null; pending = null; $('#setSheet').hidden = true;
+  seedOpening(); window.scrollTo({top:0});
+};
+
+/* ---------- intro ---------- */
+function syncIntro(){ const n = $('#inName').value.trim() || '許知夏'; $('#introAv').textContent = initial(n); $('#introYou').textContent = '你・' + n; }
+$('#inName').addEventListener('input', syncIntro);
+$('#btnStart').onclick = () => {
+  profile.name = $('#inName').value.trim() || '許知夏';
+  $('#introSheet').hidden = true;
+  seedOpening();
+};
+
+if (S.started){ render(); scrollEnd(); }
+else { $('#inName').value = profile.name === '許知夏' ? '' : profile.name; syncSeg('#levelSeg'); syncIntro(); renderHUD(); openSheet('#introSheet'); }
+</script>
+</body>
+</html>
