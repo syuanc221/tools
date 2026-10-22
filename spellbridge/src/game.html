@@ -62,6 +62,8 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 .friend{border:0;padding:12px 10px 16px;cursor:pointer;background:#2fb37a;box-shadow:inset 0 -6px 0 #1d7a52;font-family:var(--title);font-weight:900;font-size:19px;letter-spacing:.08em;display:flex;flex-direction:column;align-items:center;gap:2px}
 .friend small{font-family:var(--body);font-size:11px;font-weight:700;letter-spacing:0;opacity:.9}
 .friend:active{transform:translateY(2px)}
+#repMsg{width:100%;box-sizing:border-box;background:#121c29;color:var(--ink);border:0;padding:10px;font:inherit;font-size:14px;resize:vertical}
+#repContact{width:100%;box-sizing:border-box}
 .rankbtn{background:#c98a1c;box-shadow:inset 0 -6px 0 #8a5a0c;color:#2a1700}
 .ranklist{max-height:52vh;overflow-y:auto}
 .grow.me{background:#2c3f5c;box-shadow:inset 0 0 0 2px var(--gold)}
@@ -400,7 +402,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
       <div class="statgrid" id="pfStats"></div>
       <div class="panel"><h3>頭像</h3><div class="avatars" id="pfAvatars"></div><p class="muted">在冒險模式擊敗對手，就能使用他們的頭像。</p></div>
       <div class="panel"><h3>最常使用的卡</h3><div class="list" id="pfFav"></div></div>
-      <div class="panel"><h3>設定</h3><div class="setrow">音效<button class="sbtn" id="pfMute"></button></div><div class="setrow">背景音樂<button class="sbtn" id="pfMusic"></button></div><div class="setrow">音樂音量<input type="range" class="vol" id="pfMusicVol" min="0" max="100" step="5" aria-label="音樂音量"></div></div>
+      <div class="panel"><h3>設定</h3><div class="setrow">音效<button class="sbtn" id="pfMute"></button></div><div class="setrow">背景音樂<button class="sbtn" id="pfMusic"></button></div><div class="setrow">音樂音量<input type="range" class="vol" id="pfMusicVol" min="0" max="100" step="5" aria-label="音樂音量"></div><div class="setrow">問題回報<button class="sbtn" id="pfReport">回報問題</button></div></div>
     </section>
     <section class="scr" id="scr-battle" hidden>
       <div id="hud">
@@ -438,6 +440,17 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
     <div class="list ranklist" id="rankList"></div>
     <div id="rankMe"></div>
     <button class="ghost" id="closeRank">返回</button>
+  </div>
+</div>
+<div class="ov" id="reportOv" hidden>
+  <div class="box">
+    <h1>問題回報<span>告 訴 我 們</span></h1>
+    <div class="filters" id="repKind"><button data-k="bug" aria-pressed="true">遊戲錯誤</button><button data-k="idea" aria-pressed="false">建議</button><button data-k="other" aria-pressed="false">其他</button></div>
+    <textarea id="repMsg" maxlength="2000" rows="5" placeholder="發生了什麼事？在哪個畫面、做了什麼操作？"></textarea>
+    <input id="repContact" maxlength="200" placeholder="聯絡方式（選填，例如 Email）">
+    <p class="muted" style="margin:0;font-size:12px">會一併附上遊戲版本、裝置類型和最近的錯誤訊息，方便我們找問題。</p>
+    <button class="go" id="repSend">送出</button>
+    <button class="ghost" id="repClose">取消</button>
   </div>
 </div>
 <div class="ov" id="talkOv" hidden>
@@ -675,6 +688,9 @@ $('#pfMusic').addEventListener('click',()=>setMusic(!BGM.on));setMusic(BGM.on);
 $('#pfMusicVol').addEventListener('input',e=>setMusicVol(e.target.value/100));setMusicVol(BGM.vol);
 $('#muteBtn').addEventListener('click',()=>setMute(SFX.on));$('#pfMute').addEventListener('click',()=>setMute(SFX.on));
 
+// analytics hook: the standalone site's shim defines TRACK (events table); the Artifact build has none
+const track=(n,p)=>{try{if(window.TRACK)window.TRACK(n,p)}catch(e){}};
+
 // ================= Google ads (public site only) =================
 // Small 100px banners on the home page bottom and the battle result screen, never in battle or next to the card tray.
 // Same AdSense account as 市長大人 / 貓指名俱樂部; Google's script only loads on *.off-office.co. ?adtest=1 shows placeholders instead.
@@ -685,12 +701,13 @@ if(AD_HOST&&!AD_TEST&&!document.querySelector('script[src*="adsbygoogle.js"]')){
 function adFill(id){
   const box=$('#'+id);if(!box||box.dataset.filled||!(AD_HOST||AD_TEST))return;box.dataset.filled='1';box.hidden=false;
   box.innerHTML='<div class="lab">廣告</div>'+(AD_TEST?'<div class="ph">廣告位置（測試模式）</div>':`<ins class="adsbygoogle" style="display:block;width:100%;height:100px" data-ad-client="${AD_CLIENT}" data-ad-slot="${AD_SLOT}" data-full-width-responsive="false"></ins>`);
-  if(!AD_TEST)setTimeout(()=>{try{(window.adsbygoogle=window.adsbygoogle||[]).push({})}catch(e){}},50);
+  if(!AD_TEST){setTimeout(()=>{try{(window.adsbygoogle=window.adsbygoogle||[]).push({})}catch(e){}},50);
+    const ins=box.querySelector('ins');new MutationObserver((_,ob)=>{const st=ins.getAttribute('data-ad-status');if(st){ob.disconnect();track('ad',{slot:id,st})}}).observe(ins,{attributes:true,attributeFilter:['data-ad-status']})}
 }
 // fill each slot the first time it is actually on screen (AdSense can't size a slot inside a hidden overlay)
 new MutationObserver(()=>{if(!$('#endOv').hidden)adFill('adEnd')}).observe($('#endOv'),{attributes:true,attributeFilter:['hidden']});
 setTimeout(()=>{if(VIEW==='home')adFill('adHome')},1500);
-{const _ss=showScreen;showScreen=function(n){_ss(n);if(n==='home')setTimeout(()=>adFill('adHome'),300)}}
+{const _ss=showScreen;showScreen=function(n){_ss(n);if(n!=='battle')track('screen',{s:n});if(n==='home')setTimeout(()=>adFill('adHome'),300)}}
 
 // ================= drawn icons (flat poly SVG, no emoji) =================
 const OCT='M8 2h8l6 6v8l-6 6H8l-6-6V8z';
@@ -1994,7 +2011,7 @@ function openChest(type){
   }
   items.sort((a,b)=>RORDER.indexOf(CARDS[a.key].rar)-RORDER.indexOf(CARDS[b.key].rar));
   for(const it of items)it.isNew=addCard(it.key,it.count);
-  S.gold+=gold;S.gems+=gems;S.xp+=5;
+  S.gold+=gold;S.gems+=gems;S.xp+=5;track('chest',{t:type});
   return{gold,gems,items};
 }
 function doOpen(i){const t=S.chests[i].type;S.chests[i]=null;const r=openChest(t);persist();renderHome();reveal({title:CHESTS[t].name,img:CHEST_IMG[t],chest:true,...r})}
@@ -2137,7 +2154,7 @@ function openCard(k){
 $('#cdClose').addEventListener('click',()=>$('#cardOv').hidden=true);
 function canUp(k,ignoreGold){const o=S.cards[k];return !!o&&o.lvl<MAXLV&&o.copies>=needFor(k,o.lvl)&&(ignoreGold||S.gold>=COST[o.lvl])}
 const upgradable=()=>Object.keys(S.cards).filter(k=>CARDS[k]&&canUp(k,true));
-function doUpgrade(k){if(!canUp(k))return false;const o=S.cards[k];o.copies-=needFor(k,o.lvl);S.gold-=COST[o.lvl];o.lvl++;S.xp+=o.lvl*10*(1+RORDER.indexOf(CARDS[k].rar));return true}
+function doUpgrade(k){if(!canUp(k))return false;const o=S.cards[k];o.copies-=needFor(k,o.lvl);S.gold-=COST[o.lvl];o.lvl++;track('upgrade',{k,lv:o.lvl});S.xp+=o.lvl*10*(1+RORDER.indexOf(CARDS[k].rar));return true}
 function showUpgrade(k,from){
   const c=CARDS[k],to=S.cards[k].lvl,star=starOf(to)>starOf(from);
   $('#upImg').src=THUMB[k];skinCard($('#upImg'),k);$('#upName').textContent=c.name;$('#upFrom').textContent='Lv.'+from;$('#upTo').textContent='Lv.'+to;
@@ -2179,7 +2196,7 @@ function gacha(n){
     if(rar!=='common')rare=true;if(rar==='legendary')S.pity=0;
     const k=pick(byRar(rar)),cnt=GACHA_N[rar];items.push({key:k,count:cnt,isNew:addCard(k,cnt)});
   }
-  S.xp+=n*2;persist();reveal({title:n===10?'十連召喚':'召喚',img:ICON.altar,items});
+  S.xp+=n*2;persist();track('gacha',{n,best:items.reduce((b,it)=>Math.max(b,RORDER.indexOf(CARDS[it.key].rar)),0),pity:S.pity});reveal({title:n===10?'十連召喚':'召喚',img:ICON.altar,items});
 }
 $('#pull1').addEventListener('click',()=>gacha(1));$('#pull10').addEventListener('click',()=>gacha(10));
 
@@ -2207,7 +2224,7 @@ $('#pfNick').addEventListener('change',e=>{const v=e.target.value.trim().slice(0
 const tray=$('#tray');
 function ladderCfg(){const t=S.trophies;return{diff:t<150?'easy':t<500?'normal':'hard',aiLvl:Math.min(8,1+Math.floor(t/220))}}
 function startBattle(mode,ch){
-  MODE=mode;chIdx=ch;const c=CHAPTERS[ch];
+  MODE=mode;chIdx=ch;track('battle_start',{m:mode,ch});const c=CHAPTERS[ch];
   const cfg=mode==='story'?{diff:c.diff,aiLvl:ch+1,deck1:c.deck}:Object.assign(ladderCfg(),{deck1:shuffle(Object.keys(CARDS)).slice(0,8)});
   document.documentElement.style.setProperty('--enemy',c.color);
   $('#hudE').src=PORTRAIT[ch];$('#nameE').textContent=mode==='story'?c.name:c.name+'的幻影';
@@ -2282,6 +2299,7 @@ function end(){
   if(MODE==='friend')return friendEnd();
   $('#againBtn').hidden=false;$('#againBtn').textContent='再戰一次';
   const[p,e]=G.crowns,won=p>e,lost=p<e,c=CHAPTERS[chIdx],st=S.stats;
+  track('battle_end',{m:MODE,ch:chIdx,r:won?'win':lost?'lose':'draw',cr:[p,e],ot:!!G.overtime,tro:S.trophies});
   st.battles++;st.crowns+=p;if(won){st.wins++;if(p===3)st.three++}else if(lost)st.losses++;else st.draws++;
   const loot=[];const add=(icon,txt)=>loot.push([icon,txt]);
   if(MODE==='ladder'){const d=won?30:lost?-20:0;S.trophies=Math.max(0,S.trophies+d);S.best=Math.max(S.best,S.trophies);add('trophy',(d>=0?'+':'')+d)}
@@ -2403,6 +2421,22 @@ function renderRank(box,list){
     info.append(el('b',null,(str(p.nick,12)||'無名巫師')+(p.id===cloud.id?'（你）':'')),el('small',null,`Lv.${+p.level||1}${g?' · '+str(g.name,14):''}${p.id===p.guild?' · 會長':''}`));
     const nm=el('span','num');nm.append(ic('trophy'),' '+(+p.trophies||0));r.append(el('span','rk',String(i+1)),im,info,nm);box.append(r)});
 }
+// problem reports: kind + message (+ optional contact) go to public.reports through the shim; the shim attaches version, device and recent errors
+let repKind='bug',repAt=0;
+function openReport(){$('#reportOv').hidden=false;$('#repMsg').focus()}
+$('#pfReport').addEventListener('click',openReport);
+$('#repClose').addEventListener('click',()=>$('#reportOv').hidden=true);
+$('#repKind').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;repKind=b.dataset.k;$('#repKind').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))});
+$('#repSend').addEventListener('click',async()=>{
+  const msg=$('#repMsg').value.trim(),btn=$('#repSend');if(!msg){$('#repMsg').focus();return toast('請先寫下內容')}
+  if(!window.REPORT)return toast('這個版本沒辦法送出回報，請到 spellbridge.off-office.co 回報');
+  if(Date.now()-repAt<60000)return toast('剛剛已經送出一則，請稍等一下再送');
+  btn.disabled=true;btn.textContent='送出中…';
+  try{await window.REPORT(repKind,msg,$('#repContact').value.trim(),{view:VIEW,lv:lvInfo(S.xp).lv,tro:S.trophies,cards:Object.keys(S.cards).length});
+    repAt=Date.now();$('#repMsg').value='';$('#reportOv').hidden=true;toast('收到了，謝謝你的回報！');track('report',{k:repKind})}
+  catch(e){toast('送出失敗，請稍後再試')}
+  btn.disabled=false;btn.textContent='送出';
+});
 let rankTab='p';
 function openRank(){$('#rankOv').hidden=false;renderRankOv()}
 function renderRankOv(){
@@ -2525,7 +2559,7 @@ function startFriend(g){
   const raw=Array.isArray(pr.deck)?pr.deck:[],lvs=Array.isArray(pr.lv)?pr.lv:[];
   const deck=[...new Set(raw.filter(k=>typeof k==='string'&&CARDS[k]))].slice(0,8);for(const k of STARTER)if(deck.length<8&&!deck.includes(k))deck.push(k);
   const lv1={};for(const k of deck)lv1[k]=clamp(Math.round(+lvs[raw.indexOf(k)]||1),1,MAXLV);
-  MODE='friend';chIdx=1;
+  MODE='friend';chIdx=1;track('battle_start',{m:'friend',host:true});
   newGame({deck0:S.deck,deck1:deck,diff:'normal'});G.pvp=true;G.lv1=lv1;G.fxLog=[];G.fxSeq=0;G.running=true;
   setFriendHud();$('#friendOv').hidden=true;$('#endOv').hidden=true;$('#startOv').hidden=true;$('#talkOv').hidden=true;showScreen('battle');SFX.play('chime');
 }
@@ -2542,7 +2576,7 @@ function applySnap(st){
   if(!st||!Array.isArray(st.E))return;
   if(!G||!G.guest||(G.over&&!st.o)){
     if(st.o)return;
-    MODE='friend';chIdx=1;newGame({});G.guest=true;G.running=true;G.ents=[];G.byId=new Map();G.projById=new Map();G.spById=new Map();
+    MODE='friend';chIdx=1;track('battle_start',{m:'friend',host:false});newGame({});G.guest=true;G.running=true;G.ents=[];G.byId=new Map();G.projById=new Map();G.spById=new Map();
     NET.seen=Array.isArray(st.F)&&st.F.length?st.F[st.F.length-1][0]:0;
     setFriendHud();$('#friendOv').hidden=true;$('#endOv').hidden=true;$('#startOv').hidden=true;$('#talkOv').hidden=true;$('#revealOv').hidden=true;showScreen('battle');SFX.play('chime');
   }
@@ -2609,7 +2643,7 @@ function showFriendResult(mine,theirs,note){
   $('#againBtn').hidden=NET.role!=='host'||!!note;$('#againBtn').textContent='再來一場';
   clearTimeout(endTimer);endTimer=setTimeout(()=>{SFX.play(note?'chime':won?'win':lost?'lose':'chime');$('#endOv').hidden=false;$('#homeBtn').focus()},note?0:900);
 }
-function friendEnd(){S.stats.battles++;persist();showFriendResult(G.crowns[0],G.crowns[1]);if(NET.room)NET.room.presence({st:encodeState()}).catch(()=>{})}
+function friendEnd(){const[p,e]=G.crowns;track('battle_end',{m:'friend',r:p>e?'win':p<e?'lose':'draw',cr:[p,e],host:!G.guest});S.stats.battles++;persist();showFriendResult(G.crowns[0],G.crowns[1]);if(NET.room)NET.room.presence({st:encodeState()}).catch(()=>{})}
 function guestEnd(){G.over=true;G.sel=null;S.stats.battles++;persist();showFriendResult(G.crowns[0],G.crowns[1])}
 function opponentLeft(){NET.peer=null;NET.guestP=null;if(G&&(G.pvp||G.guest)&&!G.over){G.over=true;showFriendResult(0,0,'對手離開了房間')}else toast('對手離開了房間')}
 $('#friendBtn').addEventListener('click',openFriend);

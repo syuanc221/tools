@@ -3,10 +3,12 @@ here=os.path.dirname(os.path.abspath(__file__))
 src=open(os.path.join(here,'game.html')).read()
 cfg=json.load(open(os.path.join(here,'config.json'))) if os.path.exists(os.path.join(here,'config.json')) else {"url":"","key":""}
 shim=open(os.path.join(here,'shim.js')).read()
+import datetime
+ver=datetime.datetime.now().strftime('%Y%m%d-%H%M')   # build stamp, sent with analytics events and problem reports
 three='<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>'
 assert src.count(three)==1
 inject=('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>\n'
-        f'<script>window.SB_URL={json.dumps(cfg["url"])};window.SB_KEY={json.dumps(cfg["key"])};</script>\n'
+        f'<script>window.SB_URL={json.dumps(cfg["url"])};window.SB_KEY={json.dumps(cfg["key"])};window.SB_VER={json.dumps(ver)};</script>\n'
         '<script>'+shim+'</script>\n'+three)
 body=src.replace(three,inject)
 head=('<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">'
@@ -22,3 +24,7 @@ head=('<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">'
  '</head><body>')
 open(os.path.join(here,'..','index.html'),'w').write(head+body+'</body></html>')
 print('built',len(head+body))
+# admin dashboard: same public Supabase URL/key; data access is gated by RLS + admin_stats()
+adm=open(os.path.join(here,'admin.html')).read().replace('__SB_URL__',cfg['url']).replace('__SB_KEY__',cfg['key'])
+open(os.path.join(here,'..','admin.html'),'w').write(adm)
+print('built admin',len(adm))

@@ -74,6 +74,20 @@
       connected:()=>true,
       leave:async()=>{try{await ch.untrack()}catch(e){}sb.removeChannel(ch)}};
   }};
+  // analytics + problem reports: events are batched and posted to public.events (insert-only for players, admin-only reads)
+  const DEV=(()=>{try{let d=localStorage.getItem('sb-dev');if(!d){d=crypto.randomUUID();localStorage.setItem('sb-dev',d)}return d}catch(e){return 'nodev'}})();
+  const SID=crypto.randomUUID(),VER=window.SB_VER||'';let queue=[],errs=0;
+  const tokenNow=async()=>{try{const r=await sb.auth.getSession();return r.data.session?r.data.session.access_token:KEY}catch(e){return KEY}};
+  async function flush(){if(!queue.length)return;const rows=queue.splice(0,50);const tok=await tokenNow();
+    fetch(URL+'/rest/v1/events',{method:'POST',keepalive:true,headers:{apikey:KEY,Authorization:'Bearer '+tok,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(rows)}).catch(()=>{})}
+  window.TRACK=(name,props)=>{try{queue.push({dev:DEV,sid:SID,name:String(name).slice(0,40),props:props||{},ver:VER});if(queue.length>=20)flush()}catch(e){}};
+  setInterval(flush,8000);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flush()});
+  const onErr=(msg,src)=>{if(++errs>5)return;window.TRACK('error',{msg:String(msg||'').slice(0,300),src:String(src||'').slice(0,120)});(window.__errs=window.__errs||[]).push(String(msg||'').slice(0,200))};
+  window.addEventListener('error',e=>onErr(e.message,(e.filename||'').split('/').pop()+':'+e.lineno));
+  window.addEventListener('unhandledrejection',e=>onErr(e.reason&&(e.reason.message||e.reason),'promise'));
+  ready.then(()=>window.TRACK('session',{li:!!user,w:innerWidth,h:innerHeight,lang:navigator.language,ref:(()=>{try{return document.referrer?new URL(document.referrer).hostname:''}catch(e){return ''}})(),pwa:matchMedia('(display-mode: standalone)').matches}));
+  window.REPORT=async(kind,msg,contact,ctx)=>{const{error}=await sb.from('reports').insert({dev:DEV,kind,msg,contact:contact||null,ctx:Object.assign({ver:VER,sid:SID,ua:navigator.userAgent.slice(0,200),errs:(window.__errs||[]).slice(-5)},ctx||{})});if(error)throw error};
   // db is handed out signed-out too so the public leaderboards load; writes still require a user (docRef.set)
   window.claude={use:async n=>{await ready;if(n==='db')return db;if(n==='user')return userNS;if(n==='room')return lobby;return null}};
 })();

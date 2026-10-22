@@ -11,7 +11,7 @@
 | `src/config.json` | Supabase 專案網址和公開 anon key（本來就是公開用的，不是密碼） |
 | `src/build.py` | 把 `game.html` + `shim.js` + 設定打包成上一層的 `index.html` |
 | `index.html` | 打包結果，GitHub Pages 直接提供這個檔案 |
-| `schema.sql` | Supabase 資料表與存取權限（已套用，重建專案時才需要再跑） |
+| `schema.sql` | Supabase 資料表與存取權限（已套用，重建專案時才需要再跑）；含 events／reports／admins 與後台函式 |
 | `audio/*.m4a` | 背景音樂（遊戲用相對路徑 `audio/…` 讀取） |
 | `icon.svg`、`icon-32.png`、`icon-192.png`、`icon-512.png`、`apple-touch-icon.png` | 網站 icon「符文晶柱」（深色框裡的紫色晶柱、金色符文線、左邊一根小晶柱）；iPhone 用的 180 px 是不帶圓角的滿版 |
 | `og.png` | 分享預覽圖 1200×630（`build.py` 寫入 og:image／twitter:image） |
@@ -48,6 +48,9 @@
 - Google 廣告：首頁底部 `#adHome`、戰鬥結算 `#adEnd` 各一條 100px 橫幅（不放在戰鬥中或抽卡揭曉）。AdSense 帳號同市長大人／貓指名俱樂部（ca-pub-3250433705379365，單元暫用 8844785341），只在 *.off-office.co 載入；`?adtest=1` 顯示測試框。`ads.txt` 在本資料夾
 - 戰鬥鏡頭的霧跟著鏡頭距離往後推（`fitCamera`），不然窄鏡頭退得遠會讓整個場地變暗
 - 倒數音效：剩 1 分鐘鐘聲＋號角（`lastMin`）、最後 10 秒逐秒升高的嗶聲（`count`，最後 3 秒較重）、延長賽號角（`overtime`），由 `timeCues` 觸發，好友對戰兩邊都會響；最後一分鐘與延長賽時 Suno 戰鬥曲加速到 1.08 倍
+- 埋點：`shim.js` 的 `TRACK` 每 8 秒批次寫入 `public.events`（session、screen、battle_start/end、gacha、chest、upgrade、ad、error、report），帶裝置 id、session id 與版本號（`build.py` 產生的 `SB_VER`）
+- 問題回報：個人頁「設定 → 回報問題」，寫入 `public.reports`，自動附上版本、畫面、裝置、最近錯誤
+- 後台：`admin.html`（由 `src/admin.html` 產生），先在遊戲裡用管理員 Google 帳號登入再打開；資料來自 `admin_stats()` 與 `reports`，只有 `public.admins` 裡的帳號讀得到。本機可用 `admin.html?demo=1` 看範例
 - 戰鬥血條：所有單位常駐顯示、受傷時白色殘影、血量低於 30% 閃紅，塔上顯示血量數字
 - 冒險三章劇情、天梯、寶箱、抽卡（50 抽保底）、卡牌升級、公會與聊天、好友即時對戰（房主模擬、對手看鏡像）
 - 3D 用 Three.js r128，卡圖與頭像都是即時從 3D 模型渲染；圖示全部是 SVG，不用 emoji；字體 Noto Sans TC 黑體；Poly 扁平風格
