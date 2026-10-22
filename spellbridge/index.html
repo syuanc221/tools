@@ -213,6 +213,10 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 #clock small{display:block;font-family:var(--body);font-size:11px;font-weight:900;color:var(--magic);letter-spacing:.06em;margin-top:3px;min-height:14px}
 #stage{flex:1;min-height:0;position:relative;overflow:hidden;--cut:14px}
 /* opponent's plays: recent cards strip + a tag over the spot they dropped it */
+.adslot{margin-top:18px}
+.adslot .lab{font-size:10px;color:var(--muted);letter-spacing:.2em;margin:0 0 4px;text-align:left}
+.adslot ins,.adslot .ph{display:block;width:100%;height:100px;overflow:hidden;background:#121c29}
+.adslot .ph{display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted)}
 #eplays{position:absolute;left:8px;top:8px;display:flex;gap:4px;pointer-events:none}
 #eplays .ep{width:38px;background:rgba(8,12,18,.8);box-shadow:inset 0 -3px 0 var(--rc,#a9b6c8);padding:2px 2px 4px;text-align:center;animation:eppop .35s cubic-bezier(.2,1.4,.4,1)}
 #eplays .ep img{display:block;width:34px;height:34px}
@@ -368,6 +372,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
       <div class="sechead"><h2>寶箱</h2><button class="free" id="freeBtn"></button></div>
       <div class="chests" id="chestGrid"></div>
       <p class="muted">打贏對戰會掉寶箱。一次只能解鎖一個，也可以用寶石立刻打開。</p>
+      <div class="adslot" id="adHome" hidden></div>
     </section>
     <section class="scr" id="scr-cards" hidden>
       <div class="sechead"><h2>我的牌組</h2><span id="avgCost"></span></div>
@@ -449,6 +454,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
     <div class="loot" id="endLoot"></div>
     <p id="ending" hidden>你奪回了《星之法典》。灰河兩岸再次響起學院的鐘聲。</p>
     <div class="btns"><button class="go" id="nextBtn">下一章</button><button class="ghost" id="againBtn">再戰一次</button><button class="ghost" id="homeBtn">回到首頁</button></div>
+    <div class="adslot" id="adEnd" hidden></div>
   </div>
 </div>
 <div class="ov" id="revealOv" hidden>
@@ -744,6 +750,23 @@ function setMute(off){SFX.on=!off;try{localStorage.setItem('bd-mute',off?'1':'0'
 $('#pfMusic').addEventListener('click',()=>setMusic(!BGM.on));setMusic(BGM.on);
 $('#pfMusicVol').addEventListener('input',e=>setMusicVol(e.target.value/100));setMusicVol(BGM.vol);
 $('#muteBtn').addEventListener('click',()=>setMute(SFX.on));$('#pfMute').addEventListener('click',()=>setMute(SFX.on));
+
+// ================= Google ads (public site only) =================
+// Small 100px banners on the home page bottom and the battle result screen, never in battle or next to the card tray.
+// Same AdSense account as 市長大人 / 貓指名俱樂部; Google's script only loads on *.off-office.co. ?adtest=1 shows placeholders instead.
+const AD_CLIENT='ca-pub-3250433705379365',AD_SLOT='8844785341';
+const AD_HOST=/(^|\.)off-office\.co$/.test(location.hostname);
+let AD_TEST=false;try{const m=location.search.match(/[?&]adtest=([01])/);if(m)localStorage.setItem('sb-ad-test',m[1]);AD_TEST=localStorage.getItem('sb-ad-test')==='1'}catch(e){}
+if(AD_HOST&&!AD_TEST&&!document.querySelector('script[src*="adsbygoogle.js"]')){const sc=document.createElement('script');sc.async=true;sc.crossOrigin='anonymous';sc.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+AD_CLIENT;document.head.appendChild(sc)}
+function adFill(id){
+  const box=$('#'+id);if(!box||box.dataset.filled||!(AD_HOST||AD_TEST))return;box.dataset.filled='1';box.hidden=false;
+  box.innerHTML='<div class="lab">廣告</div>'+(AD_TEST?'<div class="ph">廣告位置（測試模式）</div>':`<ins class="adsbygoogle" style="display:block;width:100%;height:100px" data-ad-client="${AD_CLIENT}" data-ad-slot="${AD_SLOT}" data-full-width-responsive="false"></ins>`);
+  if(!AD_TEST)setTimeout(()=>{try{(window.adsbygoogle=window.adsbygoogle||[]).push({})}catch(e){}},50);
+}
+// fill each slot the first time it is actually on screen (AdSense can't size a slot inside a hidden overlay)
+new MutationObserver(()=>{if(!$('#endOv').hidden)adFill('adEnd')}).observe($('#endOv'),{attributes:true,attributeFilter:['hidden']});
+setTimeout(()=>{if(VIEW==='home')adFill('adHome')},1500);
+{const _ss=showScreen;showScreen=function(n){_ss(n);if(n==='home')setTimeout(()=>adFill('adHome'),300)}}
 
 // ================= drawn icons (flat poly SVG, no emoji) =================
 const OCT='M8 2h8l6 6v8l-6 6H8l-6-6V8z';
@@ -1958,7 +1981,7 @@ let VIEW='home';
 function fitCamera(){
   const p=cv.parentElement;const w=p.clientWidth||1,h=p.clientHeight||1;
   renderer.setSize(w,h,false);camera.aspect=w/h;camera.clearViewOffset();camera.updateProjectionMatrix();
-  if(VIEW!=='battle')return;
+  if(VIEW!=='battle'){scene.fog.near=900;scene.fog.far=1700;return}
   const dir=new T.Vector3(0,1.7,1).normalize(),target=new T.Vector3(0,0,14);
   const corners=[[-W/2-6,0,-H/2-6],[W/2+6,0,-H/2-6],[-W/2-6,0,H/2+6],[W/2+6,0,H/2+6],[0,100,-H/2+40]].map(a=>new T.Vector3(...a));
   let ys=[];
@@ -1968,6 +1991,8 @@ function fitCamera(){
     if(ps.every(p=>Math.abs(p.x)<=.98)&&Math.max(...ys)-Math.min(...ys)<=1.92)break;
   }
   camera.setViewOffset(w,h,0,-(Math.max(...ys)+Math.min(...ys))/2*h/2,w,h);
+  // the narrow battle lens sits far back, so push the fog behind the arena or it dims the whole field
+  const dist=camera.position.distanceTo(target);scene.fog.near=dist+450;scene.fog.far=dist+1300;
 }
 function render(dt,now){
   riverTex.offset.x=(riverTex.offset.x+dt*.04)%1;
