@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 156 200">
+  <rect width="156" height="200" fill="#1b2a40"/>
+  <!-- diamond lattice -->
+  <path fill="none" stroke="#263a57" stroke-width="2" d="M-20 0L80 100-20 200M20 0l120 120M60 0l100 100M100 0l60 60M-20 40l140 140M-20 80l120 120M-20 120l80 80M176 0L76 100l100 100M136 0L16 120M96 0L-4 100M56 0L-4 60M176 40L36 180M176 80L56 200M176 120l-80 80"/>
+  <!-- gold frame with corner gems -->
+  <rect x="8" y="8" width="140" height="184" fill="none" stroke="#f3c55b" stroke-width="2"/>
+  <rect x="13" y="13" width="130" height="174" fill="none" stroke="#f3c55b" stroke-opacity=".35" stroke-width="1"/>
+  <g fill="#f3c55b"><path d="M8 2l6 6-6 6-6-6zM148 2l6 6-6 6-6-6zM8 186l6 6-6 6-6-6zM148 186l6 6-6 6-6-6z"/></g>
+  <!-- stars -->
+  <g fill="#f3c55b"><path d="M78 26l3 7 7 3-7 3-3 7-3-7-7-3 7-3zM78 154l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/></g>
+  <!-- seal with the hat-bridge wizard -->
+  <circle cx="78" cy="100" r="42" fill="#111a26" stroke="#f3c55b" stroke-width="2.5"/>
+  <circle cx="78" cy="100" r="36" fill="none" stroke="#b65cf0" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <g transform="translate(51 71) scale(.105)">
+    <path fill="#f4efe6" d="M262 58c26 4 48 20 58 44-18-8-34-6-44 4 10 50 34 128 58 196H178c26-70 52-150 84-244z"/>
+    <path fill="#111a26" d="M256 176l9 22 23 9-23 9-9 22-9-22-23-9 23-9z"/>
+    <path fill="#f4efe6" d="M52 336c64-40 136-54 204-54s140 14 204 54v70h-50c-6-48-72-78-154-78s-148 30-154 78H52z"/>
+    <circle cx="220" cy="374" r="15" fill="#f3c55b"/><circle cx="292" cy="374" r="15" fill="#f3c55b"/>
+    <path fill="none" stroke="#b65cf0" stroke-width="14" stroke-linecap="round" d="M70 446q31-16 62 0t62 0 62 0 62 0 62 0 62 0"/>
+  </g>
+</svg>
