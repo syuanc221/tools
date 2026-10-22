@@ -166,6 +166,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 .sync i{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
 .sync.on i{background:var(--ok)}
 .setrow{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:14px}
+.setrow .vol{width:140px;accent-color:var(--blue)}.setrow .vol:disabled{opacity:.4}
 
 /* guild */
 .emb{display:inline-grid;place-items:center;width:38px;height:42px;flex:none;clip-path:polygon(50% 100%,0 72%,0 0,100% 0,100% 72%);padding-bottom:6px;box-sizing:border-box}
@@ -356,7 +357,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
       <div class="statgrid" id="pfStats"></div>
       <div class="panel"><h3>頭像</h3><div class="avatars" id="pfAvatars"></div><p class="muted">在冒險模式擊敗對手，就能使用他們的頭像。</p></div>
       <div class="panel"><h3>最常使用的卡</h3><div class="list" id="pfFav"></div></div>
-      <div class="panel"><h3>設定</h3><div class="setrow">音效<button class="sbtn" id="pfMute"></button></div><div class="setrow">背景音樂<button class="sbtn" id="pfMusic"></button></div></div>
+      <div class="panel"><h3>設定</h3><div class="setrow">音效<button class="sbtn" id="pfMute"></button></div><div class="setrow">背景音樂<button class="sbtn" id="pfMusic"></button></div><div class="setrow">音樂音量<input type="range" class="vol" id="pfMusicVol" min="0" max="100" step="5" aria-label="音樂音量"></div></div>
     </section>
     <section class="scr" id="scr-battle" hidden>
       <div id="hud">
@@ -613,6 +614,7 @@ const BGM={on:(()=>{try{return localStorage.getItem('bd-music')!=='0'}catch(e){r
   tick(){
     const A=SFX;if(!A.ctx||A.ctx.state!=='running')return;
     if(!this.gain){this.gain=A.ctx.createGain();this.gain.connect(A.master)}
+    if(this.files(this.on&&A.on)){this.gain.gain.setTargetAtTime(0,A.ctx.currentTime,.4);return}
     const m=this.on&&A.on?this.want():'';this.gain.gain.setTargetAtTime(m?(m==='home'?.55:.42):0,A.ctx.currentTime,.4);
     if(m!==this.mode){this.mode=m;this.step=0;this.next=Math.max(this.next,A.ctx.currentTime+.05)}
     if(!m)return;
@@ -638,13 +640,53 @@ const BGM={on:(()=>{try{return localStorage.getItem('bd-music')!=='0'}catch(e){r
     }
   },
 };
+// recorded tracks per scene (audio/*.m4a), crossfaded over ~2s on two alternating players; the procedural loops above are the fallback
+Object.assign(BGM,{
+  TRACKS:{main:'main-theme',battle:'battle',boss:'dragon-boss',map:'adventure-map',hall:'guild-hall'},
+  vol:(()=>{try{const v=parseFloat(localStorage.getItem('bd-music-vol'));return isNaN(v)?.8:Math.min(1,Math.max(0,v))}catch(e){return .8}})(),
+  cur:'',failed:false,decks:null,act:0,
+  scene(){
+    if(typeof VIEW==='undefined'||document.hidden)return '';
+    if(VIEW==='battle'){if(!G||G.over)return this.cur;return MODE==='story'&&chIdx===CHAPTERS.length-1?'boss':'battle'}
+    if(VIEW==='home')return !$('#startOv').hidden||!$('#talkOv').hidden?'map':'main';
+    return 'hall';
+  },
+  files(on){
+    if(this.failed)return false;
+    const A=SFX,now=A.ctx.currentTime,ms=performance.now();
+    if(!this.decks){
+      this.fgain=A.ctx.createGain();this.fgain.connect(A.master);
+      this.decks=[0,1].map(()=>{const el=new Audio(),g=A.ctx.createGain();el.loop=true;el.preload='auto';
+        el.addEventListener('error',()=>{if(el.getAttribute('src')){this.failed=true;for(const d of this.decks)d.el.pause()}});
+        A.ctx.createMediaElementSource(el).connect(g);g.gain.value=0;g.connect(this.fgain);return {el,g,name:'',stopAt:0}});
+    }
+    this.fgain.gain.setTargetAtTime(this.vol,now,.1);
+    const want=on?this.scene():'';
+    if(want!==this.cur){
+      this.cur=want;const fade=(d,v)=>{d.g.gain.cancelScheduledValues(now);d.g.gain.setValueAtTime(d.g.gain.value,now);d.g.gain.setTargetAtTime(v,now,.5)};
+      const a=this.decks[this.act];
+      if(want&&a.name===want){fade(a,1);a.stopAt=0}
+      else{
+        fade(a,0);a.stopAt=ms+2500;
+        if(want){const b=this.decks[1-this.act];if(b.name!==want){b.name=want;b.el.src='audio/'+this.TRACKS[want]+'.m4a'}b.stopAt=0;fade(b,1);this.act=1-this.act}
+      }
+    }
+    for(const d of this.decks){
+      if(d.stopAt&&ms>d.stopAt){d.stopAt=0;d.el.pause()}
+      else if(!d.stopAt&&d.name&&d.name===this.cur&&d.el.paused)d.el.play().catch(()=>{});
+    }
+    return true;
+  },
+});
 setInterval(()=>{try{BGM.tick()}catch(e){}},90);
-function setMusic(on){BGM.on=on;try{localStorage.setItem('bd-music',on?'1':'0')}catch(e){}$('#pfMusic').textContent=on?'開啟':'關閉'}
-window.addEventListener('pointerdown',()=>SFX.init(),true);
+function setMusic(on){BGM.on=on;try{localStorage.setItem('bd-music',on?'1':'0')}catch(e){}$('#pfMusic').textContent=on?'開啟':'關閉';$('#pfMusicVol').disabled=!on}
+function setMusicVol(v){BGM.vol=v;try{localStorage.setItem('bd-music-vol',String(v))}catch(e){}$('#pfMusicVol').value=Math.round(v*100)}
+window.addEventListener('pointerdown',()=>{SFX.init();try{if(SFX.ctx)BGM.files(BGM.on&&SFX.on)}catch(e){}},true);
 window.addEventListener('keydown',()=>SFX.init(),true);
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&!b.classList.contains('card')&&!b.disabled)SFX.play('click')},true);
 function setMute(off){SFX.on=!off;try{localStorage.setItem('bd-mute',off?'1':'0')}catch(e){}$('#muteBtn').innerHTML=SFX.on?ICO.sndOn:ICO.sndOff;$('#muteBtn').setAttribute('aria-pressed',String(!SFX.on));$('#pfMute').textContent=SFX.on?'開啟':'關閉'}
 $('#pfMusic').addEventListener('click',()=>setMusic(!BGM.on));setMusic(BGM.on);
+$('#pfMusicVol').addEventListener('input',e=>setMusicVol(e.target.value/100));setMusicVol(BGM.vol);
 $('#muteBtn').addEventListener('click',()=>setMute(SFX.on));$('#pfMute').addEventListener('click',()=>setMute(SFX.on));
 
 // ================= drawn icons (flat poly SVG, no emoji) =================
