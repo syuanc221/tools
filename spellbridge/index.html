@@ -236,7 +236,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 .rcard.open .in{transform:rotateY(180deg)}
 .rcard .f,.rcard .b{position:absolute;inset:0;border-radius:10px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .rcard .b{background:#24344a;box-shadow:inset 0 -6px 0 var(--rc),0 0 12px var(--rc)}
-.rcard .f{transform:rotateY(180deg);background:var(--panel-2);box-shadow:inset 0 -6px 0 var(--rc)}
+.rcard .f{transform:rotateY(180deg)}
 .rcard .f img{width:80%;aspect-ratio:1}
 .rcard .f b{font-size:11px;font-weight:900}
 .rcard .f small{font-family:var(--display);font-weight:900;font-size:12px;color:var(--gold)}
@@ -263,6 +263,27 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 .panel{--cut:12px}.lvbar,#track{--cut:4px}#nav{--cut:10px}
 .card .cost,.cc .cost{border-radius:0;box-shadow:none;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);width:24px}
 .play:active,.adv:active,.pull:active,.go:active,.ghost:active,.sbtn:active,.slot:active,.cc:active{transform:translateY(2px)}
+
+/* card faces: element sets the ground colour and pattern, type sets the frame silhouette, rarity sets the frame trim */
+.cc,.card,.rcard .f,.cdhead img,#next img{background-color:var(--eb,var(--panel-2))!important;background-image:var(--pat,none);background-size:26px 26px}
+.cc,.card,.rcard .f{box-shadow:var(--fr,inset 0 0 0 2px #6d7a8f),inset 0 -6px 0 var(--rc)!important}
+[data-rar="common"]{--fr:inset 0 0 0 2px #7b889c}
+[data-rar="rare"]{--fr:inset 0 0 0 3px #f0a33a}
+[data-rar="epic"]{--fr:inset 0 0 0 2px #d79bff,inset 0 0 0 4px #2a1145,inset 0 0 0 5px #c06cff}
+[data-rar="legendary"]{--fr:inset 0 0 0 2px #ffe9a0,inset 0 0 0 4px #5a3d00,inset 0 0 0 6px #ffd86b}
+.cc[data-rar="legendary"]::after,.card[data-rar="legendary"]::after,.rcard[data-rar="legendary"] .f::after{content:"";position:absolute;inset:9px;border:1px solid rgba(255,216,107,.35);pointer-events:none}
+.cc[data-type="spell"],.card[data-type="spell"],.rcard[data-type="spell"] .f,.rcard[data-type="spell"] .b{clip-path:polygon(0 11%,50% 0,100% 11%,100% calc(100% - 7px),calc(100% - 7px) 100%,7px 100%,0 calc(100% - 7px))!important}
+.cc[data-type="building"],.card[data-type="building"],.rcard[data-type="building"] .f,.rcard[data-type="building"] .b{clip-path:polygon(0 0,16% 0,16% 7px,32% 7px,32% 0,68% 0,68% 7px,84% 7px,84% 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,7px 100%,0 calc(100% - 7px))!important}
+.cc[data-type="spell"] .cost,.card[data-type="spell"] .cost,.cc[data-type="building"] .cost,.card[data-type="building"] .cost{top:10px}
+.cc .ty,.card .ty,.rcard .ty{position:absolute;top:4px;right:4px;width:18px;height:18px;display:grid;place-items:center;background:rgba(5,9,15,.45);clip-path:polygon(4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px),0 4px)}
+.cc[data-type="spell"] .ty,.card[data-type="spell"] .ty,.cc[data-type="building"] .ty,.card[data-type="building"] .ty{top:10px}
+.ty svg,.eg svg{display:block;width:12px;height:12px}
+.cc .eg,.card .eg,.rcard .eg{position:absolute;left:4px;width:16px;height:16px;display:grid;place-items:center;background:var(--ec);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+.cc .eg{bottom:30px}.card .eg{bottom:24px}.rcard .eg{bottom:30px}
+.eg svg{width:10px;height:10px}
+.cc .lv{top:auto!important;bottom:30px;right:4px;border-radius:0!important}
+.cc .nm,.card .nm{position:relative;z-index:1;text-shadow:0 1px 0 rgba(0,0,0,.6)}
+.card.sel{filter:brightness(1.25);box-shadow:var(--fr),inset 0 -6px 0 var(--gold),inset 0 0 0 40px rgba(243,197,91,.12)!important}
 @media (prefers-reduced-motion:reduce){.card,.rcard .in{transition:none}.cc.swap,#revImg.shake{animation:none}}
 </style>
 
@@ -1073,9 +1094,23 @@ function elemMark(el){
   else{g.add(mesh(new T.OctahedronGeometry(1.5,0),glow('#7fb6ff',1.5)));const t=mesh(new T.TorusGeometry(2.2,.25,4,16),glow('#7fb6ff',1));t.rotation.x=Math.PI/2;g.add(t)}
   void c;return g;
 }
+function elemDeco(g,el){
+  g.updateMatrixWorld(true);const box=new T.Box3().setFromObject(g),sz=box.getSize(new T.Vector3());
+  const w=Math.max(3,sz.x/2),d=Math.max(2,sz.z/2),y0=box.min.y,h=sz.y,at=f=>y0+h*f,add=m=>(g.add(m),m);
+  if(el==='fire')for(const s of[-1,1]){add(mesh(new T.ConeGeometry(1.5,5,5),glow('#ff7a1a',1.4),s*w*.72,at(.66),0));add(mesh(new T.ConeGeometry(.8,3.2,5),glow('#ffd34d',1.5),s*w*.72,at(.66)+.8,.7))}
+  else if(el==='ice')for(let i=-1;i<=1;i++){const m=add(mesh(new T.OctahedronGeometry(1.4,0),mat('#d7f2ff',{emissive:'#7fd0ff',emissiveIntensity:.55,roughness:.2}),i*w*.4,at(.58)-Math.abs(i)*1.4,-d*.9));m.scale.y=2.5;m.rotation.x=-.55;m.rotation.z=-i*.35}
+  else if(el==='thunder')for(const s of[-1,1]){const m=add(mesh(new T.BoxGeometry(.7,h*.38,.7),glow('#ffe14d',1.5),s*w*.85,at(.5),-1));m.rotation.z=s*.45;const n=add(mesh(new T.BoxGeometry(.7,h*.22,.7),glow('#ffe14d',1.5),s*w*.95,at(.32),-1));n.rotation.z=-s*.5}
+  else if(el==='dark')for(const s of[-1,1]){const m=add(mesh(new T.ConeGeometry(1,5.5,5),mat('#2a1a3d',{emissive:'#5b2a99',emissiveIntensity:.35}),s*Math.min(w*.4,3.2),at(.98),0));m.rotation.z=-s*.55}
+  else if(el==='holy')for(const s of[-1,1]){const m=add(mesh(new T.ConeGeometry(2.2,8,3),mat('#fff6dc',{emissive:'#ffe9a0',emissiveIntensity:.35}),s*(w*.75+1.5),at(.62),-d*.7));m.rotation.z=s*1.95;m.scale.z=.3}
+  else if(el==='nature'){const t=add(mesh(new T.TorusGeometry(Math.max(2.6,w*.7),.75,4,10),mat('#3f8f3a'),0,at(.42),0));t.rotation.x=Math.PI/2;for(let i=0;i<5;i++){const a=i/5*Math.PI*2,r=Math.max(2.6,w*.7);const lf=add(mesh(new T.ConeGeometry(1,3,4),mat('#6ee07a'),Math.cos(a)*r,at(.42)+1,Math.sin(a)*r));lf.rotation.z=Math.cos(a)*.9;lf.rotation.x=-Math.sin(a)*.9}}
+  else if(el==='rune'){const t=add(mesh(new T.TorusGeometry(Math.max(3.2,w*.95),.32,4,24),glow('#7fb6ff',1.3),0,at(.3),0));t.rotation.x=Math.PI/2;g.userData.runeRing=t}
+}
 function cardModel(k,col){
   const c=CARDS[k],g=MODELS[c.arch](col,ELEM[c.el].col);
-  if(c.type!=='spell'&&c.arch!=='dragon'&&c.arch!=='archmage'){g.updateMatrixWorld(true);const top=new T.Box3().setFromObject(g).max.y;const m=elemMark(c.el);m.position.set(0,top+3.2,0);g.add(m);g.userData.mark=m}
+  if(c.type!=='spell'&&c.arch!=='dragon'&&c.arch!=='archmage'){
+    elemDeco(g,c.el);
+    g.updateMatrixWorld(true);const top=new T.Box3().setFromObject(g).max.y;const m=elemMark(c.el);m.position.set(0,top+3.2,0);g.add(m);g.userData.mark=m;
+  }
   return g;
 }
 function makeChest(type){
@@ -1244,6 +1279,7 @@ function updateView(v,e,dt,now){
     if(u.wings){const a=Math.sin(now/(ar==='dragon'?140:90)+e.id)*.65;u.wings[0].rotation.z=-a;u.wings[1].rotation.z=-a}
     if(u.arm)u.arm.rotation.x=(ar==='golem'?-1.2:-1.4)*Math.sin(Math.min(1,e.atk/.25)*Math.PI)+(ar==='knight'?.5:0);
     if(u.mark){u.mark.rotation.y+=dt*2}
+    if(u.runeRing){u.runeRing.rotation.z+=dt*1.5}
     if(u.crystal){u.crystal.rotation.y+=dt*2;u.crystal.position.y=22+Math.sin(now/300)*1.5}
     if(v.summon){if(e.deploy>0){v.summon.rotation.z+=dt*4;v.summon.material.opacity=.85*(e.deploy/e.deployMax)+.15}else{v.root.remove(v.summon);v.summon=null}}
   }
@@ -1440,10 +1476,11 @@ function reveal(o){
   if(o.gems){const s=el('span');s.append(el('i','gem'),'+'+o.gems);loot.append(s)}
   const grid=$('#revGrid');grid.innerHTML='';
   for(const it of o.items){
-    const c=CARDS[it.key],r=el('div','rcard');r.style.setProperty('--rc',RAR[c.rar].col);r.dataset.rar=c.rar;
+    const c=CARDS[it.key],r=el('div','rcard');r.style.setProperty('--rc',RAR[c.rar].col);skinCard(r,it.key);
     const inn=el('div','in'),b=el('div','b'),f=el('div','f');
     const im=el('img');im.src=THUMB[it.key];im.alt='';f.append(im,el('b',null,c.name),el('small',null,'×'+it.count));
     if(it.isNew)f.append(el('span','new','NEW'));
+    {const ty=el('span','ty');ty.innerHTML=TYPE_GLYPH[c.type];const eg=el('span','eg');eg.innerHTML=`<svg viewBox="0 0 24 24">${ELEM_GLYPH[c.el]}</svg>`;f.append(ty,eg)}
     inn.append(b,f);r.append(inn);r.addEventListener('click',()=>flipCard(r));grid.append(r);
   }
   const btn=$('#revBtn');btn.textContent='全部翻開';btn.dataset.state='flip';
@@ -1455,11 +1492,49 @@ $('#revBtn').addEventListener('click',()=>{
   $('#revealOv').hidden=true;SFX.play('coin');renderTop();if(VIEW==='cards')renderCards();if(VIEW==='gacha')renderGacha();
 });
 
+// ================= card faces (drawn patterns and corner glyphs) =================
+const ELEM_FACE={
+  fire:{bg:'#4a2018',pat:'<path d="M0 18l6.5-9 6.5 9 6.5-9 6.5 9" fill="none" stroke="#ff9a5a" stroke-opacity=".16" stroke-width="2"/>'},
+  ice:{bg:'#14384d',pat:'<path d="M13 2l11 11-11 11L2 13z" fill="none" stroke="#bfeaff" stroke-opacity=".14" stroke-width="1.6"/>'},
+  thunder:{bg:'#453a10',pat:'<path d="M15 0l-5 12h7l-6 14" fill="none" stroke="#ffe14d" stroke-opacity=".17" stroke-width="2"/>'},
+  dark:{bg:'#24163d',pat:'<g fill="#c79bff" fill-opacity=".22"><path d="M6 3l1 3 3 1-3 1-1 3-1-3-3-1 3-1z"/><circle cx="19" cy="17" r="1.2"/><circle cx="11" cy="23" r=".9"/><circle cx="22" cy="5" r=".8"/></g>'},
+  holy:{bg:'#433820',pat:'<g stroke="#fff1b8" stroke-opacity=".16" stroke-width="1.6"><path d="M13 1v7M13 18v7M1 13h7M18 13h7M4.5 4.5l4 4M17.5 17.5l4 4M21.5 4.5l-4 4M8.5 17.5l-4 4"/></g>'},
+  nature:{bg:'#163a20',pat:'<path d="M0 13q6.5-12 13 0t13 0M-13 26q6.5-12 13 0t13 0M13 26q6.5-12 13 0" fill="none" stroke="#8cf08a" stroke-opacity=".15" stroke-width="1.6"/>'},
+  rune:{bg:'#162a4d',pat:'<path d="M6.5 1h13L26 13l-6.5 12h-13L0 13z" fill="none" stroke="#8fc0ff" stroke-opacity=".16" stroke-width="1.4"/><path d="M13 8v10M9 11h8" stroke="#8fc0ff" stroke-opacity=".12" stroke-width="1.4"/>'},
+};
+const ELEM_GLYPH={
+  fire:'<path fill="#fff" d="M12 1c1 5 7 7 7 14a7 7 0 0 1-14 0c0-4 2-6 3-8 0 3 1 4 2 4 0-4-1-6 2-10z"/>',
+  ice:'<path fill="none" stroke="#fff" stroke-width="3" d="M12 1v22M2.5 6.5l19 11M2.5 17.5l19-11"/>',
+  thunder:'<path fill="#fff" d="M14 1L4 14h6l-2 9 12-14h-7z"/>',
+  dark:'<path fill="#fff" d="M15 2a10 10 0 1 0 7 15A9 9 0 0 1 15 2z"/>',
+  holy:'<path fill="#fff" d="M12 6l2 4 4-2-2 4 4 2-4 2 2 4-4-2-2 4-2-4-4 2 2-4-4-2 4-2-2-4 4 2z"/>',
+  nature:'<path fill="#fff" d="M20 2C8 2 3 9 4 20l2 2c0-6 4-11 10-13-5 3-8 7-9 12 11 1 14-7 13-19z"/>',
+  rune:'<path fill="#fff" d="M12 1l9 11-9 11-9-11z"/><path fill="#16294d" d="M12 7l4 5-4 5-4-5z"/>',
+};
+const TYPE_GLYPH={
+  troop:'<svg viewBox="0 0 24 24"><path fill="#fff" d="M15 2h7v7L11 20l-3-3zM3 15l6 6-2 2-6-6zM2 21l2 2-1 1-2-2z"/></svg>',
+  spell:'<svg viewBox="0 0 24 24"><path fill="#fff" d="M12 1l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/></svg>',
+  building:'<svg viewBox="0 0 24 24"><path fill="#fff" d="M3 23V9h3V4h3v5h2V4h2v5h2V4h3v5h3v14h-7v-6h-4v6z"/></svg>',
+};
+(function(){
+  let css='';
+  for(const k in ELEM_FACE){const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26">${ELEM_FACE[k].pat}</svg>`;
+    css+=`[data-el="${k}"]{--eb:${ELEM_FACE[k].bg};--ec:${ELEM[k].col};--pat:url("data:image/svg+xml,${encodeURIComponent(svg)}")}\n`}
+  const st=document.createElement('style');st.textContent=css;document.head.append(st);
+})();
+function skinCard(node,k,corner){
+  const c=CARDS[k];node.dataset.el=c.el;node.dataset.type=c.type;node.dataset.rar=c.rar;
+  if(!corner)return node;
+  const ty=el('span','ty');ty.innerHTML=TYPE_GLYPH[c.type];
+  const eg=el('span','eg');eg.innerHTML=`<svg viewBox="0 0 24 24">${ELEM_GLYPH[c.el]}</svg>`;
+  node.append(ty,eg);return node;
+}
+
 // ================= cards =================
 let swapKey=null,collFilter='all';
 function cardTile(k,inDeck){
   const c=CARDS[k],own=S.cards[k],b=el('button','cc');b.style.setProperty('--rc',RAR[c.rar].col);b.id=(inDeck?'d-':'c-')+k;
-  b.append(el('span','cost',c.cost));const im=el('img');im.src=THUMB[k];im.alt='';b.append(im,el('span','nm',c.name));
+  b.append(el('span','cost',c.cost));const im=el('img');im.src=THUMB[k];im.alt='';b.append(im,el('span','nm',c.name));skinCard(b,k,true);
   if(!own){b.classList.add('locked');b.append(el('span','lv','未獲得'));return b}
   b.append(el('span','lv','Lv.'+own.lvl));
   if(own.lvl<MAXLV){const need=NEED[own.lvl],bar=el('span','pbar'),i=el('i');i.style.width=Math.min(100,own.copies/need*100)+'%';bar.append(i);b.append(bar);if(own.copies>=need)b.classList.add('can')}
@@ -1488,7 +1563,7 @@ function statRows(k,l){
 }
 function openCard(k){
   cardKey=k;const c=CARDS[k],own=S.cards[k],l=own?own.lvl:1;
-  $('#cdImg').src=THUMB[k];$('#cdName').textContent=c.name;$('#cdDesc').textContent=c.desc;
+  $('#cdImg').src=THUMB[k];skinCard($('#cdImg'),k);$('#cdName').textContent=c.name;$('#cdDesc').textContent=c.desc;
   const rr=$('#cdRar');rr.textContent=RAR[c.rar].name+(c.type==='spell'?' · 法術':c.type==='building'?' · 建築':' · 部隊');rr.style.color=RAR[c.rar].col;
   const st=$('#cdStats');st.innerHTML='';
   for(const[a,b,up]of statRows(k,l)){const d=el('div');d.append(el('span',null,a));const v=el('b',null,String(b));if(up&&own)v.append(el('em',null,up));d.append(v);st.append(d)}
@@ -1566,12 +1641,12 @@ function buildHand(){
   tray.querySelectorAll('.card').forEach(n=>n.remove());
   G.decks[0].hand.forEach((k,i)=>{
     const c=CARDS[k],b=document.createElement('button');
-    b.className='card';b.id='card'+i;b.dataset.i=i;
+    b.className='card';b.id='card'+i;b.dataset.i=i;b.style.setProperty('--rc',RAR[c.rar].col);
     b.innerHTML=`<span class="cost">${c.cost}</span><img src="${THUMB[k]}" alt=""><span class="nm">${c.name}</span>`;
-    b.setAttribute('aria-label',`${c.name}，${c.cost} 點魔力`);
+    b.setAttribute('aria-label',`${c.name}，${c.cost} 點魔力`);skinCard(b,k,true);
     tray.appendChild(b);
   });
-  $('#nextImg').src=THUMB[G.decks[0].queue[0]];
+  $('#nextImg').src=THUMB[G.decks[0].queue[0]];skinCard($('#nextImg'),G.decks[0].queue[0]);
 }
 function updateUI(){
   const key=G.decks[0].hand.join()+'|'+G.decks[0].queue[0];
