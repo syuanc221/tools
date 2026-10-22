@@ -2296,18 +2296,23 @@ async function flushCloud(){
   cloud.writing=false;if(cloud.pending){cloud.pending=false;flushCloud()}
 }
 function cloudOff(){cloud.state='off';if(VIEW==='guild')renderGuild();if(VIEW==='profile')renderProfile()}
+let boardsOn=false,boardsLoaded=false;
+function watchBoards(db){
+  if(boardsOn)return;boardsOn=true;
+  db.collection('players').orderBy('trophies','desc').limit(300).onSnapshot(s=>{PLAYERS=s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));boardsLoaded=true;onCloudData()},()=>{});
+  db.collection('guilds').limit(200).onSnapshot(s=>{GUILDS=new Map(s.docs.map(d=>[d.id,d.data()]));if(!s.metadata.fromCache)guildsLoaded=true;onCloudData()},()=>{});
+}
 async function initCloud(){
   try{
     if(!window.claude||typeof claude.use!=='function')return cloudOff();
     const[db,user]=await Promise.all([claude.use('db'),claude.use('user')]);
     if(!db||!user)return cloudOff();
-    const id=await user.id();if(!id)return cloudOff();
+    const id=await user.id();if(!id){watchBoards(db);return cloudOff()}
     cloud.db=db;cloud.id=id;cloud.canWrite=await user.can('data.write');
     const snap=await db.doc(`data/users/${id}/save`).get().catch(()=>null);
     if(snap&&snap.exists){const d=snap.data().save;if(d&&(d.ts||0)>(S.ts||0)){S=fixSave(JSON.parse(JSON.stringify(d)));try{localStorage.setItem('bd-save',JSON.stringify(S))}catch(e){}renderTop();compNotice();if(VIEW!=='battle')showScreen(VIEW)}}
     cloud.state='on';
-    db.collection('players').orderBy('trophies','desc').limit(300).onSnapshot(s=>{PLAYERS=s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));onCloudData()},()=>{});
-    db.collection('guilds').limit(200).onSnapshot(s=>{GUILDS=new Map(s.docs.map(d=>[d.id,d.data()]));if(!s.metadata.fromCache)guildsLoaded=true;onCloudData()},()=>{});
+    watchBoards(db);
     cloudSave(true);
     if(VIEW==='guild')renderGuild();if(VIEW==='profile')renderProfile();
   }catch(e){cloudOff()}
@@ -2373,7 +2378,7 @@ function renderRankOv(){
   if($('#rankOv').hidden)return;
   $('#rankTabP').setAttribute('aria-pressed',String(rankTab==='p'));$('#rankTabG').setAttribute('aria-pressed',String(rankTab==='g'));
   const box=$('#rankList'),me=$('#rankMe');box.innerHTML='';me.innerHTML='';
-  if(cloud.state!=='ready'&&!PLAYERS.length){box.append(el('p','muted','正在讀取排名…'));return}
+  if(!boardsLoaded){box.append(el('p','muted',boardsOn||cloud.state==='pending'?'正在讀取排名…':'目前無法讀取排行榜。'));return}
   if(rankTab==='p'){
     renderRank(box,PLAYERS);
     const i=PLAYERS.findIndex(p=>p.id===cloud.id);

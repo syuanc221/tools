@@ -74,5 +74,6 @@
       connected:()=>true,
       leave:async()=>{try{await ch.untrack()}catch(e){}sb.removeChannel(ch)}};
   }};
-  window.claude={use:async n=>{await ready;if(n==='db')return user?db:null;if(n==='user')return userNS;if(n==='room')return lobby;return null}};
+  // db is handed out signed-out too so the public leaderboards load; writes still require a user (docRef.set)
+  window.claude={use:async n=>{await ready;if(n==='db')return db;if(n==='user')return userNS;if(n==='room')return lobby;return null}};
 })();
