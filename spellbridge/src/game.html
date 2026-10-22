@@ -62,6 +62,11 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 .friend{border:0;padding:12px 10px 16px;cursor:pointer;background:#2fb37a;box-shadow:inset 0 -6px 0 #1d7a52;font-family:var(--title);font-weight:900;font-size:19px;letter-spacing:.08em;display:flex;flex-direction:column;align-items:center;gap:2px}
 .friend small{font-family:var(--body);font-size:11px;font-weight:700;letter-spacing:0;opacity:.9}
 .friend:active{transform:translateY(2px)}
+.rankbtn{background:#c98a1c;box-shadow:inset 0 -6px 0 #8a5a0c;color:#2a1700}
+.ranklist{max-height:52vh;overflow-y:auto}
+.grow.me{background:#2c3f5c;box-shadow:inset 0 0 0 2px var(--gold)}
+.grow .rk.top{color:var(--gold);font-size:16px}
+#rankMe .grow{background:#1d2a3d}
 #emotes{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
 #emotes button{border:0;background:var(--panel-2);padding:4px 0 7px;font-size:15px;display:grid;place-items:center;font-weight:900;cursor:pointer;box-shadow:inset 0 -3px 0 #121b27}
 .ic{display:inline-block;width:15px;height:15px;vertical-align:-2px;flex:none}
@@ -207,6 +212,17 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 #clock{font-family:var(--display);font-weight:900;font-size:24px;text-align:center;font-variant-numeric:tabular-nums;line-height:1}
 #clock small{display:block;font-family:var(--body);font-size:11px;font-weight:900;color:var(--magic);letter-spacing:.06em;margin-top:3px;min-height:14px}
 #stage{flex:1;min-height:0;position:relative;overflow:hidden;--cut:14px}
+/* opponent's plays: recent cards strip + a tag over the spot they dropped it */
+#eplays{position:absolute;left:8px;top:8px;display:flex;gap:4px;pointer-events:none}
+#eplays .ep{width:38px;background:rgba(8,12,18,.8);box-shadow:inset 0 -3px 0 var(--rc,#a9b6c8);padding:2px 2px 4px;text-align:center;animation:eppop .35s cubic-bezier(.2,1.4,.4,1)}
+#eplays .ep img{display:block;width:34px;height:34px}
+#eplays .ep b{display:block;font-size:9px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#eplays .ep:not(:first-child){opacity:.6}
+.droptag{position:absolute;transform:translate(-50%,-100%);display:flex;align-items:center;gap:4px;background:var(--red);color:#fff;padding:3px 8px 3px 3px;font-size:12px;font-weight:900;white-space:nowrap;pointer-events:none;animation:droptag 1.8s ease-out forwards;z-index:3}
+.droptag img{width:26px;height:26px;background:rgba(0,0,0,.25)}
+.droptag::after{content:"";position:absolute;left:50%;bottom:-6px;margin-left:-6px;border:6px solid transparent;border-bottom:0;border-top-color:var(--red)}
+@keyframes eppop{from{transform:scale(.3);opacity:0}}
+@keyframes droptag{0%{opacity:0;margin-top:10px}12%{opacity:1;margin-top:0}75%{opacity:1}100%{opacity:0;margin-top:-8px}}
 #cv{display:block;width:100%;height:100%;touch-action:none}
 #toast{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:rgba(8,12,18,.85);padding:6px 14px;border-radius:14px;font-size:14px;font-weight:900;pointer-events:none;white-space:nowrap}
 #tray{display:grid;grid-template-columns:48px repeat(4,1fr);gap:6px;align-items:end}
@@ -256,8 +272,31 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 .loot span{background:#121c29;border-radius:999px;padding:5px 12px;font-size:13px;font-weight:900;display:flex;align-items:center;gap:6px}
 .reveal{align-items:center;text-align:center}
 .reveal h2{font-family:var(--title);font-weight:900;margin:0;font-size:22px;letter-spacing:.08em}
-#revImg{width:130px;height:130px}
+#revImg{width:130px;height:130px;position:relative;z-index:1;transition:width .35s,height .35s}
 #revImg.shake{animation:shake .5s ease-in-out 2}
+/* opening sequence: altar spins a rune circle, chests rumble harder and harder, then a flash in the best rarity's colour deals the cards */
+.revstage{--glow:#a9b6c8;position:relative;display:grid;place-items:center;width:100%;height:136px;transition:height .35s;cursor:pointer}
+.revstage .ring,.revstage .rays,.revstage .burst{position:absolute;left:50%;top:50%;translate:-50% -50%}
+.revstage .ring,.revstage .rays{width:240px;height:240px;color:var(--glow);opacity:0;pointer-events:none}
+.revstage .burst{width:80px;height:80px;border-radius:50%;background:var(--glow);opacity:0;pointer-events:none;z-index:2}
+.reveal.intro .revstage{height:300px}
+.reveal.intro #revImg{width:200px;height:200px}
+.reveal.intro>:not(.revstage){display:none}
+.reveal.intro.altar .ring{animation:ringin 1.9s ease-out forwards}
+.reveal.intro.altar .rays{animation:raysin 1.9s ease-in forwards}
+.reveal.intro.altar #revImg{animation:hover 1.9s ease-in-out forwards}
+.reveal.intro.chest #revImg{animation:rumble 1.6s linear forwards}
+.reveal.intro.chest .rays{animation:raysin 1.6s ease-in forwards}
+.reveal.pop .burst{animation:burst .55s ease-out}
+.reveal.dealt .rcard{animation:deal .45s cubic-bezier(.2,1.3,.4,1) backwards;animation-delay:calc(var(--i)*70ms)}
+.reveal.dealt .rcard[data-rar="legendary"] .b,.reveal.dealt .rcard[data-rar="epic"] .b{animation:backglow 1s ease-in-out infinite alternate}
+@keyframes ringin{0%{opacity:0;transform:scale(.4) rotate(0)}30%{opacity:.9}100%{opacity:.9;transform:scale(1.05) rotate(220deg)}}
+@keyframes raysin{0%{opacity:0;transform:scale(.6) rotate(0)}100%{opacity:.55;transform:scale(1.25) rotate(-60deg)}}
+@keyframes hover{0%{transform:translateY(0);filter:drop-shadow(0 0 0 var(--glow))}100%{transform:translateY(-14px) scale(1.06);filter:drop-shadow(0 0 18px var(--glow))}}
+@keyframes rumble{0%,8%{transform:none}12%{transform:rotate(-4deg)}16%{transform:rotate(4deg)}20%,38%{transform:none}42%{transform:rotate(-7deg) translateY(-4px)}46%{transform:rotate(7deg)}50%{transform:rotate(-7deg)}54%,66%{transform:none}70%{transform:rotate(-11deg) translateY(-8px)}74%{transform:rotate(11deg)}78%{transform:rotate(-11deg)}82%{transform:rotate(11deg)}86%{transform:scale(1.12)}100%{transform:scale(1.25);filter:drop-shadow(0 0 22px var(--glow))}}
+@keyframes burst{0%{opacity:1;transform:scale(.2)}100%{opacity:0;transform:scale(7)}}
+@keyframes deal{from{opacity:0;transform:translateY(-90px) scale(.3) rotate(-25deg)}}
+@keyframes backglow{from{box-shadow:inset 0 -6px 0 var(--rc),0 0 6px var(--rc)}to{box-shadow:inset 0 -6px 0 var(--rc),0 0 20px var(--rc)}}
 @keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-7deg) scale(1.05)}75%{transform:rotate(7deg) scale(1.05)}}
 .rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px;width:100%}
 .rcard{--rc:#a9b6c8;perspective:600px;aspect-ratio:.78;cursor:pointer}
@@ -294,7 +333,8 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 .card .cost,.cc .cost{border-radius:0;box-shadow:none;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);width:24px}
 .play:active,.adv:active,.pull:active,.go:active,.ghost:active,.sbtn:active,.slot:active,.cc:active{transform:translateY(2px)}
 
-/* card faces: element sets the ground colour and pattern, type sets the frame silhouette, rarity sets the frame trim */
+/* card faces: every card is the same plain rectangle; element sets the ground colour and pattern, rarity sets the frame trim */
+.cc,.card,.rcard .f,.rcard .b{clip-path:none!important}
 .cc,.card,.rcard .f,.cdhead img,#next img{background-color:var(--eb,var(--panel-2))!important;background-image:var(--pat,none);background-size:26px 26px}
 .cc,.card,.rcard .f{box-shadow:var(--fr,inset 0 0 0 2px #6d7a8f),inset 0 -6px 0 var(--rc)!important}
 [data-rar="common"]{--fr:inset 0 0 0 2px #7b889c}
@@ -302,11 +342,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 [data-rar="epic"]{--fr:inset 0 0 0 2px #d79bff,inset 0 0 0 4px #2a1145,inset 0 0 0 5px #c06cff}
 [data-rar="legendary"]{--fr:inset 0 0 0 2px #ffe9a0,inset 0 0 0 4px #5a3d00,inset 0 0 0 6px #ffd86b}
 .cc[data-rar="legendary"]::after,.card[data-rar="legendary"]::after,.rcard[data-rar="legendary"] .f::after{content:"";position:absolute;inset:9px;border:1px solid rgba(255,216,107,.35);pointer-events:none}
-.cc[data-type="spell"],.card[data-type="spell"],.rcard[data-type="spell"] .f,.rcard[data-type="spell"] .b{clip-path:polygon(0 11%,50% 0,100% 11%,100% calc(100% - 7px),calc(100% - 7px) 100%,7px 100%,0 calc(100% - 7px))!important}
-.cc[data-type="building"],.card[data-type="building"],.rcard[data-type="building"] .f,.rcard[data-type="building"] .b{clip-path:polygon(0 0,16% 0,16% 7px,32% 7px,32% 0,68% 0,68% 7px,84% 7px,84% 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,7px 100%,0 calc(100% - 7px))!important}
-.cc[data-type="spell"] .cost,.card[data-type="spell"] .cost,.cc[data-type="building"] .cost,.card[data-type="building"] .cost{top:10px}
 .cc .ty,.card .ty,.rcard .ty{position:absolute;top:4px;right:4px;width:18px;height:18px;display:grid;place-items:center;background:rgba(5,9,15,.45);clip-path:polygon(4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px),0 4px)}
-.cc[data-type="spell"] .ty,.card[data-type="spell"] .ty,.cc[data-type="building"] .ty,.card[data-type="building"] .ty{top:10px}
 .ty svg,.eg svg{display:block;width:12px;height:12px}
 .cc .eg,.card .eg,.rcard .eg{position:absolute;left:4px;width:16px;height:16px;display:grid;place-items:center;background:var(--ec);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
 .cc .eg{bottom:30px}.card .eg{bottom:24px}.rcard .eg{bottom:30px}
@@ -314,7 +350,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 .cc .lv{top:auto!important;bottom:30px;right:4px;border-radius:0!important}
 .cc .nm,.card .nm{position:relative;z-index:1;text-shadow:0 1px 0 rgba(0,0,0,.6)}
 .card.sel{filter:brightness(1.25);box-shadow:var(--fr),inset 0 -6px 0 var(--gold),inset 0 0 0 40px rgba(243,197,91,.12)!important}
-@media (prefers-reduced-motion:reduce){#upOv.anim *,.cc .upb{animation:none!important}.card,.rcard .in{transition:none}.cc.swap,#revImg.shake{animation:none}}
+@media (prefers-reduced-motion:reduce){#eplays .ep,.droptag{animation:none!important}#upOv.anim *,.cc .upb{animation:none!important}.card,.rcard .in{transition:none}.cc.swap,#revImg.shake{animation:none}.reveal .revstage *,.reveal .rcard,.reveal .rcard .b{animation:none!important}}
 </style>
 
 <div id="app">
@@ -327,6 +363,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
       <div class="hero" id="heroSlot"><div class="logo">秘法雙橋<span>SPELLBRIDGE</span></div><div class="arena-tag" id="arenaTag"></div></div>
       <div class="bigbtns"><button class="play" id="ladderBtn">天梯對戰<small id="ladderSub"></small></button><button class="adv" id="advBtn">冒險<small id="advSub"></small></button></div>
       <button class="friend" id="friendBtn">好友對戰<small id="friendSub">建立房間或輸入房號，和朋友即時對打</small></button>
+      <button class="friend rankbtn" id="rankBtn">排行榜<small id="rankSub">全服獎盃與公會排名</small></button>
       <div class="sechead"><h2>寶箱</h2><button class="free" id="freeBtn"></button></div>
       <div class="chests" id="chestGrid"></div>
       <p class="muted">打贏對戰會掉寶箱。一次只能解鎖一個，也可以用寶石立刻打開。</p>
@@ -365,7 +402,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
         <div id="clock"><span id="time">3:00</span><small id="tag"></small></div>
         <div class="side" id="sideP"><div class="who"><b id="nameP"></b><span><span id="crP">0</span> <i class="ic" data-ic="crown"></i></span></div><img id="hudP" alt=""></div>
       </div>
-      <div id="stage"><canvas id="cv" aria-label="戰場"></canvas><div id="toast" hidden></div><div class="bubble" id="bubE" hidden></div><div class="bubble me" id="bubP" hidden></div></div>
+      <div id="stage"><canvas id="cv" aria-label="戰場"></canvas><div id="eplays" aria-label="對手最近出的牌"></div><div id="toast" hidden></div><div class="bubble" id="bubE" hidden></div><div class="bubble me" id="bubP" hidden></div></div>
       <div id="tray"><div id="next"><img id="nextImg" alt="">下一張</div></div>
       <div id="bar"><div class="num" id="eNum">5</div><div id="track"><div id="fill"></div><div id="ticks"></div></div></div>
       <div id="emotes" hidden><button data-e="0" aria-label="開心"></button><button data-e="1" aria-label="大笑"></button><button data-e="2" aria-label="驚訝"></button><button data-e="3" aria-label="生氣"></button><button data-e="4" aria-label="好球"></button></div>
@@ -388,6 +425,15 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
     <button class="ghost" id="closeStart">返回首頁</button>
   </div>
 </div>
+<div class="ov" id="rankOv" hidden>
+  <div class="box rankbox">
+    <h1>排行榜<span>全 服 排 名</span></h1>
+    <div class="filters" id="rankTabs"><button id="rankTabP" aria-pressed="true">巫師</button><button id="rankTabG" aria-pressed="false">公會</button></div>
+    <div class="list ranklist" id="rankList"></div>
+    <div id="rankMe"></div>
+    <button class="ghost" id="closeRank">返回</button>
+  </div>
+</div>
 <div class="ov" id="talkOv" hidden>
   <div class="box">
     <div class="talk"><img id="talkImg" alt=""><div><div class="chap" id="talkChap"></div><div class="nm" id="talkName"></div><p id="talkLine"></p></div></div>
@@ -406,7 +452,12 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 </div>
 <div class="ov" id="revealOv" hidden>
   <div class="box reveal">
-    <img id="revImg" alt="">
+    <div class="revstage" id="revStage">
+      <svg class="ring" viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="92" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="10 7"/><circle cx="100" cy="100" r="78" fill="none" stroke="currentColor" stroke-width="2"/><path fill="currentColor" d="M100 14l6 14h-12zM100 186l-6-14h12zM14 100l14-6v12zM186 100l-14 6v-12zM39 39l14 5-9 9zM161 161l-14-5 9-9zM161 39l-5 14-9-9zM39 161l5-14 9 9z"/></svg>
+      <svg class="rays" viewBox="0 0 200 200" aria-hidden="true"><g fill="currentColor"><path d="M100 100L92 0h16z"/><path d="M100 100L92 0h16z" transform="rotate(45 100 100)"/><path d="M100 100L92 0h16z" transform="rotate(90 100 100)"/><path d="M100 100L92 0h16z" transform="rotate(135 100 100)"/><path d="M100 100L92 0h16z" transform="rotate(180 100 100)"/><path d="M100 100L92 0h16z" transform="rotate(225 100 100)"/><path d="M100 100L92 0h16z" transform="rotate(270 100 100)"/><path d="M100 100L92 0h16z" transform="rotate(315 100 100)"/></g></svg>
+      <img id="revImg" alt="">
+      <div class="burst"></div>
+    </div>
     <h2 id="revTitle"></h2>
     <div class="loot" id="revLoot"></div>
     <div class="rgrid" id="revGrid"></div>
@@ -876,7 +927,7 @@ const sfx=(n,gap)=>{if(VIEW==='battle')SFX.play(n,gap)};
 function makeDeck(keys){const k=shuffle(keys);return{hand:k.slice(0,4),queue:k.slice(4)}}
 function tower(team,x,y,king){const hp=king?2600:1500;return{id:G.nextId++,team,kind:'tower',king,x,y,r:king?24:19,hp,maxHp:hp,dmg:king?75:55,range:king?125:118,hit:king?1:.8,cd:0,speed:0,targetsAir:true,air:false,active:!king,proj:'bolt',deploy:0,atk:0,lane:king?-1:(x<180?0:1)}}
 function newGame(o={}){
-  clearTimeout(endTimer);clearScene();
+  clearTimeout(endTimer);clearScene();{const ep=$('#eplays');if(ep)ep.innerHTML=''}document.querySelectorAll('.droptag').forEach(t=>t.remove());
   G={ents:[],proj:[],spells:[],time:180,overtime:false,crowns:[0,0],elixir:[5,5],decks:[makeDeck(o.deck0||S.deck),makeDeck(o.deck1||STARTER)],aiLvl:o.aiLvl||1,diff:o.diff||'normal',sel:null,hover:null,over:false,running:false,nextId:1,ai:{think:2},msg:null,handKey:'',lastSec:180};
   G.ents.push(tower(0,70,470,false),tower(0,290,470,false),tower(0,180,545,true),tower(1,70,130,false),tower(1,290,130,false),tower(1,180,55,true));
 }
@@ -910,6 +961,14 @@ function validDeploy(team,key,x,y){
 }
 const OLD_VOICE={knight:'dHuman',archers:'dHuman',assassin:'dHuman',archmage:'dHuman',mage:'dHuman',imps:'dBlob',skeletons:'dBone',golem:'dBuild',tower:'dBuild',cavalry:'dBeast',griffin:'dFlyer',wyvern:'dFlyer',dragon:'dFlyer'};
 function deployVoice(c){const m=c.m||{};return m.t==='old'?OLD_VOICE[m.k]||'deploy':{human:'dHuman',beast:'dBeast',flyer:'dFlyer',blob:'dBlob',construct:'dMech',build:'dBuild'}[m.t]||'deploy'}
+function enemyPlayed(key,x,y){
+  const c=CARDS[key],st=$('#stage');if(!c||!st)return;
+  const m=new T.Mesh(new T.RingGeometry(.8,1,48),new T.MeshBasicMaterial({color:'#ff4d5a',transparent:true,opacity:.9,depthWrite:false,side:T.DoubleSide}));m.rotation.x=-Math.PI/2;m.position.set(wx(x),1.6,wz(y));scene.add(m);effects.push({obj:m,life:1.4,max:1.4,r:c.type==='spell'?(+c.radius||40):26,kind:'ring'});
+  const p=new T.Vector3(wx(x),18,wz(y)).project(camera),w=cv.clientWidth,h=cv.clientHeight;
+  const t=el('div','droptag');const im=el('img');im.src=THUMB[key];im.alt='';t.append(im,c.name);
+  t.style.left=Math.round((p.x+1)/2*w)+'px';t.style.top=Math.round((1-p.y)/2*h)+'px';st.append(t);setTimeout(()=>t.remove(),1900);
+  const ep=$('#eplays'),d=el('div','ep');d.style.setProperty('--rc',RAR[c.rar].col);const i2=el('img');i2.src=THUMB[key];i2.alt='';d.append(i2,el('b',null,c.name));ep.prepend(d);while(ep.children.length>3)ep.lastChild.remove();
+}
 function play(team,i,x,y){
   const d=G.decks[team],key=d.hand[i],c=CARDS[key];
   if(G.elixir[team]<c.cost){if(team===0)say('魔力不足');return false}
@@ -919,6 +978,7 @@ function play(team,i,x,y){
   if(c.type!=='spell'){sfx(deployVoice(c),.08);if(c.s.hp>=1500)sfx('roar',.5);if(c.rar==='legendary')sfx('sparkle',.3)}else if(c.fx==='meteor')sfx('whistle',.3);
   if(c.type==='spell')castSpell(team,key,x,y);
   else for(const[ox,oy]of offsFor(c.count))G.ents.push(makeUnit(key,team,clamp(x+ox,10,W-10),y+oy));
+  if(team===1&&!G.guest)try{enemyPlayed(key,x,y)}catch(e){}
   return true;
 }
 function castSpell(team,key,x,y){
@@ -1581,7 +1641,7 @@ const renderer=new T.WebGLRenderer({canvas:cv,antialias:true});
 renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.outputEncoding=T.sRGBEncoding;
 const scene=new T.Scene();scene.background=new T.Color('#16233a');scene.fog=new T.Fog('#16233a',900,1700);
-const camera=new T.PerspectiveCamera(38,1,1,3000);
+const camera=new T.PerspectiveCamera(24,1,1,4000);
 scene.add(new T.HemisphereLight('#d4e4ff','#3b4a2c',.75));
 const sun=new T.DirectionalLight('#fff1d8',.95);sun.position.set(-160,520,220);sun.castShadow=true;
 Object.assign(sun.shadow.camera,{left:-260,right:260,top:380,bottom:-380,near:10,far:1400});sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0008;
@@ -1816,8 +1876,8 @@ function fitCamera(){
   const p=cv.parentElement;const w=p.clientWidth||1,h=p.clientHeight||1;
   renderer.setSize(w,h,false);camera.aspect=w/h;camera.clearViewOffset();camera.updateProjectionMatrix();
   if(VIEW!=='battle')return;
-  const dir=new T.Vector3(0,1.3,1).normalize(),target=new T.Vector3(0,0,14);
-  const corners=[[-W/2-6,0,-H/2-6],[W/2+6,0,-H/2-6],[-W/2-6,0,H/2+6],[W/2+6,0,H/2+6],[0,70,-H/2+55]].map(a=>new T.Vector3(...a));
+  const dir=new T.Vector3(0,1.7,1).normalize(),target=new T.Vector3(0,0,14);
+  const corners=[[-W/2-6,0,-H/2-6],[W/2+6,0,-H/2-6],[-W/2-6,0,H/2+6],[W/2+6,0,H/2+6],[0,100,-H/2+40]].map(a=>new T.Vector3(...a));
   let ys=[];
   for(let d=300;d<4000;d+=10){
     camera.position.copy(target).addScaledVector(dir,d);camera.lookAt(target);camera.updateProjectionMatrix();camera.updateMatrixWorld();
@@ -1912,8 +1972,19 @@ setInterval(()=>{if(VIEW==='home'&&$('#confirmOv').hidden)renderHome()},1000);
 
 // ---------- reveal (chests + gacha) ----------
 function flipCard(r){if(r.classList.contains('open'))return;r.classList.add('open');const rar=r.dataset.rar;SFX.play(rar==='legendary'?'legend':rar==='epic'?'epic':'flip',.03)}
+let revTimer=0;
+function revealDeal(){
+  const box=$('#revealOv .reveal');if(!box.classList.contains('intro'))return;clearTimeout(revTimer);
+  box.classList.remove('intro');box.classList.add('pop','dealt');
+  const best=box.dataset.best;SFX.play(best==='legendary'?'legend':best==='epic'?'epic':'sparkle');
+  $('#revBtn').focus();
+}
 function reveal(o){
-  const img=$('#revImg');img.src=o.img;img.classList.remove('shake');void img.offsetWidth;if(o.chest)img.classList.add('shake');
+  const img=$('#revImg');img.src=o.img;img.classList.remove('shake');
+  const box=$('#revealOv .reveal'),best=o.items.reduce((b,it)=>Math.max(b,RORDER.indexOf(CARDS[it.key].rar)),0);
+  box.className='box reveal';void box.offsetWidth;box.dataset.best=RORDER[best];$('#revStage').style.setProperty('--glow',RAR[RORDER[best]].col);
+  const still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!still)box.classList.add('intro',o.chest?'chest':'altar');
   SFX.play(o.chest?'chest':'summon');
   $('#revTitle').textContent=o.title;
   const loot=$('#revLoot');loot.innerHTML='';
@@ -1926,11 +1997,13 @@ function reveal(o){
     const im=el('img');im.src=THUMB[it.key];im.alt='';f.append(im,el('b',null,c.name),el('small',null,'×'+it.count));
     if(it.isNew)f.append(el('span','new','NEW'));
     {const ty=el('span','ty');ty.innerHTML=TYPE_GLYPH[c.type];const eg=el('span','eg');eg.innerHTML=`<svg viewBox="0 0 24 24">${ELEM_GLYPH[c.el]}</svg>`;f.append(ty,eg)}
-    inn.append(b,f);r.append(inn);r.addEventListener('click',()=>flipCard(r));grid.append(r);
+    inn.append(b,f);r.append(inn);r.style.setProperty('--i',grid.children.length);r.addEventListener('click',()=>flipCard(r));grid.append(r);
   }
   const btn=$('#revBtn');btn.textContent='全部翻開';btn.dataset.state='flip';
-  $('#revealOv').hidden=false;btn.focus();
+  $('#revealOv').hidden=false;
+  if(still)btn.focus();else revTimer=setTimeout(revealDeal,o.chest?1600:1900);
 }
+$('#revStage').addEventListener('click',revealDeal);
 $('#revBtn').addEventListener('click',()=>{
   const btn=$('#revBtn');
   if(btn.dataset.state==='flip'){[...document.querySelectorAll('#revGrid .rcard:not(.open)')].forEach((r,i)=>setTimeout(()=>flipCard(r),i*170));btn.textContent='收下';btn.dataset.state='done';return}
@@ -2241,8 +2314,9 @@ async function initCloud(){
 }
 function onCloudData(){
   if(guildsLoaded&&S.guild&&!GUILDS.has(S.guild)){S.guild=null;persist()}
-  subChat();if(VIEW==='guild')renderGuild();
+  subChat();if(VIEW==='guild')renderGuild();renderRankOv();renderRankSub();
 }
+function renderRankSub(){const i=PLAYERS.findIndex(p=>p.id===cloud.id);$('#rankSub').textContent=i>=0?`你目前第 ${i+1} 名 · 共 ${PLAYERS.length} 位巫師`:'全服獎盃與公會排名'}
 function subChat(){
   const gid=S.guild&&GUILDS.has(S.guild)?S.guild:null;
   if(gid===chatGid)return;
@@ -2293,6 +2367,31 @@ function renderRank(box,list){
     info.append(el('b',null,(str(p.nick,12)||'無名巫師')+(p.id===cloud.id?'（你）':'')),el('small',null,`Lv.${+p.level||1}${g?' · '+str(g.name,14):''}${p.id===p.guild?' · 會長':''}`));
     const nm=el('span','num');nm.append(ic('trophy'),' '+(+p.trophies||0));r.append(el('span','rk',String(i+1)),im,info,nm);box.append(r)});
 }
+let rankTab='p';
+function openRank(){$('#rankOv').hidden=false;renderRankOv()}
+function renderRankOv(){
+  if($('#rankOv').hidden)return;
+  $('#rankTabP').setAttribute('aria-pressed',String(rankTab==='p'));$('#rankTabG').setAttribute('aria-pressed',String(rankTab==='g'));
+  const box=$('#rankList'),me=$('#rankMe');box.innerHTML='';me.innerHTML='';
+  if(cloud.state!=='ready'&&!PLAYERS.length){box.append(el('p','muted','正在讀取排名…'));return}
+  if(rankTab==='p'){
+    renderRank(box,PLAYERS);
+    const i=PLAYERS.findIndex(p=>p.id===cloud.id);
+    box.querySelectorAll('.grow').forEach((r,j)=>{if(j<3)r.querySelector('.rk').classList.add('top');if(j===i)r.classList.add('me')});
+    if(!cloud.id)me.append(el('p','muted','登入後才會列入排行榜。'));
+    else if(i<0)me.append(el('p','muted','打一場天梯就會出現在排行榜上。'));
+    else if(i>=50){const t=el('div','list');renderRank(t,[PLAYERS[i]]);t.querySelector('.rk').textContent=String(i+1);t.querySelector('.grow').classList.add('me');me.append(t)}
+  }else{
+    const gs=[...GUILDS.entries()].map(([id,g])=>Object.assign({id,g},guildStats(id))).filter(x=>x.n).sort((a,b)=>b.tro-a.tro).slice(0,50);
+    if(!gs.length)box.append(el('p','muted','還沒有任何公會。'));
+    gs.forEach((x,j)=>{const r=el('div','grow'+(x.id===S.guild?' me':''));const rk=el('span','rk'+(j<3?' top':''),String(j+1));const info=el('div','info');
+      info.append(el('b',null,str(x.g.name,14)||'無名公會'),el('small',null,`${x.n} 位成員`));const nm=el('span','num');nm.append(ic('trophy'),' '+x.tro);r.append(rk,emb(x.g.emblem),info,nm);box.append(r)});
+  }
+}
+$('#rankBtn').addEventListener('click',openRank);
+$('#closeRank').addEventListener('click',()=>$('#rankOv').hidden=true);
+$('#rankTabP').addEventListener('click',()=>{rankTab='p';renderRankOv()});
+$('#rankTabG').addEventListener('click',()=>{rankTab='g';renderRankOv()});
 function buildMyGuild(body,gid){
   const head=el('div','panel');const gh=el('div','ghead');gh.id='gHead';head.append(gh,el('p','muted','公會加成：勝利獲得的金幣 +10%。'));
   const chat=el('div','panel');chat.append(el('h3',null,'公會聊天'));const cl=el('div','chat');cl.id='gChat';
