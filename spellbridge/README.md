@@ -13,6 +13,9 @@
 | `index.html` | 打包結果，GitHub Pages 直接提供這個檔案 |
 | `schema.sql` | Supabase 資料表與存取權限（已套用，重建專案時才需要再跑） |
 | `audio/*.m4a` | 背景音樂（遊戲用相對路徑 `audio/…` 讀取） |
+| `icon.svg`、`icon-32.png`、`icon-192.png`、`icon-512.png`、`apple-touch-icon.png` | 網站 icon「帽橋巫師」（帽簷是拱橋、拱下兩顆眼睛）；iPhone 用的 180 px 是不帶圓角的滿版 |
+| `og.png` | 分享預覽圖 1200×630（`build.py` 寫入 og:image／twitter:image） |
+| `brand/` | icon 與分享圖的原始檔：`icon-a.svg`、滿版 `icon-a-square.svg`、黑白版 `icon-a-mono.svg`、`share.html`（用 Chrome headless 截圖產生 `og.png`） |
 
 ## 改遊戲的流程
 
