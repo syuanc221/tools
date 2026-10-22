@@ -4,8 +4,11 @@
   if(!URL||!KEY||!window.supabase){window.AUTH={configured:false,user:null};return}
   const sb=window.supabase.createClient(URL,KEY);
   let user=null;
-  const ready=sb.auth.getSession().then(r=>{user=r.data.session?r.data.session.user:null}).catch(()=>{});
-  sb.auth.onAuthStateChange((ev,ses)=>{const nu=ses?ses.user:null;if((nu&&nu.id)!==(user&&user.id)){user=nu;if(window.__booted)location.reload()}});
+  // events before getSession settles (INITIAL_SESSION, SIGNED_IN from the OAuth redirect) only record the user; reloading on them looped forever
+  let settled=false;
+  const ready=sb.auth.getSession().then(r=>{user=r.data.session?r.data.session.user:null}).catch(()=>{}).finally(()=>{settled=true});
+  sb.auth.onAuthStateChange((ev,ses)=>{const nu=ses?ses.user:null;if(ev==='INITIAL_SESSION'||!settled){if(!settled)user=nu;return}
+    if((nu&&nu.id)!==(user&&user.id)){user=nu;if(window.__booted)location.reload()}});
   window.AUTH={configured:true,ready,get user(){return user},
     signIn:p=>sb.auth.signInWithOAuth({provider:p,options:{redirectTo:location.origin+location.pathname}}),
     signOut:()=>sb.auth.signOut()};
