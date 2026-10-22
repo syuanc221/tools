@@ -249,6 +249,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 .cstats{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
 .cstats div{background:#121c29;border-radius:8px;padding:6px 10px;display:flex;justify-content:space-between;font-size:13px}
 .cstats span{color:var(--muted);font-weight:700}
+.cstats .wide{grid-column:1/-1;gap:10px}.cstats .wide b{text-align:right}
 .cstats b{font-weight:900}
 .cstats em{font-style:normal;color:var(--ok);font-size:11px;margin-left:4px}
 .prog{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:700}
@@ -315,7 +316,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
         <button class="pull" id="pull1">召喚 ×1<small><i class="gem"></i>100</small></button>
         <button class="pull" id="pull10">召喚 ×10<small><i class="gem"></i>900 · 必出稀有以上</small></button>
       </div>
-      <div class="panel"><h3>出現機率</h3><div class="rates" id="rates"></div><p class="muted">每次召喚得到一張卡的數張複本：普通 ×5、稀有 ×3、史詩與傳說 ×1。抽中沒有的卡就會解鎖。共 100 張卡：14 種兵種 × 7 種元素，再加上 2 張專屬傳說卡。</p></div>
+      <div class="panel"><h3>出現機率</h3><div class="rates" id="rates"></div><p class="muted">每次召喚得到一張卡的數張複本：普通 ×5、稀有 ×3、史詩與傳說 ×1。抽中沒有的卡就會解鎖。共 100 張各不相同的卡牌，分屬 7 種元素，每張都有自己的模型、數值和特殊能力。</p></div>
     </section>
     <section class="scr" id="scr-guild" hidden><div id="guildBody" style="display:flex;flex-direction:column;gap:12px"></div></section>
     <section class="scr" id="scr-profile" hidden>
@@ -576,43 +577,148 @@ const RAR={common:{name:'普通',col:'#a9b6c8',rate:.62},rare:{name:'稀有',col
 const RORDER=['common','rare','epic','legendary'];
 const ELEM={fire:{name:'火焰',col:'#e8573a'},ice:{name:'冰霜',col:'#5fc8f0'},thunder:{name:'雷霆',col:'#f2c93a'},dark:{name:'暗影',col:'#8a5ad9'},holy:{name:'聖光',col:'#f3e3a0'},nature:{name:'森林',col:'#4caf5a'},rune:{name:'符文',col:'#4f8ff0'}};
 const ELEM_KEYS=Object.keys(ELEM);
-const ELEM_MOD={fire:{dmg:1.15,hp:.9,txt:'火焰之力讓攻擊更猛烈，但比較脆弱。'},ice:{hp:1.15,speed:.9,radius:1.1,txt:'冰霜護體，更耐打，移動稍慢。'},thunder:{speed:1.15,hit:.85,hp:.92,txt:'雷霆加身，出手與移動都更快。'},dark:{dmg:1.25,hp:.85,radius:.9,txt:'暗影之力帶來極高傷害，代價是血量。'},holy:{hp:1.25,dmg:.9,tower:1.3,txt:'受聖光守護，血量更高。'},nature:{hp:1.05,dmg:1.05,radius:1.2,txt:'自然之力讓各項能力均衡提升。'},rune:{hp:1.08,dmg:1.08,txt:'符文刻印，穩定可靠。'}};
-const ARCH={
-  knight:{base:'劍士',rar:0,cost:3,type:'troop',count:1,desc:'近戰戰士，攻守兼備。',s:{hp:700,dmg:88,range:8,hit:1.1,speed:45,r:11}},
-  archers:{base:'弓手',rar:0,cost:3,type:'troop',count:2,desc:'兩名遠程弓手，可以射擊空中單位。',s:{hp:210,dmg:52,range:105,hit:1,speed:45,r:9,targetsAir:true,proj:'arrow'}},
-  imps:{base:'小魔鬼',rar:0,cost:2,type:'troop',count:3,desc:'三隻高速小魔鬼，以數量取勝。',s:{hp:125,dmg:43,range:6,hit:1,speed:70,r:8}},
-  skeletons:{base:'骷髏兵',rar:0,cost:1,type:'troop',count:4,desc:'四名廉價骷髏兵，最適合拖延時間。',s:{hp:70,dmg:40,range:6,hit:1,speed:55,r:7}},
-  rain:{base:'雨',rar:0,cost:3,type:'spell',desc:'大範圍法術，清掉成群的小兵。',radius:70,dmg:150,towerDmg:45},
-  cavalry:{base:'騎兵',rar:1,cost:4,type:'troop',count:1,desc:'衝鋒騎兵，速度快、血量厚。',s:{hp:950,dmg:120,range:9,hit:1.2,speed:68,r:13}},
-  tower:{base:'砲塔',rar:1,cost:3,type:'building',count:1,desc:'防禦建築，30 秒內攻擊靠近的地面敵人。',s:{hp:720,dmg:85,range:115,hit:.9,speed:0,r:14,life:30,proj:'ball'}},
-  golem:{base:'巨像',rar:1,cost:5,type:'troop',count:1,desc:'血量極高，只會攻擊建築與塔。',s:{hp:2450,dmg:140,range:8,hit:1.5,speed:28,r:15,buildingsOnly:true}},
-  bolt:{base:'彈',rar:1,cost:4,type:'spell',desc:'中範圍高傷害法術，也能打塔。',radius:45,dmg:330,towerDmg:110},
-  griffin:{base:'獅鷲',rar:1,cost:4,type:'troop',count:1,desc:'飛行騎士，速度快，空中與地面都能攻擊。',s:{hp:600,dmg:100,range:10,hit:1.2,speed:62,r:12,air:true,targetsAir:true}},
-  mage:{base:'法師',rar:1,cost:4,type:'troop',count:1,desc:'遠程施法者，法球會造成範圍傷害。',s:{hp:420,dmg:105,range:90,hit:1.4,speed:45,r:10,targetsAir:true,splash:22,proj:'orb'}},
-  wyvern:{base:'飛龍',rar:2,cost:4,type:'troop',count:1,desc:'空中單位，噴吐範圍吐息。',s:{hp:650,dmg:80,range:65,hit:1.6,speed:50,r:13,air:true,targetsAir:true,splash:28,proj:'fire'}},
-  assassin:{base:'刺客',rar:2,cost:4,type:'troop',count:1,desc:'高速移動的刺客，單體傷害極高。',s:{hp:560,dmg:160,range:8,hit:1,speed:75,r:10}},
-  strike:{base:'擊',rar:2,cost:5,type:'spell',desc:'小範圍天降一擊，威力驚人。',radius:30,dmg:520,towerDmg:160},
-};
-const NAMES={
-  rain:{fire:'火雨術',ice:'冰雹術',thunder:'雷雨術',dark:'咒怨之雨',holy:'聖光雨',nature:'花瓣風暴',rune:'符文流星'},
-  bolt:{fire:'火球術',ice:'冰槍術',thunder:'雷光彈',dark:'暗影彈',holy:'聖光彈',nature:'荊棘彈',rune:'符文飛彈'},
-  strike:{fire:'隕石術',ice:'冰柱術',thunder:'雷擊術',dark:'虛空裂隙',holy:'天罰術',nature:'巨木衝擊',rune:'符文爆破'},
-  archers:{nature:'精靈弓手'},imps:{dark:'小魔鬼'},tower:{rune:'水晶砲塔',nature:'藤蔓砲塔'},golem:{rune:'石巨像',fire:'熔岩巨像',nature:'樹人巨像'},
-  wyvern:{fire:'飛龍'},griffin:{holy:'獅鷲騎士'},assassin:{dark:'幽影刺客'},skeletons:{dark:'骷髏兵'},
-};
-const LEGACY={'knight:rune':'knight','archers:nature':'archers','imps:dark':'imps','rain:ice':'hail','tower:rune':'crystal','golem:rune':'golem','bolt:fire':'fireball','griffin:holy':'griffin','wyvern:fire':'wyvern','assassin:dark':'assassin','strike:thunder':'thunder'};
-const CARDS={};
-for(const a in ARCH)for(const el of ELEM_KEYS){
-  const A=ARCH[a],M=ELEM_MOD[el],bump=el==='dark'||el==='holy'?1:0,q=1+.08*bump;
-  const key=LEGACY[a+':'+el]||a+'_'+el,name=(NAMES[a]&&NAMES[a][el])||ELEM[el].name+A.base;
-  const c={name,arch:a,el,rar:RORDER[Math.min(3,A.rar+bump)],cost:A.cost,type:A.type,count:A.count||1,desc:A.desc+M.txt};
-  if(A.type==='spell'){c.radius=Math.round(A.radius*(M.radius||1));c.dmg=Math.round(A.dmg*(M.dmg||1)*q);c.towerDmg=Math.round(A.towerDmg*(M.dmg||1)*(M.tower||1)*q)}
-  else{const st=Object.assign({},A.s);st.hp=Math.round(st.hp*(M.hp||1)*q);st.dmg=Math.round(st.dmg*(M.dmg||1)*q);if(st.speed)st.speed=Math.round(st.speed*(M.speed||1));st.hit=+(st.hit*(M.hit||1)).toFixed(2);c.s=st}
-  CARDS[key]=c;
+// 100 distinct cards. s: hp dmg range hit speed r (+ air ta=targets air bo=buildings only splash proj life); x: special abilities; m: 3D model recipe.
+// x keys: shield, heal:[amount,radius], rage:[radius], slow:[fraction,seconds], spawn:[token,every,count], dSpawn:[token,count], dDmg:[damage,radius], charge, chain:n, kami, steal:fraction
+const CARD_LIST=[
+  // ---------- fire ----------
+  {k:'imps',n:'火焰小鬼群',r:'common',c:2,e:'fire',cnt:3,s:{hp:125,dmg:45,range:6,hit:1,speed:70,r:8},m:{t:'old',k:'imps'},d:'三隻高速小鬼，以數量取勝。'},
+  {k:'goblinbomb',n:'爆破哥布林',r:'common',c:2,e:'fire',s:{hp:220,dmg:280,range:6,hit:1,speed:72,r:9,splash:34},x:{kami:1},m:{t:'blob',k:'bomber',c:'#3b7a3a'},d:'衝向敵人後自爆，炸傷周圍所有地面敵人。'},
+  {k:'bomber',n:'炸彈投手',r:'common',c:3,e:'fire',s:{hp:280,dmg:115,range:80,hit:1.8,speed:45,r:9,splash:30,proj:'bomb'},m:{t:'human',body:'#7a4a2a',head:'mask',hcol:'#ff7a1a',w:'bomb'},d:'丟出炸彈，炸傷一群地面敵人，但打不到飛行單位。'},
+  {k:'brawler',n:'炎拳鬥士',r:'rare',c:4,e:'fire',s:{hp:1050,dmg:130,range:8,hit:1.2,speed:50,r:12,splash:18},m:{t:'human',heavy:1,body:'#8a3324',head:'horns',hcol:'#5a2018',w:'fists',skin:'#c86a3a'},d:'火焰拳頭會波及身邊的敵人。'},
+  {k:'pyromancer',n:'炎術士',r:'rare',c:5,e:'fire',s:{hp:520,dmg:150,range:95,hit:1.5,speed:45,r:10,ta:1,splash:32,proj:'orb'},m:{t:'human',robe:1,body:'#9c2a22',head:'hat',hcol:'#6a1a14',w:'staff',wc:'#ff8a2a'},d:'遠程丟出大火球，範圍傷害地面與空中。'},
+  {k:'lavagolem',n:'熔岩巨像',r:'epic',c:6,e:'fire',s:{hp:2900,dmg:150,range:8,hit:1.5,speed:26,r:16,bo:1},x:{dSpawn:['lavarock',3]},m:{t:'old',k:'golem',ec:'#ff6a2a'},d:'只攻擊建築。倒下時碎成三塊熔岩碎石繼續作戰。'},
+  {k:'firecannon',n:'火焰砲台',r:'rare',c:3,e:'fire',t:'building',s:{hp:700,dmg:110,range:110,hit:1,r:14,life:30,proj:'bomb'},m:{t:'build',k:'cannon'},d:'防禦建築，轟擊靠近的地面敵人。'},
+  {k:'hellhound',n:'地獄犬',r:'epic',c:4,e:'fire',s:{hp:900,dmg:110,range:8,hit:1,speed:62,r:12,splash:22},m:{t:'beast',k:'wolf',c:'#3a1a14',c2:'#ff6a2a',sc:1.15},d:'渾身烈焰的獵犬，咬擊會燒到周圍敵人。'},
+  {k:'phoenix',n:'鳳凰',r:'legendary',c:5,e:'fire',s:{hp:900,dmg:150,range:30,hit:1.2,speed:55,r:13,air:1,ta:1,splash:20,proj:'fire'},x:{dDmg:[200,40],dSpawn:['phoenixegg',1]},m:{t:'flyer',k:'bird',c:'#ff7a1a',c2:'#ffd34d',sc:1.3},d:'倒下時爆炸，並留下一顆會孵出雛鳳的蛋。'},
+  {k:'fireball',n:'火球術',r:'rare',c:4,e:'fire',t:'spell',radius:45,dmg:330,towerDmg:110,fx:'ball',d:'中範圍高傷害法術，也能打塔。'},
+  {k:'meteor',n:'隕石術',r:'epic',c:6,e:'fire',t:'spell',radius:42,dmg:700,towerDmg:220,fx:'meteor',d:'延遲一秒後從天而降，威力巨大。'},
+  {k:'firerain',n:'火雨術',r:'common',c:3,e:'fire',t:'spell',radius:70,dmg:140,towerDmg:42,fx:'rain',d:'大範圍火雨，清掉成群小兵。'},
+  {k:'dragon',n:'遠古巨龍',r:'legendary',c:7,e:'fire',s:{hp:2200,dmg:160,range:70,hit:1.7,speed:32,r:18,air:1,ta:1,splash:34,proj:'fire'},m:{t:'old',k:'dragon'},d:'傳說中的巨龍，空中範圍噴火，血量驚人。'},
+  {k:'flameknight',n:'火焰騎士',r:'rare',c:4,e:'fire',s:{hp:950,dmg:125,range:9,hit:1.2,speed:66,r:13},x:{charge:1},m:{t:'old',k:'cavalry'},d:'衝鋒後的第一擊造成雙倍傷害。'},
+  // ---------- ice ----------
+  {k:'frostsprite',n:'冰霜精靈',r:'common',c:1,e:'ice',s:{hp:90,dmg:90,range:6,hit:1,speed:75,r:7,splash:30,ta:1},x:{kami:1,slow:[.5,2]},m:{t:'blob',k:'sprite',c:'#bfeaff'},d:'撞上敵人後碎裂，讓周圍敵人減速。'},
+  {k:'yeti',n:'雪人守衛',r:'rare',c:4,e:'ice',s:{hp:1300,dmg:80,range:8,hit:1.3,speed:38,r:13},x:{slow:[.4,1.5]},m:{t:'human',heavy:1,body:'#e8f2f7',head:'beast',hcol:'#e8f2f7',w:'fists',skin:'#d8e6ee',sc:1.15},d:'血厚的雪人，每一拳都會讓敵人變慢。'},
+  {k:'frostmage',n:'冰霜法師',r:'rare',c:4,e:'ice',s:{hp:450,dmg:85,range:92,hit:1.3,speed:45,r:10,ta:1,splash:22,proj:'frost'},x:{slow:[.4,1.5]},m:{t:'human',robe:1,body:'#2a6aa0',head:'hood',hcol:'#bfeaff',w:'staff',wc:'#9fe0ff'},d:'冰彈造成範圍傷害並讓敵人減速。'},
+  {k:'icebear',n:'冰原巨熊',r:'epic',c:5,e:'ice',s:{hp:1700,dmg:170,range:8,hit:1.4,speed:40,r:15},m:{t:'beast',k:'bear',c:'#e9eef2',sc:1.35},d:'又大又兇的巨熊，什麼都擋得住。'},
+  {k:'icetower',n:'冰晶塔',r:'rare',c:4,e:'ice',t:'building',s:{hp:800,dmg:60,range:115,hit:.8,r:14,life:35,ta:1,proj:'frost'},x:{slow:[.5,1.5]},m:{t:'old',k:'tower'},d:'防禦建築，射出的冰晶會讓敵人減速。'},
+  {k:'hail',n:'冰雹術',r:'common',c:3,e:'ice',t:'spell',radius:70,dmg:150,towerDmg:45,fx:'rain',d:'大範圍冰雹，清掉成群的小兵。'},
+  {k:'freeze',n:'冰凍術',r:'epic',c:4,e:'ice',t:'spell',radius:50,dmg:90,towerDmg:30,freeze:2.5,fx:'ring',d:'凍住範圍內所有敵人和塔 2.5 秒。'},
+  {k:'snowwolves',n:'雪狼群',r:'common',c:3,e:'ice',cnt:3,s:{hp:260,dmg:60,range:7,hit:.9,speed:68,r:9},m:{t:'beast',k:'wolf',c:'#cfd8e0',c2:'#7fb0d0'},d:'三隻高速雪狼，擅長包圍。'},
+  {k:'icelancer',n:'冰槍兵',r:'common',c:3,e:'ice',s:{hp:560,dmg:105,range:20,hit:1.2,speed:45,r:10},m:{t:'human',body:'#5e7d99',head:'helm',hcol:'#bfeaff',w:'spear'},d:'長槍的攻擊距離比一般近戰遠。'},
+  {k:'frostdragon',n:'冰霜巨龍',r:'legendary',c:6,e:'ice',s:{hp:1900,dmg:120,range:70,hit:1.6,speed:34,r:17,air:1,ta:1,splash:34,proj:'frost'},x:{slow:[.5,2]},m:{t:'old',k:'dragon',ec:'#7fd0ff'},d:'吐出冰霜吐息，範圍傷害並讓敵人大幅減速。'},
+  {k:'iceguard',n:'冰盾衛士',r:'rare',c:3,e:'ice',s:{hp:520,dmg:80,range:8,hit:1.1,speed:45,r:11},x:{shield:450},m:{t:'human',body:'#7fa8c8',head:'helm',hcol:'#e8f2f7',w:'sword',off:'shield'},d:'冰盾會先吸收 450 點傷害。'},
+  {k:'penguins',n:'雪橇企鵝',r:'common',c:2,e:'ice',cnt:2,s:{hp:260,dmg:65,range:6,hit:1,speed:70,r:8},m:{t:'blob',k:'penguin'},d:'兩隻滑雪橇衝鋒的企鵝，跑得很快。'},
+  {k:'icewitch',n:'冰之女巫',r:'epic',c:5,e:'ice',s:{hp:650,dmg:90,range:85,hit:1.3,speed:42,r:11,ta:1,proj:'frost'},x:{spawn:['frostsprite_t',6,2]},m:{t:'human',robe:1,body:'#3a6fa8',head:'hat',hcol:'#bfeaff',w:'staff',wc:'#bfeaff'},d:'每 6 秒召喚兩隻冰霜精靈。'},
+  {k:'snowballer',n:'雪球投手',r:'common',c:2,e:'ice',s:{hp:300,dmg:70,range:85,hit:1.2,speed:48,r:9,ta:1,proj:'snow'},x:{slow:[.3,1]},m:{t:'human',body:'#a8c8e0',head:'hood',hcol:'#e8f2f7',w:'none'},d:'便宜的遠程單位，雪球會讓敵人稍微變慢。'},
+  // ---------- thunder ----------
+  {k:'thunder',n:'雷擊術',r:'epic',c:5,e:'thunder',t:'spell',radius:30,dmg:520,towerDmg:160,fx:'strike',d:'從天而降的雷霆，範圍小但威力驚人。'},
+  {k:'chainzap',n:'閃電鏈',r:'rare',c:4,e:'thunder',t:'spell',radius:20,dmg:240,towerDmg:75,chain:5,fx:'strike',d:'擊中最近的敵人後，跳到附近最多 5 個敵人。'},
+  {k:'sparkmage',n:'電擊法師',r:'epic',c:4,e:'thunder',s:{hp:560,dmg:110,range:90,hit:1.4,speed:45,r:10,ta:1,proj:'spark'},x:{chain:3},m:{t:'human',robe:1,body:'#3a3f8a',head:'hat',hcol:'#f2c93a',w:'staff',wc:'#ffe14d'},d:'閃電會連鎖跳到 3 個敵人。'},
+  {k:'stormpanther',n:'雷豹',r:'rare',c:4,e:'thunder',s:{hp:750,dmg:95,range:8,hit:.7,speed:72,r:11},m:{t:'beast',k:'cat',c:'#2a2f45',c2:'#ffe14d'},d:'速度極快，攻擊又急又密。'},
+  {k:'mechspiders',n:'機械蜘蛛',r:'common',c:3,e:'thunder',cnt:2,s:{hp:300,dmg:60,range:7,hit:.8,speed:66,r:9},m:{t:'construct',k:'spider',c:'#6c7380'},d:'兩隻高速的機械蜘蛛。'},
+  {k:'tesla',n:'特斯拉線圈',r:'rare',c:4,e:'thunder',t:'building',s:{hp:800,dmg:80,range:105,hit:.7,r:13,life:35,ta:1,proj:'spark'},m:{t:'build',k:'tesla'},d:'防禦建築，高速電擊空中和地面敵人。'},
+  {k:'thunderbird',n:'雷鳥',r:'epic',c:4,e:'thunder',s:{hp:650,dmg:90,range:60,hit:1.3,speed:58,r:12,air:1,ta:1,proj:'spark'},x:{chain:3},m:{t:'flyer',k:'bird',c:'#3a4f9a',c2:'#ffe14d',sc:1.2},d:'飛行單位，閃電會連鎖跳躍。'},
+  {k:'stormgiant',n:'風暴巨人',r:'legendary',c:7,e:'thunder',s:{hp:3400,dmg:200,range:10,hit:1.6,speed:28,r:17,splash:30},m:{t:'human',heavy:1,body:'#4a5570',head:'crown',hcol:'#ffe14d',w:'fists',skin:'#8fa3c8',sc:1.6},d:'巨大的風暴之王，重拳會震傷周圍敵人。'},
+  {k:'drummer',n:'雷霆鼓手',r:'rare',c:3,e:'thunder',s:{hp:500,dmg:50,range:8,hit:1,speed:45,r:10},x:{rage:[70]},m:{t:'human',body:'#7a5a2a',head:'horns',hcol:'#6a4a22',w:'drum'},d:'鼓聲讓附近隊友移動和出手都變快。'},
+  {k:'stormmortar',n:'磁暴砲台',r:'epic',c:5,e:'thunder',t:'building',s:{hp:900,dmg:180,range:170,hit:4,r:15,life:30,splash:35,proj:'bomb'},m:{t:'build',k:'mortar'},d:'超遠射程的砲台，範圍轟炸地面敵人。'},
+  {k:'sparkkid',n:'閃電小子',r:'common',c:2,e:'thunder',s:{hp:320,dmg:55,range:7,hit:.6,speed:72,r:9},m:{t:'human',body:'#d9b13a',head:'elf',hcol:'#ffe14d',w:'daggers'},d:'動作飛快的小傢伙，雙刀連砍。'},
+  {k:'boltgunner',n:'雷槍手',r:'common',c:3,e:'thunder',s:{hp:330,dmg:60,range:110,hit:.7,speed:45,r:9,ta:1,proj:'arrow'},m:{t:'human',body:'#4a4f6a',head:'helm',hcol:'#f2c93a',w:'crossbow'},d:'連發弩箭，射程遠、射速快。'},
+  {k:'ragespell',n:'狂暴術',r:'rare',c:2,e:'thunder',t:'spell',radius:60,rage:5,fx:'ring',d:'5 秒內範圍內的隊友移動和攻擊都變快。'},
+  {k:'thunderhammer',n:'雷霆戰錘手',r:'epic',c:5,e:'thunder',s:{hp:1250,dmg:210,range:9,hit:1.8,speed:42,r:13,splash:28},m:{t:'human',heavy:1,body:'#5a6a85',head:'helm',hcol:'#ffe14d',w:'hammer',wc:'#c9d2de'},d:'沉重的戰錘一擊砸碎一片。'},
+  // ---------- dark ----------
+  {k:'skeletons',n:'骷髏兵',r:'common',c:1,e:'dark',cnt:4,s:{hp:70,dmg:40,range:6,hit:1,speed:55,r:7},m:{t:'old',k:'skeletons'},d:'四名廉價骷髏兵，最適合拖延時間。'},
+  {k:'assassin',n:'幽影刺客',r:'epic',c:4,e:'dark',s:{hp:600,dmg:170,range:8,hit:1,speed:75,r:10},m:{t:'old',k:'assassin'},d:'在陰影中高速移動，單體傷害極高。'},
+  {k:'necromancer',n:'死靈法師',r:'epic',c:5,e:'dark',s:{hp:700,dmg:70,range:80,hit:1.4,speed:40,r:11,ta:1,proj:'orb'},x:{spawn:['skel_t',6,2]},m:{t:'human',robe:1,body:'#2a1a3d',head:'skull',hcol:'#9b5cff',w:'scythe'},d:'每 6 秒從地下召喚兩名骷髏兵。'},
+  {k:'bonegiant',n:'骷髏巨人',r:'epic',c:6,e:'dark',s:{hp:2500,dmg:130,range:8,hit:1.5,speed:30,r:16,bo:1},x:{dDmg:[500,55]},m:{t:'old',k:'skeletons',sc:2.3},d:'只攻擊建築，倒下時背上的炸彈會爆炸。'},
+  {k:'bats',n:'吸血蝙蝠群',r:'common',c:2,e:'dark',cnt:4,s:{hp:80,dmg:40,range:6,hit:.9,speed:68,r:7,air:1,ta:1},m:{t:'flyer',k:'bat',c:'#2a1a3d'},d:'四隻飛行蝙蝠，地面部隊打不到牠們。'},
+  {k:'graveyard',n:'墓地術',r:'legendary',c:5,e:'dark',t:'spell',radius:55,summon:['skel_t',7],fx:'ring',d:'在指定範圍召喚 7 名骷髏兵。'},
+  {k:'darkknight',n:'暗影騎士',r:'rare',c:4,e:'dark',s:{hp:700,dmg:115,range:8,hit:1.1,speed:48,r:12},x:{shield:350},m:{t:'human',body:'#2a2433',head:'mask',hcol:'#9b5cff',w:'sword',off:'shield',wc:'#b9a3d9'},d:'暗影護盾會先吸收 350 點傷害。'},
+  {k:'shadowhounds',n:'暗影獵犬',r:'common',c:3,e:'dark',cnt:2,s:{hp:380,dmg:75,range:7,hit:.9,speed:66,r:10},m:{t:'beast',k:'wolf',c:'#1e1626',c2:'#9b5cff'},d:'兩隻成對狩獵的暗影獵犬。'},
+  {k:'cursewitch',n:'詛咒巫婆',r:'rare',c:4,e:'dark',s:{hp:520,dmg:95,range:85,hit:1.2,speed:45,r:10,ta:1,proj:'orb'},x:{slow:[.35,1.5]},m:{t:'human',robe:1,body:'#3a2a4a',head:'hat',hcol:'#2a1a3d',w:'wand',skin:'#a8c79a'},d:'詛咒會讓敵人變慢。'},
+  {k:'poisonmist',n:'毒霧術',r:'rare',c:3,e:'dark',t:'spell',radius:55,dmg:200,towerDmg:60,slow:[.4,3],fx:'ring',d:'毒霧造成傷害，並讓敵人減速 3 秒。'},
+  {k:'gargoyle',n:'石像鬼',r:'rare',c:4,e:'dark',s:{hp:700,dmg:100,range:8,hit:1.1,speed:55,r:12,air:1,ta:1},m:{t:'flyer',k:'gargoyle',c:'#6a6470'},d:'會飛的石像怪，空中和地面都能攻擊。'},
+  {k:'tombstone',n:'墓碑',r:'rare',c:3,e:'dark',t:'building',s:{hp:600,dmg:0,range:0,hit:99,r:13,life:35},x:{spawn:['skel_t',3.5,1],dSpawn:['skel_t',3]},m:{t:'build',k:'tomb'},d:'持續爬出骷髏兵，被摧毀時再冒出三名。'},
+  {k:'reaper',n:'收割者',r:'legendary',c:6,e:'dark',s:{hp:1400,dmg:220,range:12,hit:1.3,speed:48,r:13,splash:22},x:{steal:.35},m:{t:'human',robe:1,body:'#15131b',head:'hood',hcol:'#15131b',w:'scythe',sc:1.25},d:'鐮刀橫掃一片，並吸取造成傷害的三成來回血。'},
+  {k:'shadowbolt',n:'暗影彈',r:'common',c:2,e:'dark',t:'spell',radius:24,dmg:200,towerDmg:60,fx:'ball',d:'小範圍的便宜法術，適合收尾。'},
+  {k:'ghost',n:'幽魂',r:'common',c:3,e:'dark',s:{hp:420,dmg:85,range:8,hit:1,speed:55,r:10,air:1},m:{t:'blob',k:'ghost',c:'#c8b8e8'},d:'飄在空中，只攻擊地面敵人。'},
+  // ---------- holy ----------
+  {k:'griffin',n:'獅鷲騎士',r:'rare',c:4,e:'holy',s:{hp:650,dmg:110,range:10,hit:1.2,speed:62,r:12,air:1,ta:1},m:{t:'old',k:'griffin'},d:'騎著獅鷲的飛行騎士，速度快，空中與地面都能攻擊。'},
+  {k:'archmage',n:'星辰大賢者',r:'legendary',c:6,e:'holy',s:{hp:1000,dmg:190,range:100,hit:1.5,speed:40,r:13,ta:1,splash:40,proj:'orb'},m:{t:'old',k:'archmage'},d:'學院創始人的魂魄，法球同時轟擊大範圍敵人。'},
+  {k:'paladin',n:'聖騎士',r:'rare',c:5,e:'holy',s:{hp:900,dmg:120,range:8,hit:1.2,speed:42,r:13},x:{shield:600},m:{t:'human',heavy:1,body:'#e8e2cc',head:'helm',hcol:'#f3c55b',w:'sword',off:'shield',wc:'#ffe9a0'},d:'聖盾會先吸收 600 點傷害。'},
+  {k:'healer',n:'治療修女',r:'rare',c:4,e:'holy',s:{hp:500,dmg:45,range:80,hit:1.3,speed:45,r:10,ta:1,proj:'orb'},x:{heal:[70,60]},m:{t:'human',robe:1,body:'#f1ece0',head:'hood',hcol:'#3a5a9a',w:'staff',wc:'#ffe9a0',off:'book'},d:'每秒治療附近的隊友。'},
+  {k:'angel',n:'天使守衛',r:'epic',c:5,e:'holy',s:{hp:1000,dmg:110,range:10,hit:1.1,speed:50,r:13,air:1,ta:1},x:{heal:[40,50]},m:{t:'flyer',k:'angel'},d:'飛行的守衛，持續治療身邊的隊友。'},
+  {k:'healspell',n:'治療術',r:'common',c:3,e:'holy',t:'spell',radius:55,heal:450,fx:'ring',d:'立刻治療範圍內的隊友 450 點血。'},
+  {k:'smite',n:'天罰術',r:'epic',c:5,e:'holy',t:'spell',radius:30,dmg:560,towerDmg:200,fx:'pillar',d:'聖光柱從天而降，打塔特別痛。'},
+  {k:'ballista',n:'光之弩車',r:'rare',c:4,e:'holy',t:'building',s:{hp:850,dmg:200,range:150,hit:2.2,r:15,life:35,proj:'lance'},m:{t:'build',k:'ballista'},d:'射程很遠的弩車，一發一發重擊地面敵人。'},
+  {k:'monk',n:'光明僧侶',r:'epic',c:4,e:'holy',s:{hp:850,dmg:105,range:8,hit:.8,speed:55,r:11},x:{shield:250},m:{t:'human',body:'#d9a33a',head:'halo',w:'fists'},d:'出拳極快，身上的光盾吸收 250 點傷害。'},
+  {k:'holyguards',n:'聖光衛兵',r:'common',c:3,e:'holy',cnt:2,s:{hp:380,dmg:70,range:16,hit:1.1,speed:45,r:10},m:{t:'human',body:'#d8d2bc',head:'helm',hcol:'#3a5a9a',w:'spear',off:'shield'},d:'兩名持矛衛兵，攻擊距離較長。'},
+  {k:'unicorn',n:'聖光獨角獸',r:'epic',c:5,e:'holy',s:{hp:1100,dmg:120,range:9,hit:1.1,speed:62,r:13},x:{charge:1,heal:[30,50]},m:{t:'beast',k:'unicorn',c:'#f4f1ea',c2:'#ffd86b'},d:'衝鋒第一擊雙倍傷害，並治療身邊的隊友。'},
+  {k:'fountain',n:'聖泉',r:'rare',c:4,e:'holy',t:'building',s:{hp:700,dmg:0,range:0,hit:99,r:14,life:30},x:{heal:[90,80]},m:{t:'build',k:'fountain'},d:'持續治療範圍內的隊友。'},
+  {k:'lightsprite',n:'光之精靈',r:'common',c:1,e:'holy',s:{hp:90,dmg:110,range:6,hit:1,speed:75,r:7,splash:28,ta:1},x:{kami:1},m:{t:'blob',k:'sprite',c:'#fff1b8'},d:'撞上敵人後爆出聖光，範圍傷害。'},
+  {k:'herosword',n:'聖劍勇者',r:'legendary',c:5,e:'holy',s:{hp:1300,dmg:190,range:9,hit:1.1,speed:50,r:12},x:{charge:1,shield:300},m:{t:'human',body:'#3a5aa0',head:'crown',hcol:'#ffd86b',w:'sword',cape:'#c0392b',wc:'#ffe9a0'},d:'傳說中的勇者：有護盾，衝鋒第一擊雙倍傷害。'},
+  // ---------- nature ----------
+  {k:'archers',n:'精靈弓手',r:'common',c:3,e:'nature',cnt:2,s:{hp:220,dmg:55,range:105,hit:1,speed:45,r:9,ta:1,proj:'arrow'},m:{t:'old',k:'archers'},d:'兩名遠程弓手，可以射擊空中單位。'},
+  {k:'ancienttree',n:'古樹守衛',r:'epic',c:6,e:'nature',s:{hp:2600,dmg:140,range:9,hit:1.5,speed:28,r:16},x:{dSpawn:['sapling',3]},m:{t:'construct',k:'treant',sc:1.4},d:'會走路的古樹，倒下時長出三棵小樹苗。'},
+  {k:'flytrap',n:'食人花',r:'rare',c:4,e:'nature',t:'building',s:{hp:900,dmg:220,range:25,hit:1.6,r:14,life:35},m:{t:'build',k:'plant'},d:'近距離一口咬下，傷害極高。'},
+  {k:'hogrider',n:'野豬騎士',r:'rare',c:4,e:'nature',s:{hp:900,dmg:150,range:8,hit:1.5,speed:72,r:12,bo:1},m:{t:'beast',k:'boar',c:'#6a4a32',rider:1},d:'跑得飛快，直衝敵方建築。'},
+  {k:'bees',n:'蜂群',r:'common',c:2,e:'nature',cnt:5,s:{hp:50,dmg:30,range:5,hit:.7,speed:70,r:6,air:1,ta:1},m:{t:'flyer',k:'bee'},d:'五隻嗡嗡作響的飛行蜜蜂。'},
+  {k:'druid',n:'德魯伊',r:'epic',c:5,e:'nature',s:{hp:800,dmg:90,range:80,hit:1.3,speed:42,r:11,ta:1,proj:'leaf'},x:{heal:[40,60],spawn:['wolf_t',9,1]},m:{t:'human',robe:1,body:'#3a6a32',head:'horns',hcol:'#6a4a22',w:'staff',wc:'#8cf08a'},d:'治療身邊隊友，並定期呼喚野狼助陣。'},
+  {k:'forestape',n:'森林巨猿',r:'rare',c:5,e:'nature',s:{hp:1400,dmg:140,range:9,hit:1.3,speed:45,r:14,splash:24},m:{t:'beast',k:'ape',c:'#4a3a2a'},d:'捶胸頓足的巨猿，重拳打一片。'},
+  {k:'mushrooms',n:'蘑菇人',r:'common',c:2,e:'nature',cnt:3,s:{hp:150,dmg:45,range:6,hit:1,speed:50,r:8},x:{dDmg:[80,30]},m:{t:'blob',k:'mushroom'},d:'三個小蘑菇，倒下時噴出毒孢子。'},
+  {k:'petalstorm',n:'花瓣風暴',r:'common',c:3,e:'nature',t:'spell',radius:80,dmg:120,towerDmg:36,fx:'rain',d:'超大範圍的花瓣旋風。'},
+  {k:'thorns',n:'荊棘術',r:'rare',c:3,e:'nature',t:'spell',radius:50,dmg:150,towerDmg:45,slow:[.5,3],fx:'ring',d:'荊棘纏住敵人，造成傷害並大幅減速。'},
+  {k:'ranger',n:'精靈遊俠',r:'epic',c:4,e:'nature',s:{hp:450,dmg:210,range:135,hit:2,speed:45,r:10,ta:1,proj:'arrow'},m:{t:'human',body:'#2f6b3a',head:'elf',hcol:'#d9b13a',w:'bow',cape:'#1f4a28'},d:'超遠射程的神射手，一箭重傷。'},
+  {k:'dryads',n:'樹精',r:'rare',c:3,e:'nature',cnt:2,s:{hp:450,dmg:70,range:7,hit:1.1,speed:45,r:10},x:{slow:[.4,1]},m:{t:'construct',k:'treant',sc:.7},d:'兩隻小樹精，藤蔓會纏住敵人讓他們變慢。'},
+  {k:'worldtree',n:'世界樹之靈',r:'legendary',c:7,e:'nature',t:'building',s:{hp:1500,dmg:0,range:0,hit:99,r:17,life:45},x:{spawn:['treant_t',7,1],heal:[60,90]},m:{t:'build',k:'tree'},d:'定期長出樹人，並治療附近所有隊友。'},
+  {k:'wolfrider',n:'狼騎兵',r:'rare',c:4,e:'nature',s:{hp:900,dmg:120,range:9,hit:1.2,speed:66,r:13},x:{charge:1},m:{t:'beast',k:'wolf',c:'#7a6a55',rider:1,sc:1.2},d:'騎著巨狼衝鋒，第一擊雙倍傷害。'},
+  {k:'eagle',n:'巨鷹',r:'rare',c:4,e:'nature',s:{hp:600,dmg:95,range:8,hit:1,speed:65,r:12,air:1,ta:1},m:{t:'flyer',k:'bird',c:'#6a4a32',c2:'#f2ead8',sc:1.2},d:'俯衝攻擊的巨鷹，空中地面都能打。'},
+  // ---------- rune ----------
+  {k:'knight',n:'符文劍士',r:'common',c:3,e:'rune',s:{hp:760,dmg:95,range:8,hit:1.1,speed:45,r:11},m:{t:'old',k:'knight'},d:'穩健的近戰戰士，攻守兼備。'},
+  {k:'golem',n:'石巨像',r:'rare',c:5,e:'rune',s:{hp:2600,dmg:150,range:8,hit:1.5,speed:28,r:15,bo:1},m:{t:'old',k:'golem'},d:'血量極高，只會攻擊建築與塔。'},
+  {k:'crystal',n:'水晶砲塔',r:'rare',c:3,e:'rune',t:'building',s:{hp:750,dmg:90,range:115,hit:.9,r:14,life:30,proj:'ball'},m:{t:'old',k:'tower'},d:'防禦建築，30 秒內攻擊靠近的地面敵人。'},
+  {k:'wyvern',n:'飛龍',r:'epic',c:4,e:'rune',s:{hp:700,dmg:85,range:65,hit:1.6,speed:50,r:13,air:1,ta:1,splash:28,proj:'fire'},m:{t:'old',k:'wyvern'},d:'空中單位，噴吐範圍吐息。'},
+  {k:'clockbots',n:'機關兵',r:'common',c:2,e:'rune',cnt:2,s:{hp:280,dmg:60,range:7,hit:1,speed:50,r:9},m:{t:'construct',k:'bot',c:'#8a93a0'},d:'兩台上了發條的小機關兵。'},
+  {k:'arcanecart',n:'奧術砲車',r:'rare',c:4,e:'rune',s:{hp:700,dmg:120,range:100,hit:1.2,speed:40,r:13,proj:'ball'},m:{t:'build',k:'cannon',mobile:1},d:'會移動的砲車，遠程轟擊地面敵人。'},
+  {k:'runeportal',n:'符文傳送門',r:'epic',c:4,e:'rune',t:'building',s:{hp:700,dmg:0,range:0,hit:99,r:14,life:35},x:{spawn:['bot_t',5,1]},m:{t:'build',k:'portal'},d:'每 5 秒傳送出一台機關兵。'},
+  {k:'runemissile',n:'符文飛彈',r:'common',c:2,e:'rune',t:'spell',radius:22,dmg:220,towerDmg:70,fx:'ball',d:'精準的小範圍飛彈。'},
+  {k:'runeshield',n:'符文護盾術',r:'rare',c:3,e:'rune',t:'spell',radius:55,shield:350,fx:'ring',d:'範圍內的隊友獲得 350 點護盾。'},
+  {k:'floateye',n:'浮空魔眼',r:'rare',c:4,e:'rune',s:{hp:500,dmg:70,range:90,hit:.6,speed:45,r:11,air:1,ta:1,proj:'spark'},m:{t:'flyer',k:'eye'},d:'飄在空中，高速發射魔光。'},
+  {k:'runesquad',n:'符文戰士隊',r:'epic',c:6,e:'rune',cnt:3,s:{hp:650,dmg:100,range:8,hit:1.2,speed:45,r:11},m:{t:'human',body:'#4f6a9a',head:'helm',hcol:'#7fb6ff',w:'axe'},d:'三名持斧戰士組成的小隊。'},
+  {k:'balloon',n:'熱氣球炸彈',r:'epic',c:5,e:'rune',s:{hp:1200,dmg:450,range:6,hit:2.5,speed:38,r:14,air:1,bo:1},x:{dDmg:[250,40]},m:{t:'flyer',k:'balloon'},d:'飛向敵方建築投下炸彈，被擊落時也會爆炸。'},
+  {k:'archspire',n:'大法師之塔',r:'legendary',c:6,e:'rune',t:'building',s:{hp:1200,dmg:140,range:125,hit:1.2,r:16,life:40,ta:1,splash:30,proj:'orb'},m:{t:'build',k:'spire'},d:'強大的魔法塔，範圍轟擊空中和地面。'},
+  {k:'runeshields',n:'符文盾兵',r:'common',c:3,e:'rune',cnt:2,s:{hp:300,dmg:60,range:8,hit:1.1,speed:45,r:10},x:{shield:200},m:{t:'human',body:'#5a6a85',head:'helm',hcol:'#4f8ff0',w:'mace',off:'shield'},d:'兩名持盾兵，各有 200 點護盾。'},
+];
+// units that only appear by being summoned
+const TOKEN_LIST=[
+  {k:'lavarock',n:'熔岩碎石',e:'fire',s:{hp:450,dmg:70,range:7,hit:1.2,speed:40,r:10},m:{t:'old',k:'golem',ec:'#ff6a2a',sc:.45}},
+  {k:'phoenixegg',n:'鳳凰蛋',e:'fire',t:'building',s:{hp:300,dmg:0,range:0,hit:99,r:9,life:4},x:{dSpawn:['phoenixchick',1]},m:{t:'blob',k:'egg'}},
+  {k:'phoenixchick',n:'雛鳳',e:'fire',s:{hp:450,dmg:90,range:30,hit:1.2,speed:55,r:11,air:1,ta:1,splash:16,proj:'fire'},m:{t:'flyer',k:'bird',c:'#ff7a1a',c2:'#ffd34d',sc:.85}},
+  {k:'frostsprite_t',n:'冰霜精靈',e:'ice',s:{hp:90,dmg:90,range:6,hit:1,speed:75,r:7,splash:30,ta:1},x:{kami:1,slow:[.5,2]},m:{t:'blob',k:'sprite',c:'#bfeaff'}},
+  {k:'skel_t',n:'骷髏兵',e:'dark',s:{hp:70,dmg:40,range:6,hit:1,speed:55,r:7},m:{t:'old',k:'skeletons'}},
+  {k:'sapling',n:'樹苗',e:'nature',s:{hp:220,dmg:45,range:7,hit:1.1,speed:45,r:8},m:{t:'construct',k:'treant',sc:.45}},
+  {k:'wolf_t',n:'野狼',e:'nature',s:{hp:300,dmg:60,range:7,hit:.9,speed:66,r:9},m:{t:'beast',k:'wolf',c:'#7a6a55'}},
+  {k:'treant_t',n:'樹人',e:'nature',s:{hp:700,dmg:90,range:8,hit:1.3,speed:40,r:11},m:{t:'construct',k:'treant',sc:.75}},
+  {k:'bot_t',n:'機關兵',e:'rune',s:{hp:280,dmg:60,range:7,hit:1,speed:50,r:9},m:{t:'construct',k:'bot',c:'#8a93a0'}},
+];
+function mkCard(o){
+  const c={name:o.n,rar:o.r||'common',cost:o.c||0,type:o.t||'troop',el:o.e,count:o.cnt||1,desc:o.d||'',m:o.m||{},mech:o.x||{}};
+  if(c.type==='spell')Object.assign(c,{radius:o.radius,dmg:o.dmg||0,towerDmg:o.towerDmg||0,fx:o.fx||'ball',freeze:o.freeze,slow:o.slow,rage:o.rage,heal:o.heal,shield:o.shield,chain:o.chain,summon:o.summon});
+  else{const s=Object.assign({},o.s);s.targetsAir=!!s.ta;s.buildingsOnly=!!s.bo;s.air=!!s.air;s.speed=s.speed||0;s.life=s.life||0;s.splash=s.splash||0;c.s=s}
+  return c;
 }
-CARDS.dragon={name:'遠古巨龍',arch:'dragon',el:'fire',rar:'legendary',cost:7,type:'troop',count:1,desc:'傳說中的巨龍，空中範圍噴火，血量驚人。',s:{hp:2200,dmg:160,range:70,hit:1.7,speed:32,r:18,air:true,targetsAir:true,splash:34,proj:'fire'}};
-CARDS.archmage={name:'星辰大賢者',arch:'archmage',el:'holy',rar:'legendary',cost:6,type:'troop',count:1,desc:'學院創始人的魂魄，法球同時轟擊大範圍敵人。',s:{hp:1000,dmg:190,range:100,hit:1.5,speed:40,r:13,targetsAir:true,splash:40,proj:'orb'}};
-const elCol=k=>ELEM[CARDS[k].el].col;
+const CARDS={},TOKENS={};
+for(const o of CARD_LIST)CARDS[o.k]=mkCard(o);
+for(const o of TOKEN_LIST)TOKENS[o.k]=mkCard(o);
+const cardOf=k=>CARDS[k]||TOKENS[k];
+const elCol=k=>ELEM[cardOf(k).el].col;
+function mechText(c){
+  const M=c.mech||{},o=[];
+  if(M.shield)o.push('護盾 '+M.shield);if(M.heal)o.push('治療光環');if(M.rage)o.push('狂暴光環');if(M.slow)o.push('攻擊減速');
+  if(M.spawn)o.push('召喚'+cardOf(M.spawn[0]).name);if(M.dSpawn)o.push('倒下時召喚'+cardOf(M.dSpawn[0]).name);if(M.dDmg)o.push('倒下時爆炸');
+  if(M.charge)o.push('衝鋒雙倍傷害');if(M.chain)o.push('連鎖 '+M.chain+' 個目標');if(M.kami)o.push('自爆');if(M.steal)o.push('吸血');
+  if(c.type==='spell'){if(c.freeze)o.push('冰凍 '+c.freeze+' 秒');if(c.slow)o.push('減速 '+c.slow[1]+' 秒');if(c.rage)o.push('狂暴 '+c.rage+' 秒');if(c.heal)o.push('治療 '+c.heal);if(c.shield)o.push('護盾 '+c.shield);if(c.summon)o.push('召喚 '+c.summon[1]+' 名'+cardOf(c.summon[0]).name);if(c.chain)o.push('連鎖 '+c.chain+' 個目標')}
+  return o.join('、');
+}
 const STARTER=['knight','archers','imps','hail','crystal','golem','fireball','wyvern'];
 const DIFF={easy:{mult:.8,think:1.6,attackAt:9.5},normal:{mult:1,think:.9,attackAt:8},hard:{mult:1.15,think:.45,attackAt:6.5}};
 const CHAPTERS=[
@@ -637,11 +743,13 @@ const EMBLEMS=['#3b82f6','#8b4fe0','#2fb37a','#d49a1c','#d23f44','#2ba7d6'];
 
 // ================= save =================
 function freshSave(){return{v:1,nick:'艾倫',avatar:'player',gold:300,gems:600,xp:0,trophies:0,best:0,cards:Object.fromEntries(STARTER.map(k=>[k,{lvl:1,copies:0}])),deck:STARTER.slice(),chests:[{type:'silver',unlockAt:null},null,null,null],freeAt:0,pity:0,progress:1,guild:null,stats:{wins:0,losses:0,draws:0,three:0,crowns:0,battles:0,played:{}},ts:0}}
+let SAVE_COMP=0;
 function fixSave(s){
   const d=freshSave();s=Object.assign(d,s&&typeof s==='object'?s:{});
   s.stats=Object.assign(freshSave().stats,s.stats||{});s.stats.played=s.stats.played||{};
   if(!s.cards||typeof s.cards!=='object')s.cards=d.cards;
-  for(const k of Object.keys(s.cards))if(!CARDS[k])delete s.cards[k];
+  let comp=0;for(const k of Object.keys(s.cards))if(!CARDS[k]){const o=s.cards[k]||{};comp+=50*(+o.lvl||1)+5*(+o.copies||0);delete s.cards[k]}
+  if(comp>0){s.gold=(+s.gold||0)+comp;SAVE_COMP+=comp}
   for(const k of STARTER)if(!s.cards[k])s.cards[k]={lvl:1,copies:0};
   if(!Array.isArray(s.chests)||s.chests.length!==4)s.chests=[null,null,null,null];
   s.chests=s.chests.map(c=>c&&CHESTS[c.type]?c:null);
@@ -673,7 +781,21 @@ function newGame(o={}){
   G.ents.push(tower(0,70,470,false),tower(0,290,470,false),tower(0,180,545,true),tower(1,70,130,false),tower(1,290,130,false),tower(1,180,55,true));
 }
 const unitLvl=(team,key)=>team===0?(S.cards[key]?.lvl||1):(G.lv1?(G.lv1[key]||1):G.aiLvl);
-function makeUnit(key,team,x,y){const c=CARDS[key],s=c.s,m=lvMult(unitLvl(team,key));return{id:G.nextId++,key,team,kind:c.type==='building'?'building':'unit',x,y,r:s.r,hp:s.hp*m,maxHp:s.hp*m,dmg:s.dmg*m,range:s.range,hit:s.hit,cd:.4,speed:s.speed,air:!!s.air,targetsAir:!!s.targetsAir,buildingsOnly:!!s.buildingsOnly,splash:s.splash||0,proj:s.proj||null,deploy:1,deployMax:1,life:s.life||0,target:null,retarget:0,atk:0}}
+const OFFS=[[[0,0]],[[-10,0],[10,0]],[[-12,6],[12,6],[0,-10]],[[-9,-8],[9,-8],[-9,8],[9,8]]];
+const offsFor=n=>OFFS[n-1]||Array.from({length:n},(_,i)=>[Math.cos(i/n*6.283)*13,Math.sin(i/n*6.283)*13]);
+const SPELL_DELAY={ball:.6,meteor:1.1,strike:.35,pillar:.45,rain:.55,ring:.25};
+function makeUnit(key,team,x,y,lv){
+  const c=cardOf(key),s=c.s,M=c.mech||{},tok=!CARDS[key],l=lv||unitLvl(team,key),m=lvMult(l),dep=tok?.35:1;
+  return{id:G.nextId++,key,team,kind:c.type==='building'?'building':'unit',x,y,r:s.r,hp:s.hp*m,maxHp:s.hp*m,dmg:s.dmg*m,range:s.range,hit:s.hit,cd:.4,speed:s.speed,air:!!s.air,targetsAir:!!s.targetsAir,buildingsOnly:!!s.buildingsOnly,splash:s.splash||0,proj:s.proj||null,deploy:dep,deployMax:dep,life:s.life||0,target:null,retarget:0,atk:0,
+    lvl:l,mech:M,shield:(M.shield||0)*m,slowT:0,slowF:0,freezeT:0,rageT:0,auraT:.5,spawnT:M.spawn?M.spawn[1]*.5:0,moved:0};
+}
+function spawnTokens(key,team,x,y,n,lvl,spread){
+  const o=offsFor(n);
+  for(let i=0;i<n;i++){
+    let[ox,oy]=o[i];if(spread){const a=Math.random()*6.283,r=Math.sqrt(Math.random())*spread;ox=Math.cos(a)*r;oy=Math.sin(a)*r}
+    const u=makeUnit(key,team,clamp(x+ox,10,W-10),clamp(y+oy,10,H-10),lvl);if(spread)u.deploy=u.deployMax=.3+i*.22;G.ents.push(u);
+  }
+}
 function laneOpen(team,lane){return G.ents.some(e=>e.kind==='tower'&&e.team!==team&&!e.king&&e.lane===lane&&e.dead)}
 function validDeploy(team,key,x,y){
   const c=CARDS[key];
@@ -693,7 +815,7 @@ function play(team,i,x,y){
   G.elixir[team]-=c.cost;d.hand[i]=d.queue.shift();d.queue.push(key);
   if(team===0){S.stats.played[key]=(S.stats.played[key]||0)+1;if(c.type!=='spell')sfx('deploy')}
   if(c.type==='spell')castSpell(team,key,x,y);
-  else{const offs=[[[0,0]],[[-10,0],[10,0]],[[-12,6],[12,6],[0,-10]],[[-9,-8],[9,-8],[-9,8],[9,8]]][c.count-1];for(const[ox,oy]of offs)G.ents.push(makeUnit(key,team,clamp(x+ox,10,W-10),y+oy))}
+  else for(const[ox,oy]of offsFor(c.count))G.ents.push(makeUnit(key,team,clamp(x+ox,10,W-10),y+oy));
   return true;
 }
 function castSpell(team,key,x,y){
@@ -701,9 +823,9 @@ function castSpell(team,key,x,y){
   if(king&&!king.dead)king.atk=.5;
   const fx=king?king.x:x,fy=king?king.y:(team?0:H);
   sfx('cast',.1);
-  const arch=CARDS[key].arch;G.spells.push({id:G.nextId++,key,arch,col:elCol(key),team,x,y,fx,fy,t:0,delay:arch==='bolt'?.6:arch==='strike'?.35:.55,r:CARDS[key].radius,m:lvMult(unitLvl(team,key))});
+  const c=CARDS[key],l=unitLvl(team,key);G.spells.push({id:G.nextId++,key,vfx:c.fx,col:elCol(key),team,x,y,fx,fy,t:0,delay:SPELL_DELAY[c.fx]||.5,r:c.radius,m:lvMult(l),lvl:l});
 }
-function hurt(t,d){t.hp-=d;if(t.kind==='tower'&&t.king&&!t.active)t.active=true}
+function hurt(t,d){if(t.shield>0){const a=Math.min(t.shield,d);t.shield-=a;d-=a}t.hp-=d;if(t.kind==='tower'&&t.king&&!t.active)t.active=true;return d}
 function say(text){G.msg={text,t:1.2};sfx('error',.2)}
 function canTarget(a,b){return b.team!==a.team&&!b.dead&&b.hp>0&&(!b.air||a.targetsAir)&&(!a.buildingsOnly||b.kind!=='unit')}
 function findTarget(u){
@@ -723,23 +845,59 @@ function moveToward(u,t,dt){
       if(Math.abs(u.x-bx)>6){tx=bx;ty=RIVER+uSide*(RH+4)}else{tx=bx;ty=RIVER-uSide*(RH+12)}
     }
   }
-  const dx=tx-u.x,dy=ty-u.y,d=Math.hypot(dx,dy)||1,step=Math.min(d,u.speed*dt);
-  u.x+=dx/d*step;u.y+=dy/d*step;
+  const sp=u.speed*(u.slowT>0?1-u.slowF:1)*(u.rageT>0?1.35:1);
+  const dx=tx-u.x,dy=ty-u.y,d=Math.hypot(dx,dy)||1,step=Math.min(d,sp*dt);
+  u.x+=dx/d*step;u.y+=dy/d*step;u.moved=(u.moved||0)+step;
 }
 const launchH=e=>e.kind==='tower'?(e.king?64:58):e.air?32:e.kind==='building'?24:10;
 const hitH=e=>e.kind==='tower'?34:e.air?32:8;
+const PSFX={arrow:'arrow',lance:'arrow',bolt:'bolt',fire:'fire'};
 function attack(u,t){
-  u.atk=.25;
-  if(u.proj){const h0=launchH(u);G.proj.push({id:G.nextId++,x:u.x,y:u.y,h:h0,h0,th:hitH(t),d0:Math.max(1,Math.hypot(t.x-u.x,t.y-u.y)),tx:t.x,ty:t.y,target:t,dmg:u.dmg,splash:u.splash,team:u.team,type:u.proj,col:u.key?elCol(u.key):null,speed:u.proj==='ball'?240:300});
-    sfx(u.proj==='ball'||u.proj==='orb'?'bolt':u.proj,u.proj==='bolt'?.15:.06)}
-  else{hurt(t,u.dmg);fx3d('slash',t.x,t.y,hitH(t));sfx('hit',.07)}
+  u.atk=.25;const M=u.mech||{};let dmg=u.dmg;
+  if(M.charge&&u.moved>=50){dmg*=2;fx3d('burst',t.x,t.y,hitH(t))}
+  u.moved=0;
+  if(u.proj){const h0=launchH(u);G.proj.push({id:G.nextId++,x:u.x,y:u.y,h:h0,h0,th:hitH(t),d0:Math.max(1,Math.hypot(t.x-u.x,t.y-u.y)),tx:t.x,ty:t.y,target:t,dmg,splash:u.splash,slow:M.slow,chain:M.chain,ta:u.targetsAir,steal:M.steal,src:u,team:u.team,type:u.proj,col:u.key?elCol(u.key):null,speed:u.proj==='ball'||u.proj==='bomb'?240:300});
+    sfx(PSFX[u.proj]||'bolt',u.proj==='bolt'?.15:.06)}
+  else{applyHit({team:u.team,splash:u.splash,slow:M.slow,chain:M.chain,ta:u.targetsAir,steal:M.steal,src:u},t,dmg,t.x,t.y);
+    if(M.kami){u.hp=0;u.shield=0;fx3d('burst',u.x,u.y,u.air?32:8);sfx('boom',.08)}
+    else{fx3d('slash',t.x,t.y,hitH(t));sfx('hit',.07)}}
+}
+// a: {team,splash,slow,chain,ta,steal,src,tw}; tw = damage dealt to towers when it differs
+function applyHit(a,t,dmg,x,y){
+  let dealt=0;
+  const one=e=>{dealt+=hurt(e,e.kind==='tower'&&a.tw!=null?a.tw:dmg);if(a.slow){e.slowF=a.slow[0];e.slowT=Math.max(e.slowT||0,a.slow[1])}};
+  if(a.splash){for(const e of G.ents)if(e.team!==a.team&&!e.dead&&e.hp>0&&(!e.air||a.ta||e===t)&&Math.hypot(e.x-x,e.y-y)<=a.splash+e.r)one(e)}
+  else if(t&&!t.dead)one(t);
+  if(a.chain&&t){
+    let last=t;const hit=new Set([t]);
+    for(let i=1;i<a.chain;i++){
+      let nb=null,bd=75;
+      for(const e of G.ents){if(e.team===a.team||e.dead||e.hp<=0||hit.has(e)||(e.air&&!a.ta))continue;const d=Math.hypot(e.x-last.x,e.y-last.y);if(d<bd){bd=d;nb=e}}
+      if(!nb)break;hit.add(nb);fx3d('zap',last.x,last.y,nb.x,nb.y,'#ffe14d');one(nb);last=nb;
+    }
+  }
+  if(a.steal&&a.src&&!a.src.dead&&a.src.hp>0)a.src.hp=Math.min(a.src.maxHp,a.src.hp+dealt*a.steal);
+}
+function auraPulse(u){
+  const M=u.mech,near=(e,r)=>e!==u&&e.team===u.team&&!e.dead&&e.hp>0&&e.kind!=='tower'&&Math.hypot(e.x-u.x,e.y-u.y)<=r+e.r;
+  if(M.heal){const[amt,r]=M.heal,h=amt*lvMult(u.lvl||1);let any=false;for(const e of G.ents)if(near(e,r)&&e.hp<e.maxHp){e.hp=Math.min(e.maxHp,e.hp+h);any=true}if(any)fx3d('aura',u.x,u.y,0,r,'#8cf08a')}
+  if(M.rage){const r=M.rage[0];let any=false;for(const e of G.ents)if(near(e,r)){e.rageT=Math.max(e.rageT||0,1.2);any=true}if(any)fx3d('aura',u.x,u.y,0,r,'#ff5a3a')}
 }
 function updateEnt(u,dt){
   u.atk=Math.max(0,u.atk-dt);
   if(u.deploy>0){u.deploy-=dt;return}
   if(u.kind==='tower'&&!u.active)return;
   if(u.kind==='building')u.hp-=u.maxHp/u.life*dt;
-  u.cd=Math.max(0,u.cd-dt);u.retarget-=dt;
+  if(u.slowT>0)u.slowT-=dt;
+  if(u.rageT>0)u.rageT-=dt;
+  if(u.freezeT>0){u.freezeT-=dt;return}
+  const M=u.mech;
+  if(M){
+    if(M.spawn&&(u.spawnT-=dt)<=0){u.spawnT=M.spawn[1];spawnTokens(M.spawn[0],u.team,u.x,clamp(u.y+(u.team?1:-1)*(u.r+8),10,H-10),M.spawn[2],u.lvl)}
+    if((M.heal||M.rage)&&(u.auraT-=dt)<=0){u.auraT=1;auraPulse(u)}
+  }
+  if(!(u.dmg>0))return;
+  u.cd=Math.max(0,u.cd-dt*(u.rageT>0?1.4:1)*(u.slowT>0?1-u.slowF:1));u.retarget-=dt;
   let t=u.target;
   if(!t||t.dead||t.hp<=0||(u.retarget<=0&&edge(u,t)>u.range)){t=u.target=findTarget(u);u.retarget=.25}
   if(!t)return;
@@ -747,28 +905,41 @@ function updateEnt(u,dt){
   else if(u.speed>0)moveToward(u,t,dt);
   else u.target=null;
 }
+const ARC_HIGH=new Set(['bomb','snow','leaf','fire','ball']);
 function updateProj(dt){
   for(const p of G.proj){
     const t=p.target;if(t&&!t.dead&&t.hp>0){p.tx=t.x;p.ty=t.y}
     const dx=p.tx-p.x,dy=p.ty-p.y,d=Math.hypot(dx,dy),step=p.speed*dt;
     if(d<=step){
       p.done=true;
-      if(p.splash){for(const e of G.ents)if(e.team!==p.team&&!e.dead&&Math.hypot(e.x-p.tx,e.y-p.ty)<=p.splash+e.r)hurt(e,p.dmg);fx3d('burst',p.tx,p.ty,p.th)}
-      else if(t&&!t.dead)hurt(t,p.dmg);
+      applyHit(p,t&&!t.dead&&t.hp>0?t:null,p.dmg,p.tx,p.ty);
+      if(p.splash)fx3d('burst',p.tx,p.ty,p.th);
     }else{p.x+=dx/d*step;p.y+=dy/d*step}
     const k=clamp(1-Math.hypot(p.tx-p.x,p.ty-p.y)/p.d0,0,1);
-    p.h=p.h0+(p.th-p.h0)*k+(p.type==='arrow'||p.type==='bolt'||p.type==='orb'?6:18)*Math.sin(Math.PI*k);
+    p.h=p.h0+(p.th-p.h0)*k+(ARC_HIGH.has(p.type)?18:6)*Math.sin(Math.PI*k);
   }
   G.proj=G.proj.filter(p=>!p.done);
 }
+const SPELL_HITFX={ball:'boltHit',meteor:'boltHit',rain:'rainHit',strike:'strikeHit',pillar:'strikeHit',ring:'ringHit'};
+const SPELL_SFX={ball:'boom',meteor:'boom',rain:'hail',strike:'thunder',pillar:'thunder',ring:'chime'};
 function updateSpells(dt){
   for(const s of G.spells){
     s.t+=dt;
     if(!s.done&&s.t>=s.delay){
-      s.done=true;const c=CARDS[s.key];
-      for(const e of G.ents)if(e.team!==s.team&&!e.dead&&Math.hypot(e.x-s.x,e.y-s.y)<=c.radius+e.r)hurt(e,(e.kind==='tower'?c.towerDmg:c.dmg)*s.m);
-      fx3d(s.arch+'Hit',s.x,s.y,0,c.radius,s.col);
-      sfx(s.arch==='bolt'?'boom':s.arch==='rain'?'hail':'thunder',.05);
+      s.done=true;const c=CARDS[s.key],R=c.radius,inR=e=>!e.dead&&e.hp>0&&Math.hypot(e.x-s.x,e.y-s.y)<=R+e.r;
+      if(c.chain){
+        let first=null,bd=Infinity;
+        for(const e of G.ents){if(e.team===s.team||e.dead||e.hp<=0)continue;const d=Math.hypot(e.x-s.x,e.y-s.y)-e.r;if(d<=R+30&&d<bd){bd=d;first=e}}
+        if(first)applyHit({team:s.team,chain:c.chain,ta:1,tw:c.towerDmg*s.m},first,c.dmg*s.m,first.x,first.y);
+      }else if(c.dmg)for(const e of G.ents)if(e.team!==s.team&&inR(e))hurt(e,(e.kind==='tower'?c.towerDmg:c.dmg)*s.m);
+      for(const e of G.ents){
+        if(!inR(e))continue;
+        if(e.team!==s.team){if(c.freeze)e.freezeT=Math.max(e.freezeT||0,c.freeze);if(c.slow){e.slowF=c.slow[0];e.slowT=Math.max(e.slowT||0,c.slow[1])}}
+        else if(e.kind!=='tower'){if(c.rage)e.rageT=Math.max(e.rageT||0,c.rage);if(c.heal)e.hp=Math.min(e.maxHp,e.hp+c.heal*s.m);if(c.shield)e.shield=Math.max(e.shield||0,c.shield*s.m)}
+      }
+      if(c.summon)spawnTokens(c.summon[0],s.team,s.x,s.y,c.summon[1],s.lvl,R*.8);
+      fx3d(SPELL_HITFX[c.fx]||'boltHit',s.x,s.y,0,R,s.col);
+      sfx(SPELL_SFX[c.fx]||'boom',.05);
     }
   }
   G.spells=G.spells.filter(s=>!s.done);
@@ -790,7 +961,12 @@ function separate(){
   }
 }
 function onDeath(e){
-  if(e.kind!=='tower'){sfx('pop',.08);return}
+  if(e.kind!=='tower'){
+    sfx('pop',.08);const M=e.mech||{};
+    if(M.dDmg){const[d,r]=M.dDmg,m=lvMult(e.lvl||1);for(const o of G.ents)if(o.team!==e.team&&!o.dead&&o.hp>0&&Math.hypot(o.x-e.x,o.y-e.y)<=r+o.r)hurt(o,d*m);fx3d('boltHit',e.x,e.y,0,r,'#ff9a3a');sfx('boom',.1)}
+    if(M.dSpawn)spawnTokens(M.dSpawn[0],e.team,e.x,e.y,M.dSpawn[1],e.lvl);
+    return;
+  }
   sfx('crash');sfx('crown');
   const foe=1-e.team;
   if(e.king){G.crowns[foe]=3;end();return}
@@ -803,35 +979,45 @@ function aiUpdate(dt){
   const D=diff();ai.think=D.think*(.6+Math.random()*.8);
   const hand=G.decks[1].hand,el=G.elixir[1];
   const has=k=>hand.indexOf(k)>=0&&CARDS[k].cost<=el;
+  const pick=f=>shuffle(hand).filter(k=>has(k)&&f(CARDS[k]));
   const tryAt=(k,x,y)=>{for(const ox of[0,30,-30,60,-60]){const px=clamp(x+ox,14,W-14);if(validDeploy(1,k,px,y))return play(1,hand.indexOf(k),px,y)}return false};
+  const avg=(a,f)=>a.reduce((s,e)=>s+e[f],0)/a.length;
+  const fighter=c=>c.type!=='spell'&&c.s.dmg>0&&!c.s.buildingsOnly;
   const threats=G.ents.filter(e=>e.team===0&&e.kind==='unit'&&!e.dead&&e.y<RIVER+90).sort((a,b)=>a.y-b.y);
   if(threats.length){
     const t=threats[0],near=threats.filter(e=>Math.hypot(e.x-t.x,e.y-t.y)<60);
     const threatHp=near.reduce((s,e)=>s+e.hp,0);
     const defHp=G.ents.filter(e=>e.team===1&&!e.dead&&e.kind!=='tower'&&Math.hypot(e.x-t.x,e.y-t.y)<140).reduce((s,e)=>s+e.hp,0);
     if(defHp<threatHp*.8){
-      const pickBy=f=>shuffle(hand).filter(k=>has(k)&&f(CARDS[k]));
-      const cands=near.length>=3?pickBy(c=>c.arch==='rain'||(c.s&&c.s.splash)):t.air?pickBy(c=>c.s&&c.s.targetsAir):(t.buildingsOnly||threatHp>1500)?pickBy(c=>c.arch==='strike'||c.type==='building'||(c.s&&!c.s.buildingsOnly&&c.s.dmg>=100)):pickBy(c=>c.type!=='spell'&&!c.s.buildingsOnly);
-      for(const k of cands){
+      const big=t.buildingsOnly||threatHp>1500;let cands=[];
+      if(near.length>=3)cands.push(...pick(c=>(c.type==='spell'&&c.dmg>0&&c.radius>=40)||(c.s&&c.s.splash&&fighter(c)&&(!t.air||c.s.targetsAir))));
+      if(t.air)cands.push(...pick(c=>fighter(c)&&c.s.targetsAir));
+      else if(big)cands.push(...pick(c=>(c.type==='spell'&&(c.dmg>=450||c.freeze))||(c.type==='building'&&c.s.dmg>0)||(fighter(c)&&c.s.dmg>=100)));
+      cands.push(...pick(c=>fighter(c)&&(!t.air||c.s.targetsAir)));
+      for(const k of new Set(cands)){
         const c=CARDS[k];
-        if(c.type==='spell'){const cx=near.reduce((s,e)=>s+e.x,0)/near.length,cy=near.reduce((s,e)=>s+e.y,0)/near.length;if(play(1,hand.indexOf(k),cx,cy))return}
+        if(c.type==='spell'){if(play(1,hand.indexOf(k),avg(near,'x'),avg(near,'y')))return}
         else if(c.type==='building'){if(tryAt(k,clamp(t.x,120,240),215))return}
         else if(tryAt(k,t.x,clamp(t.y-(c.s.range>40?90:45),30,278)))return;
       }
       return;
     }
   }
+  const push=G.ents.filter(e=>e.team===1&&e.kind==='unit'&&!e.dead&&e.y>RIVER-40);
+  if(push.length>=3)for(const k of pick(c=>c.type==='spell'&&(c.rage||c.heal||c.shield)))if(play(1,hand.indexOf(k),avg(push,'x'),avg(push,'y')))return;
   const ptw=G.ents.filter(e=>e.team===0&&e.kind==='tower'&&!e.dead);
-  for(const sp of hand){const c=CARDS[sp];if(c.type!=='spell'||c.arch==='rain'||!has(sp))continue;const weak=ptw.find(e=>e.hp<=c.towerDmg*lvMult(G.aiLvl));if(weak&&play(1,hand.indexOf(sp),weak.x,weak.y))return}
+  for(const k of pick(c=>c.type==='spell'&&c.towerDmg>0&&c.fx!=='rain')){const c=CARDS[k],weak=ptw.find(e=>e.hp<=c.towerDmg*lvMult(G.aiLvl));if(weak&&play(1,hand.indexOf(k),weak.x,weak.y))return}
+  const pr=ptw.filter(e=>!e.king).sort((a,b)=>a.hp-b.hp);
+  if(el>=D.attackAt-1)for(const k of pick(c=>c.summon)){const tw=pr[0]||ptw[0];if(tw&&play(1,hand.indexOf(k),tw.x,tw.y))return}
   if(el>=D.attackAt){
-    const troops=hand.filter(k=>CARDS[k].type==='troop'&&has(k));if(!troops.length)return;
-    const k=troops[Math.random()*troops.length|0];
-    const pr=ptw.filter(e=>!e.king).sort((a,b)=>a.hp-b.hp);
+    const units=hand.filter(k=>CARDS[k].type!=='spell'&&has(k));if(!units.length)return;
+    const k=units[Math.random()*units.length|0],c=CARDS[k];
     const lane=pr.length?pr[0].lane:(Math.random()*2|0);
-    const big=c=>c&&['golem','dragon','cavalry'].includes(c.arch);
-    const tank=G.ents.find(e=>e.team===1&&e.key&&big(CARDS[e.key])&&!e.dead&&e.y<RIVER);
-    if(big(CARDS[k]))tryAt(k,LANE_X[lane],200);
-    else if(tank&&CARDS[k].count<3)tryAt(k,tank.x,clamp(tank.y-30,30,278));
+    const isTank=c=>c&&c.type==='troop'&&c.s.hp>=1500;
+    const tank=G.ents.find(e=>e.team===1&&e.key&&e.kind==='unit'&&isTank(cardOf(e.key))&&!e.dead&&e.y<RIVER);
+    if(c.type==='building')tryAt(k,LANE_X[lane],230);
+    else if(isTank(c))tryAt(k,LANE_X[lane],200);
+    else if(tank&&c.count<3)tryAt(k,tank.x,clamp(tank.y-30,30,278));
     else tryAt(k,LANE_X[lane],270);
   }
 }
@@ -1063,7 +1249,7 @@ const MODELS={
     for(let i=0;i<4;i++)inner.add(mesh(new T.ConeGeometry(1.2,3.5,4),gold,0,4.6,6-i*4));
     inner.add(mesh(new T.ConeGeometry(2.8,16,6),skin,0,-1,-14).rotateX(-Math.PI/2));
     addWings(inner,shade(ec,.45),2.5,3.5);
-    inner.scale.setScalar(1.5);outer.add(inner);outer.userData.wings=inner.userData.wings;
+    inner.scale.setScalar(1.5);outer.add(inner);outer.userData.wings=inner.userData.wings;outer.userData.flap=140;
     return outer;
   },
   archmage(col,ec){
@@ -1105,12 +1291,137 @@ function elemDeco(g,el){
   else if(el==='nature'){const t=add(mesh(new T.TorusGeometry(Math.max(2.6,w*.7),.75,4,10),mat('#3f8f3a'),0,at(.42),0));t.rotation.x=Math.PI/2;for(let i=0;i<5;i++){const a=i/5*Math.PI*2,r=Math.max(2.6,w*.7);const lf=add(mesh(new T.ConeGeometry(1,3,4),mat('#6ee07a'),Math.cos(a)*r,at(.42)+1,Math.sin(a)*r));lf.rotation.z=Math.cos(a)*.9;lf.rotation.x=-Math.sin(a)*.9}}
   else if(el==='rune'){const t=add(mesh(new T.TorusGeometry(Math.max(3.2,w*.95),.32,4,24),glow('#7fb6ff',1.3),0,at(.3),0));t.rotation.x=Math.PI/2;g.userData.runeRing=t}
 }
-function cardModel(k,col){
-  const c=CARDS[k],g=MODELS[c.arch](col,ELEM[c.el].col);
-  if(c.type!=='spell'&&c.arch!=='dragon'&&c.arch!=='archmage'){
-    elemDeco(g,c.el);
-    g.updateMatrixWorld(true);const top=new T.Box3().setFromObject(g).max.y;const m=elemMark(c.el);m.position.set(0,top+3.2,0);g.add(m);g.userData.mark=m;
+// ---------- recipe-built models: every card gets its own figure from these part builders ----------
+function inner(g,sc){if(!sc||sc===1)return g;const o=new T.Group();g.scale.setScalar(sc);o.add(g);o.userData=g.userData;return o}
+function addHead(g,o,y){
+  const skin=mat(o.skin||SKIN),hc=mat(o.hcol||'#555555'),t=o.head||'none';
+  if(t==='helm'){g.add(mesh(new T.SphereGeometry(3.7,8,6),STEEL(),0,y,0));g.add(mesh(new T.BoxGeometry(5,.8,1),mat('#1a1d22'),0,y+.3,3.4));g.add(mesh(new T.ConeGeometry(1.1,4.5,4),mat(o.hcol||'#c0392b'),0,y+4.2,0))}
+  else if(t==='hood'){g.add(mesh(new T.SphereGeometry(3.2,8,6),mat('#2a2633'),0,y,0));g.add(mesh(new T.ConeGeometry(4.2,8,7),hc,0,y+2.6,-.8).rotateX(-.25))}
+  else if(t==='hat'){g.add(mesh(new T.SphereGeometry(3.2,8,6),skin,0,y,0));g.add(mesh(new T.CylinderGeometry(6,6,.8,10),hc,0,y+2.4,0));const h=mesh(new T.ConeGeometry(4,10,7),hc,0,y+7.2,0);h.rotation.z=.2;g.add(h)}
+  else if(t==='horns'){g.add(mesh(new T.SphereGeometry(3.4,8,6),hc,0,y,0));for(const s of[-1,1])g.add(mesh(new T.ConeGeometry(.9,5,5),mat('#efe6cf'),s*2.6,y+3,0).rotateZ(-s*.6))}
+  else if(t==='skull'){g.add(mesh(new T.SphereGeometry(3.3,8,6),mat('#e9e4d4'),0,y,0));for(const s of[-1,1])g.add(mesh(new T.SphereGeometry(.7,5,4),glow(o.hcol||'#9b5cff',1.8),s*1.2,y+.3,2.9));g.add(mesh(new T.ConeGeometry(4.4,8,7),mat('#15131b'),0,y+2.2,-1).rotateX(-.3))}
+  else if(t==='crown'){g.add(mesh(new T.SphereGeometry(3.4,8,6),skin,0,y,0));g.add(mesh(new T.CylinderGeometry(3.2,3.2,2,6),mat('#f3c55b',{metalness:.5,roughness:.4}),0,y+3,0));for(let i=0;i<6;i++){const a=i/6*Math.PI*2;g.add(mesh(new T.ConeGeometry(.6,1.8,4),mat('#f3c55b'),Math.cos(a)*2.9,y+4.8,Math.sin(a)*2.9))}}
+  else if(t==='halo'){g.add(mesh(new T.SphereGeometry(3.3,8,6),skin,0,y,0));const h=mesh(new T.TorusGeometry(3.2,.4,6,20),glow('#ffe9a0',1.5),0,y+4.6,0);h.rotation.x=Math.PI/2;g.add(h)}
+  else if(t==='elf'){g.add(mesh(new T.SphereGeometry(3.1,8,6),skin,0,y,0));for(const s of[-1,1])g.add(mesh(new T.ConeGeometry(.8,3.4,4),skin,s*3.2,y+.6,0).rotateZ(-s*1.2));g.add(mesh(new T.SphereGeometry(3.3,8,6,0,Math.PI*2,0,Math.PI*.5),hc,0,y+.3,-.3))}
+  else if(t==='beast'){g.add(mesh(new T.BoxGeometry(6,5.5,5.5),hc,0,y,0));for(const s of[-1,1]){g.add(mesh(new T.ConeGeometry(1,2.4,4),hc,s*2.4,y+3.4,0));g.add(mesh(new T.SphereGeometry(.6,5,4),glow('#7fd0ff',1.4),s*1.4,y+.6,2.8))}}
+  else if(t==='mask'){g.add(mesh(new T.SphereGeometry(3.4,8,6),mat('#2a2433'),0,y,0));g.add(mesh(new T.BoxGeometry(4.6,.8,1),glow(o.hcol||'#ff7a1a',1.6),0,y+.4,3.1))}
+}
+function addWeapon(g,o,S){
+  const w=o.w||'sword';if(w==='none'){g.userData.armRest=0;return}
+  const arm=new T.Group();arm.position.set(6.2*S,11*S,2);const wc=o.wc||'#dfe6ee',metal=mat('#dfe6ee',{metalness:.6,roughness:.3}),wood=mat(WOOD);let rest=.5;
+  if(w==='sword'){arm.add(mesh(new T.BoxGeometry(1.2,15,.6),mat(wc,{metalness:.6,roughness:.3}),0,7,0));arm.add(mesh(new T.BoxGeometry(5,1,1),mat('#c9a646'),0,0,0))}
+  else if(w==='axe'){arm.add(mesh(new T.CylinderGeometry(.5,.5,14,5),wood,0,6,0));arm.add(mesh(new T.BoxGeometry(5,4,.8),metal,2,12,0))}
+  else if(w==='spear'){arm.add(mesh(new T.CylinderGeometry(.45,.45,22,5),wood,0,8,0));arm.add(mesh(new T.ConeGeometry(1,4,4),metal,0,20.5,0));rest=.9}
+  else if(w==='hammer'){arm.add(mesh(new T.CylinderGeometry(.6,.6,15,5),wood,0,6,0));arm.add(mesh(new T.BoxGeometry(6,4,4),mat(wc,{metalness:.4}),0,13,0))}
+  else if(w==='mace'){arm.add(mesh(new T.CylinderGeometry(.5,.5,10,5),wood,0,4,0));arm.add(mesh(new T.IcosahedronGeometry(2.2,0),metal,0,10,0))}
+  else if(w==='staff'){arm.add(mesh(new T.CylinderGeometry(.6,.7,20,6),wood,0,6,0));arm.add(mesh(new T.IcosahedronGeometry(2.2,0),glow(wc,1.4),0,17,0));rest=.15}
+  else if(w==='wand'){arm.add(mesh(new T.CylinderGeometry(.35,.35,8,5),mat('#2a1a1a'),0,3,0));arm.add(mesh(new T.OctahedronGeometry(1.2,0),glow('#c79bff',1.6),0,7.4,0))}
+  else if(w==='bow'){arm.add(mesh(new T.TorusGeometry(5,.5,4,10,Math.PI),wood).rotateZ(-Math.PI/2));rest=0}
+  else if(w==='crossbow'){arm.add(mesh(new T.BoxGeometry(1.4,1.4,9),wood,0,0,3));arm.add(mesh(new T.BoxGeometry(9,.8,.8),metal,0,0,6));rest=0}
+  else if(w==='daggers'){arm.add(mesh(new T.BoxGeometry(.8,6,.4),metal,0,3,0));arm.add(mesh(new T.BoxGeometry(.8,6,.4),metal,-12.4*S,3,0))}
+  else if(w==='scythe'){arm.add(mesh(new T.CylinderGeometry(.5,.5,22,5),mat('#2a2020'),0,8,0));const b=mesh(new T.BoxGeometry(9,1.6,.5),metal,3.5,18.5,0);b.rotation.z=-.4;arm.add(b);rest=.3}
+  else if(w==='bomb'){arm.add(mesh(new T.IcosahedronGeometry(2.6,1),mat('#2a2a2a'),0,2,0));arm.add(mesh(new T.CylinderGeometry(.3,.3,2,4),mat('#c9a646'),0,5,0));arm.add(mesh(new T.OctahedronGeometry(.8,0),glow('#ffb347',1.8),0,6.4,0));rest=0}
+  else if(w==='fists'){arm.add(mesh(new T.BoxGeometry(3.6,3.6,3.6),mat(o.skin||o.body||SKIN),0,0,1));arm.add(mesh(new T.BoxGeometry(3.6,3.6,3.6),mat(o.skin||o.body||SKIN),-12.4*S,0,1));rest=.2}
+  else if(w==='drum'){arm.position.set(0,9*S,4);arm.add(mesh(new T.CylinderGeometry(3.4,3.4,3,10),mat('#c0392b'),0,0,0).rotateX(Math.PI/2));arm.add(mesh(new T.CylinderGeometry(3.5,3.5,.4,10),mat('#efe6cf'),0,0,1.6).rotateX(Math.PI/2));rest=0}
+  arm.rotation.x=rest;g.add(arm);g.userData.arm=arm;g.userData.armRest=rest;
+}
+function humanoid(o,col,ec){
+  const g=new T.Group(),S=o.heavy?1.25:1,body=mat(o.body||'#888888');let hy;
+  if(o.robe){g.add(mesh(new T.ConeGeometry(5.6*S,15,7),body,0,7.5,0));g.add(mesh(new T.BoxGeometry(7.4*S,1.6,5.4*S),mat(col),0,9,0));hy=16.5}
+  else{for(const s of[-1,1])g.add(mesh(new T.BoxGeometry(2.8*S,6,2.8*S),mat(o.legs||'#3d3f46'),s*2.4*S,3,0));g.add(mesh(new T.BoxGeometry(9*S,9*S,5.6*S),body,0,6+4.5*S,0));g.add(mesh(new T.BoxGeometry(9.6*S,2.6,6*S),mat(col),0,6+3*S,0));hy=6+9*S+3}
+  if(o.cape)g.add(mesh(new T.BoxGeometry(8*S,11,.8),mat(o.cape),0,hy-8,-3.4*S));
+  addHead(g,o,hy);addWeapon(g,o,S);
+  if(o.off==='shield'){const sh=mesh(new T.CylinderGeometry(4.6,4.6,1.1,8),mat(o.hcol||'#888888'),-6.3*S,10*S,2);sh.rotation.z=Math.PI/2;sh.rotation.y=.3;g.add(sh);g.add(mesh(new T.OctahedronGeometry(1.4,0),glow(ec,1.2),-7.1*S,10*S,2.4))}
+  else if(o.off==='book')g.add(mesh(new T.BoxGeometry(4,5,1.4),mat('#7a2a2a'),-6*S,10*S,2));
+  return inner(g,o.sc);
+}
+function beast(o,col,ec){
+  const g=new T.Group(),k=o.k,c=mat(o.c||'#7a5232'),c2=mat(o.c2||o.c||'#7a5232'),dark=mat(shade(o.c||'#7a5232',.6));
+  if(k==='ape'){
+    g.add(mesh(new T.BoxGeometry(10,11,8),c,0,12,0));g.add(mesh(new T.BoxGeometry(7,6,6),dark,0,20,1.5));
+    for(const s of[-1,1]){const a=mesh(new T.BoxGeometry(3.4,13,3.4),c,s*6.5,8,1);a.rotation.z=s*.1;g.add(a);g.add(mesh(new T.BoxGeometry(3,6,3),dark,s*3,3,-1));g.add(mesh(new T.SphereGeometry(.7,5,4),glow('#ffcc33',1.4),s*1.6,20.6,4.6))}
+    g.add(mesh(new T.BoxGeometry(10.4,2,8.4),mat(col),0,15,0));const arm=new T.Group();g.add(arm);g.userData.arm=arm;g.userData.armRest=0;return inner(g,o.sc);
   }
+  const L=k==='bear'?11:13,Wd=k==='bear'?9:7,Hh=k==='bear'?8:6.5,hz=L/2+2,hy=5+Hh;
+  g.add(mesh(new T.BoxGeometry(Wd,Hh,L),c,0,5+Hh/2,0));
+  for(const[x,z]of[[-1,1],[1,1],[-1,-1],[1,-1]])g.add(mesh(new T.BoxGeometry(2,5,2),dark,x*(Wd/2-1),2.5,z*(L/2-2)));
+  if(k==='wolf'){g.add(mesh(new T.BoxGeometry(4.6,4.4,5),c,0,hy,hz));g.add(mesh(new T.BoxGeometry(2.6,2.2,3),c2,0,hy-1,hz+3.4));for(const s of[-1,1]){g.add(mesh(new T.ConeGeometry(.9,2.4,4),c,s*1.5,hy+3,hz-1));g.add(mesh(new T.SphereGeometry(.5,5,4),glow(o.c2||'#ffcc33',1.6),s*1.3,hy+.8,hz+2.5))}g.add(mesh(new T.ConeGeometry(1.2,7,5),c2,0,hy-1,-L/2-2).rotateX(-1.9))}
+  else if(k==='bear'){g.add(mesh(new T.SphereGeometry(3.6,8,6),c,0,hy,hz));g.add(mesh(new T.BoxGeometry(2.6,2,2.4),dark,0,hy-1,hz+3.2));for(const s of[-1,1])g.add(mesh(new T.SphereGeometry(1.2,6,4),c,s*2.6,hy+3,hz-.6))}
+  else if(k==='boar'){g.add(mesh(new T.BoxGeometry(5,4.6,5),c,0,hy-1,hz));g.add(mesh(new T.BoxGeometry(3,2.6,1.6),mat('#d9a0a0'),0,hy-1.6,hz+3));for(const s of[-1,1])g.add(mesh(new T.ConeGeometry(.5,3,4),mat('#efe6cf'),s*1.6,hy-1,hz+3.4).rotateX(-.6));g.add(mesh(new T.BoxGeometry(2,3,L*.7),dark,0,hy+.3,0))}
+  else if(k==='cat'){g.add(mesh(new T.SphereGeometry(3,8,6),c,0,hy,hz));for(const s of[-1,1]){g.add(mesh(new T.ConeGeometry(1,2.6,3),c,s*1.6,hy+3,hz));g.add(mesh(new T.SphereGeometry(.6,5,4),glow(o.c2||'#ffe14d',1.6),s*1.2,hy+.4,hz+2.6))}g.add(mesh(new T.CylinderGeometry(.6,.4,12,5),c,0,hy,-L/2-5).rotateX(-1.1));for(let i=0;i<3;i++)g.add(mesh(new T.BoxGeometry(Wd+.2,.6,1.2),c2,0,hy+.1,-3+i*3))}
+  else if(k==='unicorn'){g.add(mesh(new T.BoxGeometry(3.6,8,3.6),c,0,hy+2,hz-1).rotateX(-.5));g.add(mesh(new T.BoxGeometry(3.6,3.6,6),c,0,hy+5.5,hz+2));g.add(mesh(new T.ConeGeometry(.7,6,5),glow(o.c2||'#ffd86b',1.4),0,hy+9,hz+3.4).rotateX(.5));g.add(mesh(new T.BoxGeometry(1.2,6,5),c2,0,hy+4.5,hz-2.4))}
+  if(o.rider){g.add(mesh(new T.BoxGeometry(5,7,4),mat(col),0,hy+3.5,-1));g.add(mesh(new T.SphereGeometry(2.6,8,6),STEEL(),0,hy+8.8,-1));g.add(mesh(new T.ConeGeometry(1,4,5),mat(ec),0,hy+12,-1.4));const lance=new T.Group();lance.position.set(3.6,hy+3.5,0);lance.add(mesh(new T.ConeGeometry(1,18,6),STEEL(),0,0,7).rotateX(Math.PI/2));g.add(lance);g.userData.arm=lance;g.userData.armRest=0}
+  else g.add(mesh(new T.BoxGeometry(Wd+.4,1.4,L*.5),mat(col),0,hy+.2,0));
+  return inner(g,o.sc);
+}
+function shrinkWings(g,f){for(const w of g.userData.wings||[])w.scale.set(w.scale.x*f,f,f)}
+function flyer(o,col,ec){
+  const g=new T.Group(),k=o.k;
+  if(k==='bird'){const c=mat(o.c||'#6a4a32'),c2=mat(o.c2||'#f2ead8');const b=mesh(new T.SphereGeometry(5,9,7),c);b.scale.set(1,.85,1.4);g.add(b);g.add(mesh(new T.SphereGeometry(3.2,8,6),c2,0,3,6.5));g.add(mesh(new T.ConeGeometry(1.1,3.6,5),mat('#f3c55b'),0,2.6,10).rotateX(Math.PI/2));for(const s of[-1,1])g.add(mesh(new T.SphereGeometry(.6,5,4),glow('#ffcc33',1.4),s*1.6,4,8.6));g.add(mesh(new T.ConeGeometry(2.6,7,4),c2,0,0,-8).rotateX(-Math.PI/2));addWings(g,o.c2||'#f2ead8',2,3);g.add(mesh(new T.BoxGeometry(6,1.2,4),mat(col),0,4.4,-1))}
+  else if(k==='bat'){const c=mat(o.c||'#2a1a3d');g.add(mesh(new T.SphereGeometry(3,8,6),c));for(const s of[-1,1]){g.add(mesh(new T.ConeGeometry(.9,2.6,3),c,s*1.6,3,0));g.add(mesh(new T.SphereGeometry(.5,5,4),glow('#ff4d4d',1.6),s*1,.6,2.6))}addWings(g,'#3a2650',.5,2);shrinkWings(g,.6);g.add(mesh(new T.BoxGeometry(3,.8,2),mat(col),0,-2,0))}
+  else if(k==='bee'){g.add(mesh(new T.SphereGeometry(2.2,8,6),mat('#f2c93a')));for(let i=0;i<2;i++)g.add(mesh(new T.CylinderGeometry(2.25,2.25,.5,8),mat('#1a1a1a'),0,0,-.6+i*1.2).rotateX(Math.PI/2));g.add(mesh(new T.ConeGeometry(.5,1.6,4),mat('#1a1a1a'),0,0,-3).rotateX(-Math.PI/2));addWings(g,'#dff3ff',1.6,1);shrinkWings(g,.35);g.add(mesh(new T.BoxGeometry(2,.6,1),mat(col),0,2.2,0))}
+  else if(k==='eye'){g.add(mesh(new T.SphereGeometry(5,12,10),mat('#f4f1ea')));g.add(mesh(new T.SphereGeometry(2.2,10,8),glow(ec,1.4),0,0,4.2));g.add(mesh(new T.SphereGeometry(1,8,6),mat('#111111'),0,0,5.6));addWings(g,'#4a5068',0,4.4);shrinkWings(g,.5);g.add(mesh(new T.TorusGeometry(5.2,.6,4,16),mat(col)).rotateX(Math.PI/2));const arm=new T.Group();g.add(arm);g.userData.arm=arm;g.userData.armRest=0}
+  else if(k==='gargoyle'){const c=mat(o.c||'#6a6470');g.add(mesh(new T.BoxGeometry(6,7,5),c));g.add(mesh(new T.BoxGeometry(4.4,4,4),c,0,5.4,1));for(const s of[-1,1]){g.add(mesh(new T.ConeGeometry(.8,3,4),mat('#3a3640'),s*1.6,8,1));g.add(mesh(new T.SphereGeometry(.6,5,4),glow('#ff4d4d',1.6),s*1.2,5.8,3.1))}addWings(g,'#4a4650',2,3);g.add(mesh(new T.BoxGeometry(6.4,1.4,5.4),mat(col),0,-1.5,0));const arm=new T.Group();arm.position.set(4,0,2);arm.add(mesh(new T.ConeGeometry(.8,4,4),mat('#3a3640'),0,-2,0));g.add(arm);g.userData.arm=arm;g.userData.armRest=0}
+  else if(k==='angel'){const h=humanoid({robe:1,body:'#f1ece0',head:'halo',w:'sword',wc:'#ffe9a0'},col,ec);h.position.y=-10;g.add(h);addWings(g,'#fff6dc',4,2);g.userData.arm=h.userData.arm;g.userData.armRest=h.userData.armRest}
+  else if(k==='balloon'){g.add(mesh(new T.SphereGeometry(8,10,8),mat(o.c||'#c0392b'),0,12,0));g.add(mesh(new T.TorusGeometry(8.05,.8,4,20),mat(col),0,12,0).rotateX(Math.PI/2));for(let i=0;i<4;i++){const a=i/4*Math.PI*2;g.add(mesh(new T.BoxGeometry(.4,8,.4),mat('#5a3d20'),Math.cos(a)*3,2,Math.sin(a)*3))}g.add(mesh(new T.BoxGeometry(6,4,6),mat('#9b6b3e'),0,-3,0));g.add(mesh(new T.IcosahedronGeometry(2.4,1),mat('#2a2a2a'),0,-6.5,0));g.add(mesh(new T.OctahedronGeometry(.9,0),glow('#ffb347',1.8),0,-3.6,0))}
+  return inner(g,o.sc);
+}
+function blob(o,col,ec){
+  const g=new T.Group(),k=o.k;
+  if(k==='sprite'){g.add(mesh(new T.IcosahedronGeometry(3.4,0),glow(o.c||'#bfeaff',1.3),0,6,0));g.add(mesh(new T.ConeGeometry(2,4,5),glow(o.c||'#bfeaff',.8),0,10,0));addWings(g,'#ffffff',6,1.5);shrinkWings(g,.3);g.add(mesh(new T.TorusGeometry(3.6,.5,4,12),mat(col),0,3,0).rotateX(Math.PI/2))}
+  else if(k==='bomber'){g.add(mesh(new T.IcosahedronGeometry(5,1),mat('#2a2a2a'),0,7,0));g.add(mesh(new T.CylinderGeometry(.5,.5,3,5),mat('#c9a646'),0,13,0));g.add(mesh(new T.OctahedronGeometry(1.2,0),glow('#ffb347',1.8),0,15,0));for(const s of[-1,1]){g.add(mesh(new T.BoxGeometry(1.6,4,1.6),mat(o.c||'#3b7a3a'),s*2.4,2,0));g.add(mesh(new T.SphereGeometry(.8,5,4),glow('#ffe14d',1.6),s*1.6,8,4.4))}g.add(mesh(new T.TorusGeometry(5.1,.6,4,14),mat(col),0,6,0).rotateX(Math.PI/2))}
+  else if(k==='penguin'){const b=mesh(new T.SphereGeometry(4,8,7),mat('#1e2430'),0,5,0);b.scale.y=1.3;g.add(b);const bel=mesh(new T.SphereGeometry(3.2,8,6),mat('#f4f6fa'),0,5,1.4);bel.scale.y=1.2;g.add(bel);g.add(mesh(new T.ConeGeometry(.8,2.4,4),mat('#f3a03a'),0,8.4,3.8).rotateX(Math.PI/2));for(const s of[-1,1])g.add(mesh(new T.SphereGeometry(.5,5,4),mat('#ffffff'),s*1.3,9.2,3.1));g.add(mesh(new T.BoxGeometry(6,1,9),mat('#9b6b3e'),0,.5,0));g.add(mesh(new T.CylinderGeometry(3.8,3.8,1.2,8),mat(col),0,9.6,0))}
+  else if(k==='mushroom'){g.add(mesh(new T.CylinderGeometry(2,2.6,6,7),mat('#efe6cf'),0,3,0));g.add(mesh(new T.SphereGeometry(5,9,6,0,Math.PI*2,0,Math.PI/2),mat(o.c||'#c0392b'),0,6,0));for(let i=0;i<5;i++){const a=i*1.3;g.add(mesh(new T.SphereGeometry(.8,5,4),mat('#ffffff'),Math.cos(a)*3,8.6,Math.sin(a)*3))}for(const s of[-1,1])g.add(mesh(new T.SphereGeometry(.5,5,4),mat('#111111'),s*1,4,2.2));g.add(mesh(new T.TorusGeometry(2.6,.5,4,12),mat(col),0,1,0).rotateX(Math.PI/2))}
+  else if(k==='ghost'){const b=mesh(new T.SphereGeometry(5,10,8),mat(o.c||'#c8b8e8',{transparent:true,opacity:.8}),0,6,0);b.scale.y=1.2;g.add(b);g.add(mesh(new T.ConeGeometry(4.6,6,8),mat(o.c||'#c8b8e8',{transparent:true,opacity:.65}),0,0,0).rotateX(Math.PI));for(const s of[-1,1])g.add(mesh(new T.SphereGeometry(.9,6,4),mat('#15131b'),s*1.8,7.4,4.2));g.add(mesh(new T.TorusGeometry(4.2,.5,4,14),mat(col),0,3,0).rotateX(Math.PI/2));const arm=new T.Group();g.add(arm);g.userData.arm=arm;g.userData.armRest=0}
+  else if(k==='egg'){const e=mesh(new T.SphereGeometry(5,10,8),glow('#ff9a3a',.8),0,5,0);e.scale.y=1.3;g.add(e);for(let i=0;i<4;i++){const a=i/4*Math.PI*2;g.add(mesh(new T.ConeGeometry(1,3,4),glow('#ffd34d',1.4),Math.cos(a)*4,1,Math.sin(a)*4))}g.add(mesh(new T.TorusGeometry(5,.6,4,14),mat(col),0,1,0).rotateX(Math.PI/2))}
+  return inner(g,o.sc);
+}
+function construct(o,col,ec){
+  const g=new T.Group(),k=o.k;
+  if(k==='spider'){const c=mat(o.c||'#6c7380');g.add(mesh(new T.BoxGeometry(6,3,7),c,0,5,0));g.add(mesh(new T.BoxGeometry(4,2.6,3),c,0,5.6,4.6));for(const s of[-1,1])g.add(mesh(new T.SphereGeometry(.6,5,4),glow(ec,1.8),s*1,6,6.2));for(let i=0;i<3;i++)for(const s of[-1,1]){const l=mesh(new T.BoxGeometry(6,.8,.8),mat('#3d3f46'),s*5,4,-2.5+i*2.5);l.rotation.z=s*.6;g.add(l)}g.add(mesh(new T.BoxGeometry(6.4,1,7.4),mat(col),0,6.8,0));const arm=new T.Group();g.add(arm);g.userData.arm=arm;g.userData.armRest=0}
+  else if(k==='bot'){const c=mat(o.c||'#8a93a0');g.add(mesh(new T.BoxGeometry(7,7,5),c,0,7,0));g.add(mesh(new T.BoxGeometry(5,4,4),c,0,13,0));g.add(mesh(new T.BoxGeometry(4,1,1),glow(ec,1.6),0,13.4,2.1));g.add(mesh(new T.CylinderGeometry(.3,.3,3,4),mat('#3d3f46'),0,16.4,0));g.add(mesh(new T.OctahedronGeometry(.8,0),glow(ec,1.6),0,18.2,0));for(const s of[-1,1])g.add(mesh(new T.CylinderGeometry(2,2,1.4,8),mat('#2a2d33'),s*3.8,2,0).rotateZ(Math.PI/2));g.add(mesh(new T.BoxGeometry(7.4,1.6,5.4),mat(col),0,8,0));const arm=new T.Group();arm.position.set(4.6,9,1);arm.add(mesh(new T.BoxGeometry(1.6,1.6,6),mat('#3d3f46'),0,0,2.6));g.add(arm);g.userData.arm=arm;g.userData.armRest=0}
+  else if(k==='treant'){const bark=mat('#5a3d22'),leaf=mat('#3f8f3a');g.add(mesh(new T.CylinderGeometry(4,5,14,7),bark,0,9,0));for(const s of[-1,1])g.add(mesh(new T.BoxGeometry(3,5,3),bark,s*3,2.5,0));const arms=new T.Group();arms.position.y=14;for(const s of[-1,1]){const a=mesh(new T.CylinderGeometry(1.2,1.6,10,5),bark,s*6,-3,0);a.rotation.z=s*.5;arms.add(a)}g.add(arms);g.userData.arm=arms;g.userData.armRest=0;for(const[x,y,z,r]of[[0,20,0,6],[-4,18,1,4],[4,19,-1,4.5]])g.add(mesh(new T.IcosahedronGeometry(r,0),leaf,x,y,z));for(const s of[-1,1])g.add(mesh(new T.SphereGeometry(.8,5,4),glow('#c8ff7a',1.6),s*1.6,13,4));g.add(mesh(new T.CylinderGeometry(5.1,5.1,1.6,7),mat(col),0,6,0))}
+  return inner(g,o.sc);
+}
+function building(o,col,ec){
+  const g=new T.Group(),k=o.k,st=mat(STONE),sd=mat(STONE_D),band=y=>g.add(mesh(new T.CylinderGeometry(9.4,9.4,1.6,8),mat(col),0,y,0));
+  if(k==='cannon'){
+    if(o.mobile){for(const s of[-1,1])g.add(mesh(new T.CylinderGeometry(3.4,3.4,1.2,10),mat(WOOD),s*5,3.4,-1).rotateZ(Math.PI/2));g.add(mesh(new T.BoxGeometry(8,3,9),mat('#6a4a2a'),0,5,0));g.add(mesh(new T.BoxGeometry(8.4,1.4,9.4),mat(col),0,6.6,0))}
+    else{g.add(mesh(new T.CylinderGeometry(8,10,5,8),st,0,2.5,0));band(5.4)}
+    const bar=new T.Group();bar.position.set(0,8,0);bar.add(mesh(new T.CylinderGeometry(2.4,3,12,10),mat('#2a2d33',{metalness:.4}),0,0,4).rotateX(Math.PI/2-.25));bar.add(mesh(new T.TorusGeometry(2.6,.4,4,12),glow(ec,1.2),0,1.4,9.6).rotateX(-.25));g.add(bar);g.userData.arm=bar;g.userData.armRest=0}
+  else if(k==='tesla'){g.add(mesh(new T.CylinderGeometry(6,8,5,8),st,0,2.5,0));band(5.4);g.add(mesh(new T.CylinderGeometry(1.6,2.4,16,6),mat('#8a93a0',{metalness:.5}),0,13,0));for(let i=0;i<3;i++)g.add(mesh(new T.TorusGeometry(3.4-i*.6,.5,4,14),mat('#c9a646',{metalness:.5}),0,9+i*4,0).rotateX(Math.PI/2));const orb=mesh(new T.IcosahedronGeometry(3,0),glow('#ffe14d',1.6),0,23,0);g.add(orb);g.userData.crystal=orb}
+  else if(k==='mortar'){g.add(mesh(new T.CylinderGeometry(9,10,5,8),st,0,2.5,0));band(5.4);const bar=new T.Group();bar.position.set(0,7,0);bar.add(mesh(new T.CylinderGeometry(4,3.2,9,10),mat('#3a3f4a',{metalness:.4}),0,4,1).rotateX(-.4));bar.add(mesh(new T.TorusGeometry(4,.6,4,12),glow('#ffe14d',1.2),0,8,2.6).rotateX(Math.PI/2-.4));g.add(bar);g.userData.arm=bar;g.userData.armRest=0}
+  else if(k==='tomb'){g.add(mesh(new T.BoxGeometry(14,2,9),mat('#4a3a2a'),0,1,0));g.add(mesh(new T.BoxGeometry(8,12,3),sd,0,8,-1));const top=mesh(new T.SphereGeometry(4,10,6,0,Math.PI*2,0,Math.PI/2),sd,0,14,-1);top.scale.z=.375;g.add(top);g.add(mesh(new T.BoxGeometry(1.2,6,.6),glow('#9b5cff',1.2),0,9,.6));g.add(mesh(new T.BoxGeometry(4,1.2,.6),glow('#9b5cff',1.2),0,10.4,.6));g.add(mesh(new T.BoxGeometry(14.4,1,9.4),mat(col),0,2.2,0))}
+  else if(k==='portal'){g.add(mesh(new T.BoxGeometry(16,2,6),sd,0,1,0));for(const s of[-1,1])g.add(mesh(new T.BoxGeometry(2.6,16,2.6),st,s*7,9,0));g.add(mesh(new T.BoxGeometry(16.4,2.6,3),st,0,17.6,0));const ring=mesh(new T.TorusGeometry(5.2,.9,6,24),glow(ec,1.4),0,9.4,0);g.add(ring);g.add(mesh(new T.CircleGeometry(4.6,20),mat(shade(ec,.5),{emissive:ec,emissiveIntensity:.6,side:T.DoubleSide}),0,9.4,0));g.userData.crystal=ring;g.add(mesh(new T.BoxGeometry(16.4,1,6.4),mat(col),0,2.4,0))}
+  else if(k==='plant'){g.add(mesh(new T.CylinderGeometry(6,7,5,8),mat('#7a4a2a'),0,2.5,0));band(5.4);g.add(mesh(new T.CylinderGeometry(1.2,1.6,10,6),mat('#3f8f3a'),0,10,0));const head=new T.Group();head.position.set(0,16,0);head.add(mesh(new T.SphereGeometry(5,10,6,0,Math.PI*2,0,Math.PI/2),mat('#c0392b')));head.add(mesh(new T.SphereGeometry(5,10,6,0,Math.PI*2,Math.PI/2,Math.PI/2),mat('#8a2a1f'),0,-.4,0));for(let i=0;i<8;i++){const a=i/8*Math.PI*2;head.add(mesh(new T.ConeGeometry(.5,1.6,4),mat('#ffffff'),Math.cos(a)*4.4,-.6,Math.sin(a)*4.4))}g.add(head);g.userData.arm=head;g.userData.armRest=0;for(let i=0;i<4;i++){const a=i/4*Math.PI*2;g.add(mesh(new T.ConeGeometry(2,7,3),mat('#4caf5a'),Math.cos(a)*4,7,Math.sin(a)*4).rotateZ(Math.cos(a)*.8).rotateX(-Math.sin(a)*.8))}}
+  else if(k==='fountain'){g.add(mesh(new T.CylinderGeometry(10,11,4,10),st,0,2,0));g.add(mesh(new T.CylinderGeometry(8.6,8.6,1,10),glow('#9fd0ff',.7),0,4.2,0));band(1);g.add(mesh(new T.CylinderGeometry(1.6,2.4,9,8),sd,0,8,0));g.add(mesh(new T.CylinderGeometry(4,2,2,10),st,0,13,0));const o2=mesh(new T.IcosahedronGeometry(2,0),glow('#ffe9a0',1.6),0,17,0);g.add(o2);g.userData.crystal=o2}
+  else if(k==='ballista'){g.add(mesh(new T.CylinderGeometry(8,10,5,8),st,0,2.5,0));band(5.4);const bar=new T.Group();bar.position.set(0,9,0);bar.add(mesh(new T.BoxGeometry(2,2,16),mat(WOOD),0,0,2));bar.add(mesh(new T.BoxGeometry(16,1.4,1.4),mat('#5b3c20'),0,0,7));bar.add(mesh(new T.ConeGeometry(1.2,4,4),glow('#ffe9a0',1.2),0,0,11).rotateX(Math.PI/2));g.add(bar);g.userData.arm=bar;g.userData.armRest=0}
+  else if(k==='tree'){g.add(mesh(new T.CylinderGeometry(3.6,6,18,7),mat('#5a3d22'),0,9,0));for(const[x,y,z,r]of[[0,24,0,9],[-6,20,2,6],[6,21,-2,6.5],[0,18,-6,5.5]])g.add(mesh(new T.IcosahedronGeometry(r,1),mat('#3f8f3a',{emissive:'#2a6a2a',emissiveIntensity:.3}),x,y,z));for(let i=0;i<6;i++){const a=i/6*Math.PI*2;g.add(mesh(new T.OctahedronGeometry(1.2,0),glow('#c8ff7a',1.5),Math.cos(a)*11,14+Math.sin(i)*3,Math.sin(a)*11))}g.add(mesh(new T.CylinderGeometry(6.4,6.4,1.6,7),mat(col),0,3,0))}
+  else if(k==='spire'){g.add(mesh(new T.CylinderGeometry(7,9,6,6),st,0,3,0));band(6.4);g.add(mesh(new T.CylinderGeometry(2.6,4.6,20,6),mat('#3a4f7a'),0,16,0));g.add(mesh(new T.ConeGeometry(3,6,6),mat('#f3c55b'),0,29,0));const cr=mesh(new T.OctahedronGeometry(3.4,0),glow(ec,1.5),0,36,0);cr.scale.y=1.5;g.add(cr);g.userData.crystal=cr;for(let i=0;i<2;i++)g.add(mesh(new T.TorusGeometry(6-i*1.6,.4,4,20),glow('#9fd0ff',1.2),0,20+i*6,0).rotateX(Math.PI/2))}
+  return inner(g,o.sc);
+}
+function spellModel(c,ec){
+  const g=new T.Group(),fx=c.fx;
+  if(fx==='ball')return MODELS.bolt(null,ec);
+  if(fx==='rain')return MODELS.rain(null,ec);
+  if(fx==='strike'){const s=MODELS.strike(null,ec);if(c.chain){for(const s2 of[-1,1]){const m=mesh(new T.BoxGeometry(1.4,8,1),glow(ec,1.6),s2*8,4,0);m.rotation.z=s2*.9;s.add(m)}}return s}
+  if(fx==='meteor'){g.add(mesh(new T.DodecahedronGeometry(8,0),mat('#3a2a22')));for(let i=0;i<6;i++){const a=i/6*Math.PI*2;g.add(mesh(new T.ConeGeometry(2,8,5),glow(i%2?'#ff7a1a':'#ffd34d',1.5),Math.cos(a)*5,6,Math.sin(a)*5).rotateX(-.5))}for(const s of[[3,2,6],[-4,-2,6]])g.add(mesh(new T.IcosahedronGeometry(1.8,0),glow('#ff5a1a',1.6),...s));return g}
+  if(fx==='pillar'){g.add(mesh(new T.CylinderGeometry(4,4,30,10),mat(mix(ec,'#ffffff',.5),{emissive:ec,emissiveIntensity:1.2,transparent:true,opacity:.85}),0,15,0));g.add(mesh(new T.TorusGeometry(9,1,6,24),glow(ec,1.4)).rotateX(Math.PI/2));for(let i=0;i<4;i++){const a=i/4*Math.PI*2;g.add(mesh(new T.OctahedronGeometry(1.6,0),glow('#ffffff',1.4),Math.cos(a)*9,4,Math.sin(a)*9))}return g}
+  // ring spells: freeze / summon / heal / rage / shield / slow
+  const ring=mesh(new T.TorusGeometry(10,1,6,28),glow(ec,1.3));ring.rotation.x=Math.PI/2;g.add(ring);
+  if(c.summon){g.add(mesh(new T.BoxGeometry(6,3,13),mat('#4a3a2a'),0,2,0));g.add(mesh(new T.BoxGeometry(6.4,1,13.4),mat('#2a1e14'),0,4,0));for(let i=0;i<3;i++)g.add(mesh(new T.SphereGeometry(2.2,8,6),mat('#e9e4d4'),-6+i*6,7,5))}
+  else if(c.freeze){for(let i=0;i<5;i++){const m=mesh(new T.OctahedronGeometry(2.6,0),mat('#d7f2ff',{emissive:'#7fd0ff',emissiveIntensity:.6,roughness:.2}),(i-2)*3.6,6+(i%2)*3,0);m.scale.y=2.4;m.rotation.z=(i-2)*.25;g.add(m)}}
+  else if(c.heal){g.add(mesh(new T.BoxGeometry(4,14,4),glow('#8cf08a',1.2),0,9,0));g.add(mesh(new T.BoxGeometry(14,4,4),glow('#8cf08a',1.2),0,11,0))}
+  else if(c.rage){for(let i=0;i<5;i++){const a=i/5*Math.PI*2;g.add(mesh(new T.ConeGeometry(2,9,5),glow('#ff5a3a',1.4),Math.cos(a)*4,6,Math.sin(a)*4).rotateZ(Math.cos(a)*.4))}g.add(mesh(new T.IcosahedronGeometry(3,0),glow('#ffd34d',1.6),0,8,0))}
+  else if(c.shield){const sh=mesh(new T.CylinderGeometry(8,8,1.4,6),mat('#3a4f7a'),0,10,0);sh.rotation.x=Math.PI/2;g.add(sh);g.add(mesh(new T.TorusGeometry(8,.8,4,6),glow(ec,1.4),0,10,.8));g.add(mesh(new T.OctahedronGeometry(2.6,0),glow('#ffffff',1.4),0,10,1.6))}
+  else{for(let i=0;i<6;i++){const a=i/6*Math.PI*2,m=mesh(new T.ConeGeometry(1.4,10,4),mat(c.el==='nature'?'#5a7a2a':'#5a2a7a'),Math.cos(a)*5,5,Math.sin(a)*5);m.rotation.z=Math.cos(a)*.5;m.rotation.x=-Math.sin(a)*.5;g.add(m)}g.add(mesh(new T.IcosahedronGeometry(4,1),mat(mix(ec,'#ffffff',.2),{transparent:true,opacity:.7,emissive:ec,emissiveIntensity:.4}),0,8,0))}
+  return g;
+}
+function cardModel(k,col){
+  const c=cardOf(k),m=c.m||{},ec=ELEM[c.el].col;let g;
+  if(c.type==='spell')g=spellModel(c,ec);
+  else if(m.t==='old'){g=MODELS[m.k](col,m.ec||ec);g.userData.armRest=m.k==='knight'?.5:0;g=inner(g,m.sc)}
+  else g={human:humanoid,beast,flyer,blob,construct,build:building}[m.t](m,col,ec);
   return g;
 }
 function makeChest(type){
@@ -1275,22 +1586,22 @@ function updateView(v,e,dt,now){
     v.g.scale.setScalar(grow*pop);
     v.g.position.y=e.air?32+Math.sin(now/300+e.id)*2:(moving?Math.abs(Math.sin(v.walk))*1.8:0);
     const u=v.g.userData;
-    const ar=CARDS[e.key].arch;
-    if(u.wings){const a=Math.sin(now/(ar==='dragon'?140:90)+e.id)*.65;u.wings[0].rotation.z=-a;u.wings[1].rotation.z=-a}
-    if(u.arm)u.arm.rotation.x=(ar==='golem'?-1.2:-1.4)*Math.sin(Math.min(1,e.atk/.25)*Math.PI)+(ar==='knight'?.5:0);
-    if(u.mark){u.mark.rotation.y+=dt*2}
-    if(u.runeRing){u.runeRing.rotation.z+=dt*1.5}
-    if(u.crystal){u.crystal.rotation.y+=dt*2;u.crystal.position.y=22+Math.sin(now/300)*1.5}
+    if(u.wings){const a=Math.sin(now/(u.flap||90)+e.id)*.65;u.wings[0].rotation.z=-a;u.wings[1].rotation.z=-a}
+    if(u.arm)u.arm.rotation.x=(u.armRest||0)-1.3*Math.sin(Math.min(1,e.atk/.25)*Math.PI);
+    if(u.crystal){if(u.crystalY===undefined)u.crystalY=u.crystal.position.y;u.crystal.rotation.y+=dt*2;u.crystal.position.y=u.crystalY+Math.sin(now/300)*1.5}
+    if(v.ice)v.ice.visible=e.freezeT>0;else if(e.freezeT>0){v.ice=new T.Mesh(new T.CylinderGeometry(e.r*1.1,e.r*1.1,e.air?14:22,6),new T.MeshStandardMaterial({color:'#bfeaff',transparent:true,opacity:.45,emissive:'#7fd0ff',emissiveIntensity:.4,flatShading:true}));v.ice.position.y=(e.air?32:11);v.root.add(v.ice)}
+    if(v.shieldM)v.shieldM.visible=e.shield>0;else if(e.shield>0){v.shieldM=new T.Mesh(new T.SphereGeometry(e.r*1.15,10,8),new T.MeshBasicMaterial({color:'#9fd0ff',transparent:true,opacity:.18,depthWrite:false}));v.shieldM.position.y=(e.air?32:e.r*.8);v.root.add(v.shieldM)}
     if(v.summon){if(e.deploy>0){v.summon.rotation.z+=dt*4;v.summon.material.opacity=.85*(e.deploy/e.deployMax)+.15}else{v.root.remove(v.summon);v.summon=null}}
   }
   const showBar=G.running&&(e.kind==='tower'||e.kind==='building'||e.hp<e.maxHp);
   v.bar.visible=showBar&&e.deploy<=0;
   if(v.bar.visible){v.bar.position.set(wx(e.x),v.top+(e.kind==='tower'?6:5),wz(e.y));v.bar.quaternion.copy(camera.quaternion);setBar(v.bar,e.hp/e.maxHp)}
 }
-const projGeo={arrow:new T.CylinderGeometry(.5,.5,10,4),bolt:new T.IcosahedronGeometry(3.2,0),fire:new T.IcosahedronGeometry(3.6,0),ball:new T.IcosahedronGeometry(3,0),orb:new T.IcosahedronGeometry(3.4,0)};
+const projGeo={arrow:new T.CylinderGeometry(.5,.5,10,4),lance:new T.CylinderGeometry(.8,.8,16,4),bolt:new T.IcosahedronGeometry(3.2,0),fire:new T.IcosahedronGeometry(3.6,0),ball:new T.IcosahedronGeometry(3,0),orb:new T.IcosahedronGeometry(3.4,0),
+  bomb:new T.IcosahedronGeometry(3,1),frost:new T.OctahedronGeometry(3.2,0),spark:new T.OctahedronGeometry(2.6,0),snow:new T.IcosahedronGeometry(2.8,1),leaf:new T.ConeGeometry(1.8,5,3)};
+const PROJ_LOOK={arrow:()=>mat('#5a3a1c'),lance:()=>glow('#ffe9a0',1.4),bomb:()=>mat('#2a2a2a'),snow:()=>mat('#ffffff'),frost:()=>glow('#bfeaff',1.4),spark:()=>glow('#ffe14d',1.8),leaf:()=>glow('#6ee07a',1)};
 function projMesh(p){
-  const col=p.type==='arrow'?'#5a3a1c':p.type==='bolt'?teamCol(p.team):p.col||'#ff8a1f';
-  const m=new T.Mesh(projGeo[p.type],p.type==='arrow'?mat(col):glow(col,1.6));
+  const m=new T.Mesh(projGeo[p.type]||projGeo.ball,PROJ_LOOK[p.type]?PROJ_LOOK[p.type]():glow(p.type==='bolt'?teamCol(p.team):p.col||'#ff8a1f',1.6));
   scene.add(m);return m;
 }
 const _v=new T.Vector3();
@@ -1298,18 +1609,21 @@ function syncProj(){
   const live=new Set(G.proj);
   for(const p of G.proj){let m=projViews.get(p);if(!m){m=projMesh(p);projViews.set(p,m)}
     m.position.set(wx(p.x),p.h,wz(p.y));
-    if(p.type==='arrow'){_v.set(wx(p.tx),p.th,wz(p.ty));m.lookAt(_v);m.rotateX(Math.PI/2)}else m.rotation.y+=.3}
+    if(p.type==='arrow'||p.type==='lance'){_v.set(wx(p.tx),p.th,wz(p.ty));m.lookAt(_v);m.rotateX(Math.PI/2)}else m.rotation.y+=.3}
   for(const[p,m]of projViews)if(!live.has(p)){scene.remove(m);projViews.delete(p)}
 }
 function spellMesh(s){
-  const g=new T.Group(),ec=s.col;
-  if(s.arch==='bolt'){const f=MODELS.bolt(null,ec);f.scale.setScalar(.9);g.add(f);g.userData.ball=f}
-  else if(s.arch==='strike'){
+  const g=new T.Group(),ec=s.col,vfx=s.vfx;
+  if(vfx==='ball'){const f=MODELS.bolt(null,ec);f.scale.setScalar(.9);g.add(f);g.userData.ball=f}
+  else if(vfx==='meteor'){const f=spellModel(CARDS[s.key],ec);f.scale.setScalar(1.5);g.add(f);g.userData.meteor=f}
+  else if(vfx==='strike'){
     const cl=new T.Group();for(const[x,z,r]of[[0,0,14],[-14,4,10],[13,-3,11],[4,-10,9]])cl.add(mesh(new T.IcosahedronGeometry(r,1),mat(mix('#4a5068',ec,.25)),x,0,z));
     cl.position.set(wx(s.x),120,wz(s.y));g.add(cl);
     const bolt=new T.Group();let y=118,x=0;for(let i=0;i<6;i++){const nx=(Math.random()-.5)*14,len=20;const m=new T.Mesh(new T.BoxGeometry(2.6,len+2,2.6),glow(mix(ec,'#ffffff',.5),2));m.position.set((x+nx)/2,y-len/2,0);m.rotation.z=Math.atan2(nx-x,len);bolt.add(m);x=nx;y-=len}
     bolt.position.set(wx(s.x),0,wz(s.y));bolt.visible=false;g.add(bolt);g.userData.bolt=bolt;g.userData.cloud=cl;
   }
+  else if(vfx==='pillar'){const c=new T.Mesh(new T.CylinderGeometry(s.r*.5,s.r*.5,160,12,1,true),new T.MeshBasicMaterial({color:mix(ec,'#ffffff',.5),transparent:true,opacity:.5,depthWrite:false,side:T.DoubleSide}));c.position.set(wx(s.x),80,wz(s.y));g.add(c);g.userData.pillar=c}
+  else if(vfx==='ring'){const r=new T.Mesh(new T.RingGeometry(.9,1,40),new T.MeshBasicMaterial({color:ec,transparent:true,opacity:.8,depthWrite:false,side:T.DoubleSide}));r.rotation.x=-Math.PI/2;r.position.set(wx(s.x),1.6,wz(s.y));g.add(r);g.userData.ringM=r}
   else{g.userData.shards=[];const sm=mat(mix(ec,'#ffffff',.45),{emissive:ec,emissiveIntensity:.6,roughness:.2});for(let i=0;i<18;i++){const a=Math.random()*Math.PI*2,r=Math.sqrt(Math.random())*s.r;const m=mesh(new T.ConeGeometry(1.8,9,5),sm,wx(s.x)+Math.cos(a)*r,0,wz(s.y)+Math.sin(a)*r);m.rotation.x=Math.PI;m.userData.lag=Math.random()*.25;g.add(m);g.userData.shards.push(m)}}
   scene.add(g);return g;
 }
@@ -1318,8 +1632,11 @@ function syncSpells(){
   for(const s of G.spells){let g=spellViews.get(s);if(!g){g=spellMesh(s);spellViews.set(s,g)}
     const k=clamp(s.t/s.delay,0,1),u=g.userData;
     if(u.ball){u.ball.position.set(wx(s.fx+(s.x-s.fx)*k),70*(1-k)+Math.sin(Math.PI*k)*90+4,wz(s.fy+(s.y-s.fy)*k));u.ball.rotation.x+=.2}
+    else if(u.meteor){u.meteor.position.set(wx(s.x)+60*(1-k),240*(1-k)+6,wz(s.y)-40*(1-k));u.meteor.rotation.x+=.15;u.meteor.rotation.z+=.1}
     else if(u.bolt){u.cloud.scale.setScalar(.4+.6*Math.min(1,k*2));u.bolt.visible=k>.7&&Math.random()>.2}
-    else for(const m of u.shards){const kk=clamp((s.t-m.userData.lag)/(s.delay-m.userData.lag),0,1);m.position.y=160*(1-kk)+4;m.visible=s.t>=m.userData.lag*.5}}
+    else if(u.pillar){u.pillar.scale.set(.2+.8*k,1,.2+.8*k);u.pillar.material.opacity=.25+.5*k}
+    else if(u.ringM){u.ringM.scale.setScalar(s.r*(.3+.7*k))}
+    else if(u.shards)for(const m of u.shards){const kk=clamp((s.t-m.userData.lag)/(s.delay-m.userData.lag),0,1);m.position.y=160*(1-kk)+4;m.visible=s.t>=m.userData.lag*.5}}
   for(const[s,g]of spellViews)if(!live.has(s)){scene.remove(g);spellViews.delete(s)}
 }
 const partGeo=new T.BoxGeometry(2.6,2.6,2.6);
@@ -1339,12 +1656,20 @@ function fx3dLocal(type,x,y,h,r,c){
   else if(type==='boltHit'){boom(x,y,8,c,r);ringFx(x,y,mix(c,'#ffffff',.3),r);burst(x,y,8,c,16);burst(x,y,8,'#3a2a20',8)}
   else if(type==='rainHit'){ringFx(x,y,mix(c,'#ffffff',.5),r);burst(x,y,6,mix(c,'#ffffff',.5),18);flash.position.set(wx(x),30,wz(y));flash.color.set(c);flash.intensity=1.6}
   else if(type==='strikeHit'){boom(x,y,10,mix(c,'#ffffff',.4),r);ringFx(x,y,c,r*1.4);burst(x,y,8,mix(c,'#ffffff',.5),14);flash.color.set(c);flash.intensity=3.2}
+  else if(type==='ringHit'){ringFx(x,y,c,r);ringFx(x,y,mix(c,'#ffffff',.5),r*.6);burst(x,y,5,mix(c,'#ffffff',.3),14);flash.position.set(wx(x),30,wz(y));flash.color.set(c);flash.intensity=1.4}
+  else if(type==='aura')ringFx(x,y,c,r);
+  else if(type==='zap'){
+    const ax=wx(x),az=wz(y),bx=wx(h),bz=wz(r),len=Math.hypot(bx-ax,bz-az)||1;
+    const m=new T.Mesh(new T.BoxGeometry(1.6,1.6,len),new T.MeshBasicMaterial({color:c||'#ffe14d',transparent:true,opacity:1,depthWrite:false}));
+    m.position.set((ax+bx)/2,14,(az+bz)/2);m.lookAt(bx,14,bz);scene.add(m);effects.push({obj:m,life:.25,max:.25,kind:'fade'});
+  }
 }
 function updateEffects(dt){
   for(const f of effects){f.life-=dt;const k=1-f.life/f.max,o=f.obj;
     if(f.kind==='part'){f.vy-=260*dt;o.position.x+=f.vx*dt;o.position.y=Math.max(1,o.position.y+f.vy*dt);o.position.z+=f.vz*dt;o.rotation.x+=dt*8;o.scale.setScalar(Math.max(.01,f.life/f.max))}
     else if(f.kind==='boom'){o.scale.setScalar(f.r*(.35+.75*k));o.material.opacity=.75*(1-k)}
-    else if(f.kind==='ring'){o.scale.setScalar(f.r*(.3+.8*k));o.material.opacity=.9*(1-k)}}
+    else if(f.kind==='ring'){o.scale.setScalar(f.r*(.3+.8*k));o.material.opacity=.9*(1-k)}
+    else if(f.kind==='fade')o.material.opacity=1-k}
   for(let i=effects.length-1;i>=0;i--)if(effects[i].life<=0){const o=effects[i].obj;scene.remove(o);if(effects[i].kind!=='part'){o.geometry.dispose();o.material.dispose()}effects.splice(i,1)}
   flash.intensity=Math.max(0,flash.intensity-dt*6);
 }
@@ -1392,6 +1717,7 @@ function render(dt,now){
 }
 
 // ================= UI: shell =================
+function compNotice(){if(!SAVE_COMP)return;const g=SAVE_COMP;SAVE_COMP=0;persist();setTimeout(()=>confirmBox(`卡牌全面改版：100 張卡現在都是不同的兵種。舊版元素卡已收回，補償你 ${g} 金幣。`,()=>{}),600)}
 function toast(t){const e=$('#gtoast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,1800)}
 function confirmBox(text,yes){$('#cfText').textContent=text;$('#confirmOv').hidden=false;$('#cfYes').onclick=()=>{$('#confirmOv').hidden=true;yes()};$('#cfYes').focus()}
 $('#cfNo').onclick=()=>$('#confirmOv').hidden=true;
@@ -1557,8 +1883,9 @@ let cardKey=null;
 function statRows(k,l){
   const c=CARDS[k],m=lvMult(l),m2=lvMult(l+1),up=l<MAXLV,rows=[['費用',c.cost],['元素',ELEM[c.el].name]];
   const d=(v,v2)=>[Math.round(v),up?'+'+(Math.round(v2)-Math.round(v)):''];
-  if(c.type==='spell'){rows.push(['傷害',...d(c.dmg*m,c.dmg*m2)],['對塔傷害',...d(c.towerDmg*m,c.towerDmg*m2)],['範圍',c.radius])}
-  else{const s=c.s;rows.push(['血量',...d(s.hp*m,s.hp*m2)],['傷害',...d(s.dmg*m,s.dmg*m2)],['射程',s.range>20?'遠程':'近戰'],[c.type==='building'?'持續':'速度',c.type==='building'?s.life+' 秒':s.speed>=60?'快':s.speed>=40?'中':'慢'],['目標',s.buildingsOnly?'建築':s.targetsAir?'空中與地面':'地面'],['數量',c.type==='building'?'建築':(s.air?'飛行 ':'')+'×'+c.count])}
+  if(c.type==='spell'){if(c.dmg)rows.push(['傷害',...d(c.dmg*m,c.dmg*m2)],['對塔傷害',...d(c.towerDmg*m,c.towerDmg*m2)]);rows.push(['範圍',c.radius])}
+  else{const s=c.s;rows.push(['血量',...d(s.hp*m,s.hp*m2)],...(s.dmg?[['傷害',...d(s.dmg*m,s.dmg*m2)],['射程',s.range>40?'遠程':s.range>12?'中距離':'近戰']]:[]),[c.type==='building'?'持續':'速度',c.type==='building'?s.life+' 秒':s.speed>=60?'快':s.speed>=40?'中':'慢'],['目標',s.buildingsOnly?'建築':s.targetsAir?'空中與地面':'地面'],['數量',c.type==='building'?'建築':(s.air?'飛行 ':'')+'×'+c.count])}
+  const mt=mechText(c);if(mt)rows.push(['特殊',mt,'',1]);
   return rows;
 }
 function openCard(k){
@@ -1566,7 +1893,7 @@ function openCard(k){
   $('#cdImg').src=THUMB[k];skinCard($('#cdImg'),k);$('#cdName').textContent=c.name;$('#cdDesc').textContent=c.desc;
   const rr=$('#cdRar');rr.textContent=RAR[c.rar].name+(c.type==='spell'?' · 法術':c.type==='building'?' · 建築':' · 部隊');rr.style.color=RAR[c.rar].col;
   const st=$('#cdStats');st.innerHTML='';
-  for(const[a,b,up]of statRows(k,l)){const d=el('div');d.append(el('span',null,a));const v=el('b',null,String(b));if(up&&own)v.append(el('em',null,up));d.append(v);st.append(d)}
+  for(const[a,b,up,wide]of statRows(k,l)){const d=el('div',wide?'wide':null);d.append(el('span',null,a));const v=el('b',null,String(b));if(up&&own)v.append(el('em',null,up));d.append(v);st.append(d)}
   const pg=$('#cdProg'),upb=$('#cdUp'),use=$('#cdUse');pg.innerHTML='';
   if(!own){pg.append(el('span',null,'尚未獲得。打開寶箱或在召喚祭壇抽卡就有機會得到。'));upb.hidden=true;use.hidden=true}
   else{
@@ -1756,7 +2083,7 @@ async function initCloud(){
     const id=await user.id();if(!id)return cloudOff();
     cloud.db=db;cloud.id=id;cloud.canWrite=await user.can('data.write');
     const snap=await db.doc(`data/users/${id}/save`).get().catch(()=>null);
-    if(snap&&snap.exists){const d=snap.data().save;if(d&&(d.ts||0)>(S.ts||0)){S=fixSave(JSON.parse(JSON.stringify(d)));try{localStorage.setItem('bd-save',JSON.stringify(S))}catch(e){}renderTop();if(VIEW!=='battle')showScreen(VIEW)}}
+    if(snap&&snap.exists){const d=snap.data().save;if(d&&(d.ts||0)>(S.ts||0)){S=fixSave(JSON.parse(JSON.stringify(d)));try{localStorage.setItem('bd-save',JSON.stringify(S))}catch(e){}renderTop();compNotice();if(VIEW!=='battle')showScreen(VIEW)}}
     cloud.state='on';
     db.collection('players').orderBy('trophies','desc').limit(300).onSnapshot(s=>{PLAYERS=s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));onCloudData()},()=>{});
     db.collection('guilds').limit(200).onSnapshot(s=>{GUILDS=new Map(s.docs.map(d=>[d.id,d.data()]));if(!s.metadata.fromCache)guildsLoaded=true;onCloudData()},()=>{});
@@ -1862,7 +2189,7 @@ async function sendChat(text){
 // ================= friend battles (live room) =================
 // The host simulates the match and shares compact snapshots through room presence; the guest renders them mirrored and sends card plays as events.
 const NET={lobby:undefined,room:null,role:null,code:'',peer:null,guestP:null,lastSend:0,seen:0,opp:{nick:'對手',avatar:'1'},emoteAt:0};
-const PKEYS=Object.keys(CARDS),PT=['arrow','bolt','fire','ball','orb'];
+const PKEYS=[...Object.keys(CARDS),...Object.keys(TOKENS)],PT=['arrow','bolt','fire','ball','orb','bomb','frost','spark','snow','leaf','lance'];
 async function getLobby(){if(NET.lobby!==undefined)return NET.lobby;try{NET.lobby=window.claude&&typeof claude.use==='function'?await claude.use('room'):null}catch(e){NET.lobby=null}return NET.lobby}
 function fdRender(state,msg){
   const b=$('#fdBody');b.innerHTML='';
@@ -1922,7 +2249,7 @@ function startFriend(g){
 function encodeState(){
   const r=Math.round,ki=k=>PKEYS.indexOf(k);
   return{t:+G.time.toFixed(1),ot:G.overtime?1:0,c:G.crowns,e:+G.elixir[1].toFixed(2),h:G.decks[1].hand.map(ki),n:ki(G.decks[1].queue[0]),o:G.over?1:0,
-    E:G.ents.slice(0,70).map(e=>[e.id,e.kind==='tower'?(e.king?-2:-1):ki(e.key),e.team,r(e.x),r(e.y),Math.max(0,Math.ceil(e.hp/e.maxHp*100)),(e.dead?1:0)|(e.deploy>0?2:0)|(e.atk>0?4:0)|(e.active?8:0)]),
+    E:G.ents.slice(0,70).map(e=>[e.id,e.kind==='tower'?(e.king?-2:-1):ki(e.key),e.team,r(e.x),r(e.y),Math.max(0,Math.ceil(e.hp/e.maxHp*100)),(e.dead?1:0)|(e.deploy>0?2:0)|(e.atk>0?4:0)|(e.active?8:0)|(e.freezeT>0?16:0)|(e.shield>0?32:0)]),
     P:G.proj.slice(0,24).map(p=>[p.id,r(p.x),r(p.y),r(p.h),PT.indexOf(p.type),p.team,p.col||'']),
     S:G.spells.map(s=>[s.id,ki(s.key),s.team,r(s.x),r(s.y),r(s.fx),r(s.fy),+Math.min(1,s.t/s.delay).toFixed(2)]),
     F:G.fxLog.slice(-8)};
@@ -1943,8 +2270,8 @@ function applySnap(st){
   for(const a of st.E){
     if(!Array.isArray(a))continue;const[id,k,t,x,y,pct,f]=a,key=k>=0?PKEYS[k]:null;if(k>=0&&!key)continue;
     const mx=W-x,my=H-y;let e=G.byId.get(id);
-    if(!e){const c=key&&CARDS[key];e={id,key,team:1-t,kind:k<0?'tower':c.type==='building'?'building':'unit',king:k===-2,x:mx,y:my,r:k===-2?24:k===-1?19:c.s.r,air:!!(c&&c.s.air),lane:k===-1?(mx<180?0:1):-1,maxHp:100,deployMax:1,target:null,atk:0};G.byId.set(id,e);G.ents.push(e)}
-    e.tx=mx;e.ty=my;e.hp=+pct||0;const dead=!!(f&1);if(dead&&!e.dead&&e.kind==='tower'){sfx('crash');sfx('crown')}e.dead=dead;e.deploy=f&2?.5:0;e.atk=f&4?.25:0;e.active=!!(f&8);seen.add(id);
+    if(!e){const c=key&&cardOf(key);e={id,key,team:1-t,kind:k<0?'tower':c.type==='building'?'building':'unit',king:k===-2,x:mx,y:my,r:k===-2?24:k===-1?19:c.s.r,air:!!(c&&c.s.air),lane:k===-1?(mx<180?0:1):-1,maxHp:100,deployMax:1,target:null,atk:0};G.byId.set(id,e);G.ents.push(e)}
+    e.tx=mx;e.ty=my;e.hp=+pct||0;const dead=!!(f&1);if(dead&&!e.dead&&e.kind==='tower'){sfx('crash');sfx('crown')}e.dead=dead;e.deploy=f&2?.5:0;e.atk=f&4?.25:0;e.active=!!(f&8);e.freezeT=f&16?1:0;e.shield=f&32?1:0;seen.add(id);
   }
   G.ents=G.ents.filter(e=>seen.has(e.id));for(const id of[...G.byId.keys()])if(!seen.has(id))G.byId.delete(id);
   const ps=new Set();
@@ -1952,18 +2279,18 @@ function applySnap(st){
   for(const id of[...G.projById.keys()])if(!ps.has(id))G.projById.delete(id);
   G.proj=[...G.projById.values()];
   const ss=new Set();
-  for(const a of st.S||[]){if(!Array.isArray(a))continue;const[id,k,team,x,y,fx,fy,p]=a,key=PKEYS[k];if(!key)continue;let s=G.spById.get(id);if(!s){const c=CARDS[key];s={id,key,arch:c.arch,col:elCol(key),team:1-team,x:W-x,y:H-y,fx:W-fx,fy:H-fy,t:0,delay:1,r:c.radius};G.spById.set(id,s)}s.t=Math.max(s.t,+p||0);ss.add(id)}
+  for(const a of st.S||[]){if(!Array.isArray(a))continue;const[id,k,team,x,y,fx,fy,p]=a,key=PKEYS[k];if(!key)continue;let s=G.spById.get(id);if(!s){const c=CARDS[key];s={id,key,vfx:c.fx,col:elCol(key),team:1-team,x:W-x,y:H-y,fx:W-fx,fy:H-fy,t:0,delay:1,r:c.radius};G.spById.set(id,s)}s.t=Math.max(s.t,+p||0);ss.add(id)}
   for(const id of[...G.spById.keys()])if(!ss.has(id))G.spById.delete(id);
   G.spells=[...G.spById.values()];
-  for(const f of st.F||[]){if(!Array.isArray(f)||!(f[0]>NET.seen))continue;NET.seen=f[0];const[,type,x,y,h,r,c]=f;if(!['slash','burst','boltHit','rainHit','strikeHit'].includes(type))continue;
-    fx3dLocal(type,W-x,H-y,+h||0,+r||0,typeof c==='string'&&/^#[0-9a-f]{6}$/i.test(c)?c:'#ffffff');const snd={slash:'hit',burst:'fire',boltHit:'boom',rainHit:'hail',strikeHit:'thunder'}[type];sfx(snd,.05)}
+  for(const f of st.F||[]){if(!Array.isArray(f)||!(f[0]>NET.seen))continue;NET.seen=f[0];const[,type,x,y,h,r,c]=f;if(!['slash','burst','boltHit','rainHit','strikeHit','ringHit','aura','zap'].includes(type))continue;
+    const zap=type==='zap';fx3dLocal(type,W-x,H-y,zap?W-(+h||0):+h||0,zap?H-(+r||0):+r||0,typeof c==='string'&&/^#[0-9a-f]{6}$/i.test(c)?c:'#ffffff');const snd={slash:'hit',burst:'fire',boltHit:'boom',rainHit:'hail',strikeHit:'thunder',ringHit:'chime',zap:'bolt'}[type];if(snd)sfx(snd,.05)}
   if(st.o)guestEnd();
 }
 function guestTick(dt){
   const k=Math.min(1,dt*12);
   for(const e of G.ents){if(e.tx==null)continue;e.x+=(e.tx-e.x)*k;e.y+=(e.ty-e.y)*k;if(e.deploy>0)e.deploy=Math.max(0,e.deploy-dt)}
   for(const p of G.proj){if(p.nx==null)continue;p.x+=(p.nx-p.x)*k;p.y+=(p.ny-p.y)*k;p.h+=(p.nh-p.h)*k;p.tx=p.nx+.01;p.ty=p.ny;p.th=p.nh}
-  for(const s of G.spells)s.t=Math.min(1,s.t+dt/(s.arch==='bolt'?.6:s.arch==='strike'?.35:.55));
+  for(const s of G.spells)s.t=Math.min(1,s.t+dt/(SPELL_DELAY[s.vfx]||.5));
   G.time=Math.max(0,G.time-dt);
   if(G.msg&&(G.msg.t-=dt)<=0)G.msg=null;
 }
@@ -2011,7 +2338,7 @@ function renderAccount(){
 // ================= boot =================
 makeThumbs();buildWorld();
 $('#nav-cards img').src=THUMB.knight;$('#nav-gacha img').src=ICON.altar;$('#nav-home img').src=ICON.castle;$('#nav-guild img').src=ICON.banner;
-setMute(!SFX.on);renderTop();showScreen('home');
+setMute(!SFX.on);renderTop();showScreen('home');compNotice();
 new ResizeObserver(()=>{if(cv.parentElement===$('#heroSlot'))fitCamera()}).observe($('#heroSlot'));
 new ResizeObserver(()=>{if(cv.parentElement===$('#stage'))fitCamera()}).observe($('#stage'));
 $('#loading').hidden=true;
