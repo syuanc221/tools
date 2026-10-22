@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#3a2160"/>
+  <!-- open spellbook whose pages arch into a bridge over the river -->
+  <path fill="#f3c55b" d="M256 92l12 30 30 12-30 12-12 30-12-30-30-12 30-12z"/>
+  <path fill="#f4efe6" d="M256 228c-40-26-104-34-170-24v172c66-10 130-2 170 24 40-26 104-34 170-24V204c-66-10-130-2-170 24z"/>
+  <path fill="#3a2160" d="M140 376c0-46 52-80 116-80s116 34 116 80h-30c0-32-38-56-86-56s-86 24-86 56z"/>
+  <path fill="none" stroke="#3a2160" stroke-width="10" d="M256 230v170"/>
+  <path fill="none" stroke="#d59bff" stroke-width="16" stroke-linecap="round" d="M96 440q20-14 40 0t40 0 40 0 40 0 40 0 40 0 40 0 40 0"/>
+</svg>

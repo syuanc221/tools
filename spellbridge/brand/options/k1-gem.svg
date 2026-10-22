@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#111a26"/>
+  <!-- cut gem: flat table on top, the river runs through the girdle, two gold bridges cross it -->
+  <path fill="#d59bff" d="M178 92h156l-28 112H206z"/>
+  <path fill="#e7c4ff" d="M178 92l28 112H96z"/>
+  <path fill="#b65cf0" d="M334 92l-28 112h110z"/>
+  <path fill="#d59bff" d="M96 252h110l50 196z"/>
+  <path fill="#b65cf0" d="M206 252h100l-50 196z"/>
+  <path fill="#8e3fd0" d="M306 252h110L256 448z"/>
+  <g fill="#f3c55b"><rect x="148" y="196" width="40" height="64" rx="6"/><rect x="324" y="196" width="40" height="64" rx="6"/></g>
+  <path fill="#f4efe6" d="M404 80l7 17 17 7-17 7-7 17-7-17-17-7 17-7z"/>
+</svg>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#111a26"/>
+  <!-- one cream line: crooked hat, brim, happy closed eyes and a little smile -->
+  <g fill="none" stroke="#f4efe6" stroke-width="24" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M176 262L246 92q14-26 40-18 22 8 26 34"/>
+    <path d="M336 262L286 132"/>
+    <path d="M118 276q138-46 276 0"/>
+    <path d="M190 318q22-22 44 0M278 318q22-22 44 0"/>
+    <path d="M226 376q30 26 60 0"/>
+  </g>
+  <path fill="#f3c55b" d="M256 176l8 20 20 8-20 8-8 20-8-20-20-8 20-8z"/>
+</svg>

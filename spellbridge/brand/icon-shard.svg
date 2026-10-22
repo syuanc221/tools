@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#111a26"/>
+  <!-- tall rune shard with three faces, split by the river (gold rune line); a small sister shard stands apart on the left -->
+  <g transform="translate(22 0)">
+    <path fill="#e7c4ff" d="M256 48l-64 80v96h64z"/>
+    <path fill="#b65cf0" d="M256 48l64 80v96h-64z"/>
+    <path fill="#e7c4ff" d="M192 268v80l64 112V268z"/>
+    <path fill="#b65cf0" d="M320 268v80l-64 112V268z"/>
+    <path fill="#d59bff" d="M70 300l36-48 36 48-36 96z"/>
+    <path fill="#8e3fd0" d="M106 252l36 48-36 96z"/>
+    <path fill="none" stroke="#f3c55b" stroke-width="14" stroke-linecap="round" d="M176 246h160"/>
+    <path fill="#f4efe6" d="M372 120l7 17 17 7-17 7-7 17-7-17-17-7 17-7z"/>
+  </g>
+</svg>

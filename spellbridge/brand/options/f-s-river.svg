@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#111a26"/>
+  <!-- the river bends into an S (SPELLBRIDGE); two gold bridges cross it -->
+  <path fill="none" stroke="#b65cf0" stroke-width="64" stroke-linecap="round" d="M372 128H210c-50 0-84 34-84 78s34 78 84 78h92c50 0 84 34 84 78s-34 78-84 78H140"/>
+  <g fill="#f3c55b">
+    <rect x="226" y="80" width="52" height="96" rx="8"/>
+    <rect x="234" y="336" width="52" height="96" rx="8"/>
+  </g>
+  <g fill="#b97c0d"><path d="M226 104h52v8h-52zM226 144h52v8h-52zM234 360h52v8h-52zM234 400h52v8h-52z"/></g>
+  <path fill="#f4efe6" d="M392 236l7 17 17 7-17 7-7 17-7-17-17-7 17-7z"/>
+</svg>

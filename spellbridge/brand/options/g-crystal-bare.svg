@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  
+  <!-- ETH-style spell crystal: the gap between the two halves is the river -->
+  <path fill="#d59bff" d="M256 52L118 270l138 64z"/>
+  <path fill="#b65cf0" d="M256 52l138 218-138 64z"/>
+  <path fill="#8e3fd0" d="M118 270l138-62 138 62-138 64z"/>
+  <path fill="#d59bff" d="M118 300l138 66V462z"/>
+  <path fill="#b65cf0" d="M394 300l-138 66V462z"/>
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#f4efe6"/>
+  <!-- solid wizard head; the closed happy eyes are two little bridges, the mouth is the river -->
+  <path fill="#111a26" d="M268 46c30 6 52 28 58 56-20-10-38-6-48 6 8 40 22 80 40 116 60 14 102 52 102 112 0 76-74 128-166 128S88 412 88 336c0-60 42-98 102-112 26-58 48-120 78-178z"/>
+  <path fill="#f3c55b" d="M262 150l8 20 20 8-20 8-8 20-8-20-20-8 20-8z"/>
+  <g fill="#f4efe6">
+    <path d="M150 340v-14c0-26 20-44 44-44s44 18 44 44v14h-20v-12c0-14-10-24-24-24s-24 10-24 24v12z"/>
+    <path d="M274 340v-14c0-26 20-44 44-44s44 18 44 44v14h-20v-12c0-14-10-24-24-24s-24 10-24 24v12z"/>
+  </g>
+  <path fill="none" stroke="#b65cf0" stroke-width="16" stroke-linecap="round" d="M196 398q15-12 30 0t30 0 30 0 30 0"/>
+</svg>

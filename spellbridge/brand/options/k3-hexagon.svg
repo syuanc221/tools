@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#111a26"/>
+  <!-- wide hexagonal crystal seen from the front: three faces, crown and pavilion split by a river with two bridges -->
+  <path fill="#e7c4ff" d="M256 72L104 210h70z"/>
+  <path fill="#d59bff" d="M256 72l-82 138h164z"/>
+  <path fill="#b65cf0" d="M256 72l152 138h-70z"/>
+  <path fill="#d59bff" d="M104 266h70l82 174z"/>
+  <path fill="#b65cf0" d="M174 266h164l-82 174z"/>
+  <path fill="#8e3fd0" d="M338 266h70L256 440z"/>
+  <path fill="#5b8fff" d="M104 222h304v32H104z"/>
+  <g fill="#f3c55b"><rect x="150" y="206" width="38" height="64" rx="6"/><rect x="324" y="206" width="38" height="64" rx="6"/></g>
+</svg>
