@@ -542,6 +542,10 @@ const SFX={ctx:null,master:null,nbuf:null,last:{},
     crash(){this.noise(1,{vol:.5,type:'lowpass',f:700,to:40});for(let i=0;i<5;i++)this.noise(.15,{vol:.2,type:'bandpass',f:600+i*300,at:.1+i*.08,q:3})},
     crown(){[784,988,1175].forEach((f,i)=>this.tone(f,.3,{type:'triangle',vol:.15,at:.35+i*.09}))},
     tick(){this.tone(1000,.05,{type:'square',vol:.06})},
+    // match clock: bell + horn at one minute left, a rising beep each of the last 10 seconds (heavier for the last 3), a low horn for overtime
+    lastMin(){[784,1046,1318].forEach((f,i)=>this.tone(f,.9,{type:'triangle',vol:.16,at:i*.12}));this.tone(196,.6,{type:'sawtooth',vol:.07,to:262,at:.35})},
+    count(){const s=this.cd||10,f=660+(10-s)*70;if(s<=3){this.tone(f*1.5,.18,{type:'square',vol:.1});this.tone(90,.25,{vol:.28,to:50})}else{this.tone(f,.09,{type:'square',vol:.09});this.tone(f*2,.05,{type:'triangle',vol:.04,at:.02})}},
+    overtime(){this.tone(110,1.1,{type:'sawtooth',vol:.1,to:147});this.tone(165,1.1,{type:'sawtooth',vol:.06,to:220,at:.05});this.noise(.6,{vol:.1,type:'lowpass',f:500})},
     chime(){[1046,1318,1568,2093].forEach((f,i)=>this.tone(f,.4,{vol:.1,at:i*.07}))},
     error(){this.tone(180,.18,{type:'square',vol:.07,to:140})},
     win(){[523,659,784,1046,784,1046].forEach((f,i)=>this.tone(f,i>3?.6:.22,{type:'triangle',vol:.18,at:i*.14}))},
@@ -651,7 +655,9 @@ Object.assign(BGM,{
         if(want){const b=this.decks[1-this.act];if(b.name!==want){b.name=want;b.el.src='audio/'+this.TRACKS[want]+'.m4a'}b.stopAt=0;fade(b,1);this.act=1-this.act}
       }
     }
+    const rate=VIEW==='battle'&&G&&!G.over&&(G.time<=60||G.overtime)?1.08:1;
     for(const d of this.decks){
+      if(Math.abs(d.el.playbackRate-rate)>.001)d.el.playbackRate=rate;
       if(d.stopAt&&ms>d.stopAt){d.stopAt=0;d.el.pause()}
       else if(!d.stopAt&&d.name&&d.name===this.cur&&d.el.paused)d.el.play().catch(()=>{});
     }
@@ -1212,8 +1218,7 @@ function update(dt){
   if(G.over||!G.running)return;
   if(G.guest){guestTick(dt);return}
   G.time-=dt;
-  const sec=Math.ceil(G.time);
-  if(sec!==G.lastSec){if(sec===60&&!G.overtime)sfx('chime');if(sec<=10&&sec>0)sfx('tick');G.lastSec=sec}
+  timeCues();
   const rate=(G.time<=60||G.overtime?2:1)/2.8;
   G.elixir[0]=Math.min(10,G.elixir[0]+rate*dt);
   G.elixir[1]=Math.min(10,G.elixir[1]+rate*dt*diff().mult);
@@ -2564,12 +2569,18 @@ function applySnap(st){
     const zap=type==='zap';fx3dLocal(type,W-x,H-y,zap?W-(+h||0):+h||0,zap?H-(+r||0):+r||0,typeof c==='string'&&/^#[0-9a-f]{6}$/i.test(c)?c:'#ffffff');const snd={slash:'hit',burst:'fire',boltHit:'boom',rainHit:'hail',strikeHit:'thunder',ringHit:'chime',zap:'zap'}[type];if(snd)sfx(snd,.05)}
   if(st.o)guestEnd();
 }
+function timeCues(){
+  if(G.overtime&&!G.otCue){G.otCue=true;sfx('overtime')}
+  const sec=Math.ceil(G.time);if(sec===G.lastSec)return;const prev=G.lastSec;G.lastSec=sec;if(prev==null)return;
+  if(sec===60&&!G.overtime)sfx('lastMin');
+  else if(sec<=10&&sec>0){SFX.cd=sec;sfx('count')}
+}
 function guestTick(dt){
   const k=Math.min(1,dt*12);
   for(const e of G.ents){if(e.tx==null)continue;e.x+=(e.tx-e.x)*k;e.y+=(e.ty-e.y)*k;if(e.deploy>0)e.deploy=Math.max(0,e.deploy-dt)}
   for(const p of G.proj){if(p.nx==null)continue;p.x+=(p.nx-p.x)*k;p.y+=(p.ny-p.y)*k;p.h+=(p.nh-p.h)*k;p.tx=p.nx+.01;p.ty=p.ny;p.th=p.nh}
   for(const s of G.spells)s.t=Math.min(1,s.t+dt/(SPELL_DELAY[s.vfx]||.5));
-  G.time=Math.max(0,G.time-dt);
+  G.time=Math.max(0,G.time-dt);timeCues();
   if(G.msg&&(G.msg.t-=dt)<=0)G.msg=null;
 }
 function guestPlay(i,x,y){
