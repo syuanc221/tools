@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>秘法雙橋 SPELLBRIDGE｜3D 巫師卡牌對戰</title>
+<meta name="description" content="秘法雙橋：一條河、兩座橋的 3D 巫師卡牌對戰。116 張卡牌、好友即時對戰、冒險劇情、每日任務、公會與排行榜，打開瀏覽器就能免費玩。">
+<meta name="theme-color" content="#111a26">
+<meta property="og:type" content="website"><meta property="og:url" content="https://spellbridge.off-office.co/home">
+<meta property="og:title" content="秘法雙橋 SPELLBRIDGE"><meta property="og:description" content="一條河、兩座橋的 3D 巫師卡牌對戰，打開瀏覽器就能免費玩。">
+<meta property="og:image" content="https://spellbridge.off-office.co/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://spellbridge.off-office.co/og.png">
+<link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="icon" href="icon-32.png" sizes="32x32" type="image/png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{--bg:#111a26;--bg2:#162233;--panel:#1b2638;--line:#2a3850;--ink:#f4efe6;--muted:#9aa3bd;--gold:#f3c55b;--violet:#b65cf0;--violet2:#d59bff}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 'Noto Sans TC',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+nav{position:sticky;top:0;z-index:5;background:rgba(17,26,38,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;gap:18px;height:60px}
+nav .brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:700;letter-spacing:.08em}
+nav .brand img{width:32px;height:32px}
+nav .links{display:flex;gap:18px;margin-left:auto;font-size:14px}
+nav .links a{text-decoration:none;color:var(--muted)}nav .links a:hover{color:var(--ink)}
+.btn{display:inline-block;background:var(--gold);color:#2a1700;text-decoration:none;font-weight:700;padding:12px 26px;border:0;font-family:inherit;font-size:16px;cursor:pointer;letter-spacing:.06em}
+.btn.small{padding:7px 14px;font-size:14px}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.hero{display:grid;grid-template-columns:1.05fr .95fr;align-items:center;gap:30px;padding:70px 20px 60px}
+.hero img.mark{width:84px;height:84px;margin-left:-10px}
+.hero h1{margin:12px 0 4px;font-weight:700;font-size:64px;line-height:1.1;letter-spacing:.08em}
+.hero .en{color:var(--gold);font-weight:500;letter-spacing:.5em;font-size:16px}
+.hero p.lead{color:var(--muted);font-size:18px;margin:22px 0 30px;max-width:30em}
+.hero .cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.hero .note{color:var(--muted);font-size:13px;margin-top:14px}
+.hero svg{width:100%;height:auto;display:block}
+section{padding:64px 0;border-top:1px solid var(--line)}
+section h2{margin:0 0 8px;font-weight:700;font-size:30px;letter-spacing:.06em}
+section .sub{color:var(--muted);margin:0 0 32px}
+.feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.feat{background:var(--panel);padding:22px}
+.feat svg{width:36px;height:36px;display:block;margin-bottom:12px}
+.feat h3{margin:0 0 6px;font-size:18px;font-weight:700}
+.feat p{margin:0;color:var(--muted);font-size:15px}
+.elems{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.el{display:flex;align-items:center;gap:8px;background:var(--panel);padding:8px 14px 8px 8px;font-size:14px}
+.el i{width:28px;height:28px;display:grid;place-items:center;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+.el i svg{width:14px;height:14px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;counter-reset:s}
+.step{background:var(--panel);padding:22px;position:relative}
+.step b{display:block;font-size:13px;color:var(--gold);letter-spacing:.2em;margin-bottom:6px}
+.step h3{margin:0 0 6px;font-size:18px;font-weight:700}
+.step p{margin:0;color:var(--muted);font-size:15px}
+.board{background:var(--panel);max-width:560px}
+.row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .rk{width:26px;text-align:center;font-weight:700;color:var(--muted)}
+.row .rk.top{color:var(--gold)}
+.row .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .nm small{color:var(--muted);margin-left:6px;font-size:13px}
+.row .tr{font-variant-numeric:tabular-nums;font-weight:500;display:flex;align-items:center;gap:4px}
+.row .tr .tro{width:16px;height:16px}
+.empty{color:var(--muted);padding:16px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+details{background:var(--panel);padding:14px 18px;margin-bottom:10px}
+summary{cursor:pointer;font-weight:500}
+details p{color:var(--muted);margin:8px 0 0;font-size:15px}
+form{background:var(--panel);padding:22px;display:flex;flex-direction:column;gap:12px}
+.kinds{display:flex;gap:6px;flex-wrap:wrap}
+.kinds button{border:0;background:var(--bg2);color:var(--ink);padding:6px 12px;font:inherit;font-size:14px;cursor:pointer}
+.kinds button[aria-pressed="true"]{background:var(--gold);color:#2a1700}
+textarea,input{width:100%;background:var(--bg2);color:var(--ink);border:1px solid var(--line);padding:10px 12px;font:inherit;font-size:15px}
+textarea:focus,input:focus{outline:2px solid var(--violet);outline-offset:-1px}
+form .hint{color:var(--muted);font-size:13px;margin:0}
+form .msg{font-size:14px;margin:0;min-height:1.4em}
+footer{border-top:1px solid var(--line);padding:30px 0 50px;color:var(--muted);font-size:13px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center}
+footer img{width:24px;height:24px;vertical-align:middle;margin-right:8px}
+@media (max-width:820px){.hero{grid-template-columns:1fr;padding:40px 20px}.hero h1{font-size:46px}.two{grid-template-columns:1fr}nav .links{display:none}nav .btn.small{margin-left:auto}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style></head>
+<body>
+<nav><div class="wrap"><a class="brand" href="#top"><img src="icon.svg" alt="">秘法雙橋</a>
+  <div class="links"><a href="#features">遊戲特色</a><a href="#how">怎麼玩</a><a href="#rank">排行榜</a><a href="#help">常見問題與回報</a></div>
+  <a class="btn small" href="./">開始遊戲</a></div></nav>
+
+<main id="top">
+<div class="wrap hero">
+  <div>
+    <img class="mark" src="icon.svg" alt="">
+    <h1>秘法雙橋</h1>
+    <div class="en">SPELLBRIDGE</div>
+    <p class="lead">灰河兩岸曾是同一座魔法學院。如今河上的兩座石橋，成了巫師決鬥的地方。召喚兵種、施放法術，推倒對手的塔，奪回《星之法典》。</p>
+    <div class="cta"><a class="btn" href="./">開始遊戲</a><a class="btn ghost" href="#features">看看玩法</a></div>
+    <div class="note">免費遊玩 · 手機和電腦的瀏覽器都能玩 · 不用下載</div>
+  </div>
+  <svg viewBox="0 0 520 520" role="img" aria-label="戰場插畫：一條河上的兩座橋，紅色與藍色的塔分立兩岸">
+    <g transform="translate(260 260) rotate(-12) scale(.9) translate(-170 -240)">
+      <rect width="340" height="480" fill="#4f9a4a"/>
+      <g fill="#5aa854">
+        <rect x="0" y="0" width="42" height="42"/><rect x="84" y="0" width="42" height="42"/><rect x="168" y="0" width="42" height="42"/><rect x="252" y="0" width="42" height="42"/>
+        <rect x="42" y="42" width="42" height="42"/><rect x="126" y="42" width="42" height="42"/><rect x="210" y="42" width="42" height="42"/><rect x="294" y="42" width="46" height="42"/>
+        <rect x="0" y="84" width="42" height="42"/><rect x="84" y="84" width="42" height="42"/><rect x="168" y="84" width="42" height="42"/><rect x="252" y="84" width="42" height="42"/>
+        <rect x="42" y="126" width="42" height="42"/><rect x="126" y="126" width="42" height="42"/><rect x="210" y="126" width="42" height="42"/><rect x="294" y="126" width="46" height="42"/>
+        <rect x="0" y="168" width="42" height="42"/><rect x="84" y="168" width="42" height="42"/><rect x="168" y="168" width="42" height="42"/><rect x="252" y="168" width="42" height="42"/>
+        <rect x="42" y="270" width="42" height="42"/><rect x="126" y="270" width="42" height="42"/><rect x="210" y="270" width="42" height="42"/><rect x="294" y="270" width="46" height="42"/>
+        <rect x="0" y="312" width="42" height="42"/><rect x="84" y="312" width="42" height="42"/><rect x="168" y="312" width="42" height="42"/><rect x="252" y="312" width="42" height="42"/>
+        <rect x="42" y="354" width="42" height="42"/><rect x="126" y="354" width="42" height="42"/><rect x="210" y="354" width="42" height="42"/><rect x="294" y="354" width="46" height="42"/>
+        <rect x="0" y="396" width="42" height="42"/><rect x="84" y="396" width="42" height="42"/><rect x="168" y="396" width="42" height="42"/><rect x="252" y="396" width="42" height="42"/>
+        <rect x="42" y="438" width="42" height="42"/><rect x="126" y="438" width="42" height="42"/><rect x="210" y="438" width="42" height="42"/><rect x="294" y="438" width="46" height="42"/>
+      </g>
+      <rect y="216" width="340" height="48" fill="#3f8de0"/>
+      <g fill="#d9a35c"><rect x="50" y="204" width="48" height="72"/><rect x="242" y="204" width="48" height="72"/></g>
+      <g fill="#a87a3f"><rect x="50" y="222" width="48" height="5"/><rect x="50" y="252" width="48" height="5"/><rect x="242" y="222" width="48" height="5"/><rect x="242" y="252" width="48" height="5"/></g>
+      <g fill="#e5484d"><rect x="58" y="88" width="32" height="32"/><rect x="250" y="88" width="32" height="32"/><rect x="146" y="22" width="48" height="48"/></g>
+      <g fill="#3f7fe0"><rect x="58" y="360" width="32" height="32"/><rect x="250" y="360" width="32" height="32"/><rect x="146" y="410" width="48" height="48"/></g>
+      <g><circle cx="74" cy="176" r="9" fill="#e8573a"/><circle cx="266" cy="150" r="9" fill="#8a5ad9"/><circle cx="90" cy="300" r="9" fill="#5fc8f0"/><circle cx="258" cy="318" r="9" fill="#4caf5a"/><circle cx="270" cy="296" r="7" fill="#f2c93a"/></g>
+      <rect width="340" height="480" fill="none" stroke="#f4efe6" stroke-width="8"/>
+    </g>
+  </svg>
+</div>
+
+<section id="features"><div class="wrap">
+  <h2>遊戲特色</h2><p class="sub">一場三分鐘，打完一場剛好喝完一口茶。</p>
+  <div class="feats">
+    <div class="feat"><svg viewBox="0 0 24 24"><path fill="#d59bff" d="M12 1l-4 5v6h4z"/><path fill="#b65cf0" d="M12 1l4 5v6h-4z"/><path fill="#d59bff" d="M8 15v4l4 4v-8z"/><path fill="#b65cf0" d="M16 15v4l-4 4v-8z"/><path fill="#f3c55b" d="M6 13h12v1H6z"/></svg><h3>116 張卡牌</h3><p>七種元素，還有妖精、吸血鬼、狼人、女巫系列。每張都有自己的 3D 造型和特殊能力，還能升級到 Lv.10。</p></div>
+    <div class="feat"><svg viewBox="0 0 24 24"><path fill="#3f8de0" d="M1 10h22v4H1z"/><path fill="#d9a35c" d="M4 7h4v10H4zM16 7h4v10h-4z"/></svg><h3>一條河、兩座橋</h3><p>即時出牌、搶橋推塔。魔力會隨時間回復，最後一分鐘魔力加倍，平手就進延長賽。</p></div>
+    <div class="feat"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="4" fill="#3f7fe0"/><circle cx="16" cy="8" r="4" fill="#e5484d"/><path fill="#3f7fe0" d="M2 20c0-4 3-7 6-7s4 1 4 1v6z"/><path fill="#e5484d" d="M22 20c0-4-3-7-6-7s-4 1-4 1v6z"/></svg><h3>好友即時對戰</h3><p>開一個房間，把房號傳給朋友，就能即時對打。天梯模式則會配對合適的對手。</p></div>
+    <div class="feat"><svg viewBox="0 0 24 24"><path fill="#f4efe6" d="M12 5C9 3 5 3 2 4v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1z"/><path fill="#111a26" d="M11.5 5.5h1v14h-1z"/></svg><h3>冒險劇情</h3><p>三章冒險，挑戰學徒莉拉、炎魔巫師摩格和暗影大巫師薩洛斯，打贏就能解鎖他們的頭像。</p></div>
+    <div class="feat"><svg viewBox="0 0 24 24"><path fill="#f3c55b" d="M6 2h12v6l-4 5h-1v3h3v3H8v-3h3v-3h-1L6 8z"/><path fill="#b97c0d" d="M7 19h10v3H7z"/></svg><h3>公會與排行榜</h3><p>加入公會一起聊天、勝利金幣加成；全服排行榜看看自己排第幾。</p></div>
+    <div class="feat"><svg viewBox="0 0 24 24"><path fill="#4caf5a" d="M3 7h18v14H3z"/><path fill="#2f8a3d" d="M3 7h18v4H3z"/><path fill="#f3c55b" d="M10 7h4v14h-4z"/></svg><h3>每日任務、免費遊玩</h3><p>新手開局送 1100 寶石，每天三個任務再領寶石。用 Google 登入，存檔放在雲端，換手機也能接著玩。</p></div>
+  </div>
+  <div class="elems" id="elems"></div>
+</div></section>
+
+<section id="how"><div class="wrap">
+  <h2>怎麼玩</h2><p class="sub">三個步驟就能上手。</p>
+  <div class="steps">
+    <div class="step"><b>STEP 1</b><h3>組一副 8 張的牌組</h3><p>從卡牌圖鑑挑出兵種、建築和法術。抽卡和開寶箱會拿到更多卡。</p></div>
+    <div class="step"><b>STEP 2</b><h3>點選或拖曳卡牌出兵</h3><p>魔力夠就把卡放到己方半場；法術可以放在任何地方。兵種會自己過橋進攻。</p></div>
+    <div class="step"><b>STEP 3</b><h3>推倒對手的塔</h3><p>三分鐘內摧毀越多座塔、拿到越多皇冠就贏。打倒主塔直接獲勝。</p></div>
+  </div>
+</div></section>
+
+<section id="rank"><div class="wrap">
+  <h2>排行榜</h2><p class="sub">全服獎盃前 10 名，即時更新。</p>
+  <div class="board" id="board"><div class="empty">正在讀取排名…</div></div>
+</div></section>
+
+<section id="help"><div class="wrap two">
+  <div>
+    <h2>常見問題</h2><p class="sub">還有問題的話，右邊直接告訴我們。</p>
+    <details><summary>需要下載或付費嗎？</summary><p>不用。秘法雙橋是網頁遊戲，用手機或電腦的瀏覽器打開就能玩，完全免費。</p></details>
+    <details><summary>我的存檔會不會不見？</summary><p>沒登入時存檔只存在這個瀏覽器；在遊戲的「個人」頁用 Google 登入後，存檔會放在雲端，換裝置登入同一個帳號就能接著玩。</p></details>
+    <details><summary>可以加到手機主畫面嗎？</summary><p>可以。在 Safari 按「分享 → 加入主畫面」，或在 Chrome 選單選「加到主畫面」，就會像 App 一樣有自己的圖示。</p></details>
+    <details><summary>沒有聲音怎麼辦？</summary><p>瀏覽器規定要先點一下畫面才能播放聲音。也可以到「個人 → 設定」確認音效、背景音樂和音量。</p></details>
+    <details><summary>怎麼和朋友對戰？</summary><p>首頁按「好友對戰」建立房間，把四位數房號傳給朋友，對方輸入房號就會連線。</p></details>
+  </div>
+  <div>
+    <h2>問題回報</h2><p class="sub">遊戲出錯、有建議都可以寫在這裡。</p>
+    <form id="rep">
+      <div class="kinds" id="kinds"><button type="button" data-k="bug" aria-pressed="true">遊戲錯誤</button><button type="button" data-k="idea" aria-pressed="false">建議</button><button type="button" data-k="other" aria-pressed="false">其他</button></div>
+      <textarea id="msg" maxlength="2000" rows="6" placeholder="發生了什麼事？在哪個畫面、做了什麼操作？用的是手機還是電腦？" required></textarea>
+      <input id="contact" maxlength="200" placeholder="聯絡方式（選填，例如 Email）">
+      <p class="hint">會一併附上瀏覽器和裝置類型，方便我們找問題。</p>
+      <button class="btn" id="send" type="submit">送出回報</button>
+      <p class="msg" id="repMsg" role="status"></p>
+    </form>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap"><span><img src="icon.svg" alt="">秘法雙橋 SPELLBRIDGE</span><a href="./">開始遊戲</a><a href="#help">問題回報</a><span>© 2026 off-office</span></div></footer>
+
+<script>
+const SB_URL='https://kenzsxyyqhfijbkeqnjz.supabase.co',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlbnpzeHl5cWhmaWpia2Vxbmp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NDQ2OTUsImV4cCI6MjEwODIyMDY5NX0.PZZgqGtDdlSynKVLhnHj2ak40v2JV6uE_4cFxfMY3c0';
+const $=s=>document.querySelector(s);
+const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// the seven elements, same colours and glyphs as the game
+const ELEMS=[['火焰','#e8573a','<path fill="#fff" d="M12 1c1 5 7 7 7 14a7 7 0 0 1-14 0c0-4 2-6 3-8 0 3 1 4 2 4 0-4-1-6 2-10z"/>'],['冰霜','#5fc8f0','<path fill="none" stroke="#fff" stroke-width="3" d="M12 1v22M2.5 6.5l19 11M2.5 17.5l19-11"/>'],['雷霆','#f2c93a','<path fill="#fff" d="M14 1L4 14h6l-2 9 12-14h-7z"/>'],['暗影','#8a5ad9','<path fill="#fff" d="M15 2a10 10 0 1 0 7 15A9 9 0 0 1 15 2z"/>'],['聖光','#d9c56a','<path fill="#fff" d="M12 6l2 4 4-2-2 4 4 2-4 2 2 4-4-2-2 4-2-4-4 2 2-4-4-2 4-2-2-4 4 2z"/>'],['森林','#4caf5a','<path fill="#fff" d="M20 2C8 2 3 9 4 20l2 2c0-6 4-11 10-13-5 3-8 7-9 12 11 1 14-7 13-19z"/>'],['符文','#4f8ff0','<path fill="#fff" d="M12 1l9 11-9 11-9-11z"/><path fill="#16294d" d="M12 7l4 5-4 5-4-5z"/>']];
+$('#elems').innerHTML=ELEMS.map(([n,c,g])=>`<span class="el"><i style="background:${c}"><svg viewBox="0 0 24 24">${g}</svg></i>${n}</span>`).join('');
+let sb=null;try{sb=supabase.createClient(SB_URL,SB_KEY)}catch(e){}
+// leaderboard: players collection is public (same rows the in-game board reads)
+(async()=>{
+  const box=$('#board');if(!sb){box.innerHTML='<div class="empty">目前無法讀取排行榜。</div>';return}
+  const{data,error}=await sb.from('docs').select('id,data').eq('coll','players').order('data->trophies',{ascending:false,nullsFirst:false}).limit(10);
+  if(error){box.innerHTML='<div class="empty">目前無法讀取排行榜。</div>';return}
+  if(!data.length){box.innerHTML='<div class="empty">還沒有玩家上榜，第一名等你來拿。</div>';return}
+  box.innerHTML=data.map((r,i)=>{const p=r.data||{};return `<div class="row"><span class="rk${i<3?' top':''}">${i+1}</span><span class="nm">${esc(String(p.nick||'無名巫師').slice(0,12))}<small>Lv.${+p.level||1}</small></span><span class="tr"><svg class="tro" viewBox="0 0 24 24" aria-hidden="true"><path fill="#b97c0d" d="M7 19h10v3H7z"/><path fill="#f5b82e" d="M6 2h12v6l-4 5h-1v3h3v3H8v-3h3v-3h-1L6 8z"/></svg>${+p.trophies||0}</span></div>`}).join('');
+})();
+// problem reports: same public.reports table as the in-game button (insert-only; only the admin can read them)
+let kind='bug';
+$('#kinds').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;kind=b.dataset.k;$('#kinds').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))});
+$('#rep').addEventListener('submit',async e=>{
+  e.preventDefault();const msg=$('#msg').value.trim(),out=$('#repMsg'),btn=$('#send');
+  if(!msg){out.textContent='請先寫下內容。';return}
+  if(!sb){out.textContent='目前無法送出，請稍後再試。';return}
+  let last=0;try{last=+localStorage.getItem('sb-rep-at')||0}catch(_){}
+  if(Date.now()-last<60000){out.textContent='剛剛已經送出一則，請稍等一下再送。';return}
+  let dev='';try{dev=localStorage.getItem('sb-dev');if(!dev){dev=crypto.randomUUID();localStorage.setItem('sb-dev',dev)}}catch(_){}
+  btn.disabled=true;btn.textContent='送出中…';
+  const{error}=await sb.from('reports').insert({dev:dev||null,kind,msg,contact:$('#contact').value.trim()||null,ctx:{ver:'home',view:'home',ua:navigator.userAgent.slice(0,200)}});
+  btn.disabled=false;btn.textContent='送出回報';
+  if(error){out.textContent='送出失敗，請稍後再試。';return}
+  try{localStorage.setItem('sb-rep-at',String(Date.now()))}catch(_){}
+  $('#msg').value='';out.textContent='收到了，謝謝你的回報！';
+});
+</script>
+</body></html>

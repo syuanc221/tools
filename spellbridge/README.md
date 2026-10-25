@@ -12,6 +12,7 @@
 | `src/build.py` | 把 `game.html` + `shim.js` + 設定打包成上一層的 `index.html` |
 | `index.html` | 打包結果，GitHub Pages 直接提供這個檔案 |
 | `schema.sql` | Supabase 資料表與存取權限（已套用，重建專案時才需要再跑）；含 events／reports／admins 與後台函式 |
+| `home.html` | 官網首頁 `spellbridge.off-office.co/home`（由 `src/home.html` 產生）：特色、玩法、即時排行榜前 10、常見問題、問題回報表單（寫入 `reports`） |
 | `audio/*.m4a` | 背景音樂（遊戲用相對路徑 `audio/…` 讀取） |
 | `icon.svg`、`icon-32.png`、`icon-192.png`、`icon-512.png`、`apple-touch-icon.png` | 網站 icon「符文晶柱」（深色框裡的紫色晶柱、金色符文線、左邊一根小晶柱）；iPhone 用的 180 px 是不帶圓角的滿版 |
 | `og.png` | 分享預覽圖 1200×630（`build.py` 寫入 og:image／twitter:image） |

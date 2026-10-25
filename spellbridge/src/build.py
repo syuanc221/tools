@@ -28,3 +28,7 @@ print('built',len(head+body))
 adm=open(os.path.join(here,'admin.html')).read().replace('__SB_URL__',cfg['url']).replace('__SB_KEY__',cfg['key'])
 open(os.path.join(here,'..','admin.html'),'w').write(adm)
 print('built admin',len(adm))
+# official homepage at /home (home.html): public leaderboard + problem report form, same Supabase config
+home=open(os.path.join(here,'home.html')).read().replace('__SB_URL__',cfg['url']).replace('__SB_KEY__',cfg['key'])
+open(os.path.join(here,'..','home.html'),'w').write(home)
+print('built home',len(home))
