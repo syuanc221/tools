@@ -104,6 +104,17 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 .play small,.adv small{font-family:var(--body);font-size:11px;font-weight:700;letter-spacing:0;opacity:.85}
 .play:active,.adv:active{transform:translateY(2px)}
 .chests{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.quests{display:flex;flex-direction:column;gap:8px}
+.quest{display:flex;align-items:center;gap:10px;background:var(--panel);padding:10px 12px;clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px)}
+.quest .qi{width:34px;height:34px;flex:none;display:grid;place-items:center;background:var(--qc,#3b82f6);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}.quest .qi svg{width:18px;height:18px;fill:#fff}
+.quest .qt{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.quest .qt b{font-size:14px}
+.quest .qbar{height:7px;background:#0a1018;overflow:hidden}.quest .qbar i{display:block;height:100%;background:var(--qc,#3b82f6)}
+.quest .qt small{font-size:11px;color:var(--muted);font-weight:700}
+.quest .qr{flex:none;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:74px}
+.quest .qr span{font-size:12px;font-weight:900;display:flex;align-items:center;gap:3px}
+.quest .qr button{padding:6px 10px;font-size:12px}
+.quest.claimed{opacity:.55}.quest.ready{box-shadow:inset 0 0 0 2px var(--gold)}
+.quest.bonus{--qc:#f3c55b;background:#2a2410}
 .slot{border:0;background:var(--panel-2);box-shadow:inset 0 -5px 0 #121b27;padding:6px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;min-height:104px;justify-content:center}
 .slot img{width:62px;height:62px}
 .slot b{font-size:11px;font-weight:900}
@@ -411,6 +422,8 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
         <button class="mode" id="friendBtn"><i class="art" data-art="friendly" aria-hidden="true"></i><span class="tx"><em>FRIENDLY</em><b>好友對戰</b><small id="friendSub">建立房間或輸入房號，和朋友即時對打</small></span></button>
         <button class="mode" id="rankBtn"><i class="art" data-art="leaders" aria-hidden="true"></i><span class="tx"><em>LEADERBOARD</em><b>排行榜</b><small id="rankSub">全服獎盃與公會排名</small></span></button>
       </div>
+      <div class="sechead"><h2>每日任務</h2><span class="muted" id="questReset"></span></div>
+      <div class="quests" id="questList"></div>
       <div class="sechead"><h2>寶箱</h2><button class="free" id="freeBtn"></button></div>
       <div class="chests" id="chestGrid"></div>
       <p class="muted">打贏對戰會掉寶箱。一次只能解鎖一個，也可以用寶石立刻打開。</p>
@@ -1150,7 +1163,7 @@ function play(team,i,x,y){
   if(G.elixir[team]<c.cost){if(team===0)say('魔力不足');return false}
   if(!validDeploy(team,key,x,y)){if(team===0)say('不能放在這裡');return false}
   G.elixir[team]-=c.cost;d.hand[i]=d.queue.shift();d.queue.push(key);
-  if(team===0)S.stats.played[key]=(S.stats.played[key]||0)+1;
+  if(team===0){S.stats.played[key]=(S.stats.played[key]||0)+1;questTick('cards15');questTick('card',1,key);if(c.type==='spell')questTick('spells5');else if(c.type==='building')questTick('build3');else if(c.s.air)questTick('air6')}
   if(c.type!=='spell'){sfx(deployVoice(c),.08);if(c.s.hp>=1500)sfx('roar',.5);if(c.rar==='legendary')sfx('sparkle',.3)}else if(c.fx==='meteor')sfx('whistle',.3);
   if(c.type==='spell')castSpell(team,key,x,y);
   else for(const[ox,oy]of offsFor(c.count))G.ents.push(makeUnit(key,team,clamp(x+ox,10,W-10),y+oy));
@@ -2146,7 +2159,59 @@ $('#topMe').addEventListener('click',()=>showScreen('profile'));
 function chestState(c){if(!c)return 'empty';if(c.unlockAt==null)return 'locked';return Date.now()>=c.unlockAt?'ready':'unlocking'}
 const fmt=s=>{s=Math.max(0,Math.ceil(s));const h=s/3600|0,m=(s%3600)/60|0,x=s%60;return h?`${h}:${String(m).padStart(2,'0')}:${String(x).padStart(2,'0')}`:`${m}:${String(x).padStart(2,'0')}`};
 const gemCost=c=>{const left=chestState(c)==='unlocking'?(c.unlockAt-Date.now())/1000:CHESTS[c.type].secs;return Math.max(1,Math.ceil(left/60))*6};
+// ================= daily quests: 3 per day, gems as rewards (player feedback: gems were too hard to get) =================
+const QUESTS={
+  win2:{t:'打贏 2 場天梯對戰',n:2,g:40,c:'#f07a2b',i:'M5 3h14v5a7 7 0 0 1-14 0zM9 15h6v3h3v3H6v-3h3z'},
+  play3:{t:'進行 3 場對戰（天梯或冒險）',n:3,g:30,c:'#3b82f6',i:'M4 4l7 7-2 2-2-2-3 3 2 2-2 2-3-3 3-3-2-2zM20 4l-7 7 2 2 2-2 3 3-2 2 2 2 3-3-3-3 2-2z'},
+  crowns5:{t:'拿到 5 顆冠冕',n:5,g:40,c:'#e8a21c',i:'M2 7l5 4 5-7 5 7 5-4-2 12H4z'},
+  cards15:{t:'出牌 15 次',n:15,g:30,c:'#8758f0',i:'M6 3h10l3 3v15H6zM9 9h7v2H9zm0 4h7v2H9z'},
+  spells5:{t:'施放 5 次法術',n:5,g:30,c:'#b65cf0',i:'M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5z'},
+  towers3:{t:'摧毀 3 座敵方塔',n:3,g:40,c:'#e5484d',i:'M5 21V9l2-2V3h3v3h4V3h3v4l2 2v12h-5v-5h-4v5z'},
+  air6:{t:'派出 6 次飛行單位',n:6,g:30,c:'#2ba7d6',i:'M2 12c4-1 7-4 10-8 3 4 6 7 10 8-4 1-7 3-10 8-3-5-6-7-10-8z'},
+  build3:{t:'放置 3 座建築',n:3,g:30,c:'#77736b',i:'M3 21V10l9-7 9 7v11h-6v-6H9v6z'},
+  upgrade1:{t:'升級 1 張卡牌',n:1,g:30,c:'#3fcf8e',i:'M12 3l8 9h-5v9H9v-9H4z'},
+  chest1:{t:'打開 1 個寶箱',n:1,g:30,c:'#a8703c',i:'M2 11h20v10H2zM2 11l3-6h14l3 6z'},
+  story1:{t:'打 1 場冒險模式',n:1,g:30,c:'#2f6cc4',i:'M3 5l6-2 6 2 6-2v16l-6 2-6-2-6 2z'},
+  elem8:{t:'用{el}卡出牌 8 次',n:8,g:40,c:'#4caf5a',i:'M12 2c4 6 7 9 7 13a7 7 0 0 1-14 0c0-4 3-7 7-13z'},
+};
+const QUEST_BONUS=60;
+const dayKey=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+function rollQuests(){
+  const ids=shuffle(Object.keys(QUESTS)).slice(0,3);
+  S.daily={day:dayKey(),q:ids.map(id=>({id,p:0,claimed:false,el:id==='elem8'?ELEM_KEYS[rint(0,ELEM_KEYS.length-1)]:null})),bonus:false};
+}
+function dailyFresh(){if(!S.daily||S.daily.day!==dayKey()||!Array.isArray(S.daily.q)||S.daily.q.some(q=>!QUESTS[q.id]))rollQuests();return S.daily}
+// called from gameplay: questTick('win2'), questTick('cards15',1,{card}) ...
+function questTick(kind,n=1,ctx){
+  const D=dailyFresh();let hit=false;
+  for(const q of D.q){if(q.claimed)continue;const Q=QUESTS[q.id];
+    if(q.id===kind||(q.id==='elem8'&&kind==='card'&&ctx&&cardOf(ctx).el===q.el)){const before=q.p;q.p=Math.min(Q.n,q.p+n);if(q.p>=Q.n&&before<Q.n)hit=true}}
+  if(hit&&VIEW!=='battle')toast('每日任務完成！到首頁領取寶石');
+}
+const questTitle=q=>QUESTS[q.id].t.replace('{el}',q.el?ELEM[q.el].name:'');
+function claimQuest(i){
+  const D=dailyFresh(),q=D.q[i],Q=QUESTS[q.id];if(!q||q.claimed||q.p<Q.n)return;
+  q.claimed=true;S.gems+=Q.g;let msg=`獲得 ${Q.g} 寶石`;
+  if(!D.bonus&&D.q.every(x=>x.claimed)){D.bonus=true;S.gems+=QUEST_BONUS;msg+=`，三個任務全部完成再加 ${QUEST_BONUS} 寶石！`}
+  track('quest',{id:q.id});persist();SFX.play('coin');toast(msg);renderQuests();
+}
+function renderQuests(){
+  const D=dailyFresh(),L=$('#questList');if(!L)return;L.innerHTML='';
+  D.q.forEach((q,i)=>{const Q=QUESTS[q.id],done=q.p>=Q.n,r=el('div','quest'+(q.claimed?' claimed':done?' ready':''));r.style.setProperty('--qc',Q.c);
+    const qi=el('span','qi');qi.innerHTML=`<svg viewBox="0 0 24 24"><path d="${Q.i}"/></svg>`;
+    const qt=el('div','qt'),bar=el('span','qbar'),bi=el('i');bi.style.width=(q.p/Q.n*100)+'%';bar.append(bi);qt.append(el('b',null,questTitle(q)),bar,el('small',null,`${q.p} / ${Q.n}`));
+    const qr=el('div','qr'),rw=el('span');rw.append(el('i','gem'),' '+Q.g);qr.append(rw);
+    if(q.claimed)qr.append(el('small',null,'已領取'));else{const b=el('button',done?'go':'ghost',done?'領取':'進行中');b.disabled=!done;b.addEventListener('click',()=>claimQuest(i));qr.append(b)}
+    r.append(qi,qt,qr);L.append(r)});
+  const all=D.q.every(x=>x.claimed),bn=el('div','quest bonus'+(D.bonus?' claimed':''));
+  const bqi=el('span','qi');bqi.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.2 7L12 18l-6.2 3.5L7 14.5l-5-5 7-1z"/></svg>';
+  const bqt=el('div','qt');bqt.append(el('b',null,'完成全部 3 個任務'),el('small',null,D.bonus?'今天的獎勵都領完了，明天見！':`已領取 ${D.q.filter(x=>x.claimed).length} / 3`));
+  const bqr=el('div','qr'),brw=el('span');brw.append(el('i','gem'),' '+QUEST_BONUS);bqr.append(brw);bn.append(bqi,bqt,bqr);L.append(bn);void all;
+  const now=new Date(),mid=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1),h=Math.floor((mid-now)/3600000),m=Math.floor((mid-now)/60000)%60;
+  $('#questReset').textContent=`${h} 小時 ${m} 分後換新任務`;
+}
 function renderHome(){
+  renderQuests();
   $('#arenaTag').innerHTML=rankBadge(S.trophies)+'<span>競技場 · '+arenaName(S.trophies)+'</span>';
   const cfg=ladderCfg(),ls=$('#ladderSub');ls.innerHTML='';ls.append(ic('trophy'),` ${S.trophies} · 對手 Lv.${cfg.aiLvl}`);
   $('#advSub').textContent=S.progress>3?'已通關':`第 ${S.progress} 章`;
@@ -2186,7 +2251,7 @@ function openChest(type){
   S.gold+=gold;S.gems+=gems;S.xp+=5;track('chest',{t:type});
   return{gold,gems,items};
 }
-function doOpen(i){const t=S.chests[i].type;S.chests[i]=null;const r=openChest(t);persist();renderHome();reveal({title:CHESTS[t].name,img:CHEST_IMG[t],chest:true,...r})}
+function doOpen(i){const t=S.chests[i].type;S.chests[i]=null;questTick('chest1');const r=openChest(t);persist();renderHome();reveal({title:CHESTS[t].name,img:CHEST_IMG[t],chest:true,...r})}
 $('#freeBtn').addEventListener('click',()=>{if(S.freeAt>Date.now())return;S.freeAt=Date.now()+4*3600e3;const r=openChest('wood');persist();renderHome();reveal({title:'免費寶箱',img:CHEST_IMG.wood,chest:true,...r})});
 setInterval(()=>{if(VIEW==='home'&&$('#confirmOv').hidden)renderHome()},1000);
 
@@ -2326,7 +2391,7 @@ function openCard(k){
 $('#cdClose').addEventListener('click',()=>$('#cardOv').hidden=true);
 function canUp(k,ignoreGold){const o=S.cards[k];return !!o&&o.lvl<MAXLV&&o.copies>=needFor(k,o.lvl)&&(ignoreGold||S.gold>=COST[o.lvl])}
 const upgradable=()=>Object.keys(S.cards).filter(k=>CARDS[k]&&canUp(k,true));
-function doUpgrade(k){if(!canUp(k))return false;const o=S.cards[k];o.copies-=needFor(k,o.lvl);S.gold-=COST[o.lvl];o.lvl++;track('upgrade',{k,lv:o.lvl});S.xp+=o.lvl*10*(1+RORDER.indexOf(CARDS[k].rar));return true}
+function doUpgrade(k){if(!canUp(k))return false;const o=S.cards[k];questTick('upgrade1');o.copies-=needFor(k,o.lvl);S.gold-=COST[o.lvl];o.lvl++;track('upgrade',{k,lv:o.lvl});S.xp+=o.lvl*10*(1+RORDER.indexOf(CARDS[k].rar));return true}
 function showUpgrade(k,from){
   const c=CARDS[k],to=S.cards[k].lvl,star=starOf(to)>starOf(from);
   $('#upImg').src=THUMB[k];skinCard($('#upImg'),k);$('#upName').textContent=c.name;$('#upFrom').textContent='Lv.'+from;$('#upTo').textContent='Lv.'+to;
@@ -2485,6 +2550,7 @@ function end(){
   const[p,e]=G.crowns,won=p>e,lost=p<e,c=CHAPTERS[chIdx],st=S.stats;
   track('battle_end',{m:MODE,ch:chIdx,r:won?'win':lost?'lose':'draw',cr:[p,e],ot:!!G.overtime,tro:S.trophies});
   st.battles++;st.crowns+=p;if(won){st.wins++;if(p===3)st.three++}else if(lost)st.losses++;else st.draws++;
+  questTick('play3');questTick('crowns5',p);questTick('towers3',G.ents.filter(e=>e.kind==='tower'&&e.team===1&&e.dead).length);if(MODE==='ladder'&&won)questTick('win2');if(MODE==='story')questTick('story1');
   const loot=[];const add=(icon,txt)=>loot.push([icon,txt]);
   if(MODE==='ladder'){const d=won?30:lost?-20:0;S.trophies=Math.max(0,S.trophies+d);S.best=Math.max(S.best,S.trophies);add('trophy',(d>=0?'+':'')+d)}
   const today=new Date().toDateString(),gb=inGuild()?1.1:1;
@@ -2852,6 +2918,7 @@ $('#nav-cards img').src=THUMB.knight;$('#nav-gacha img').src=ICON.altar;$('#nav-
 // Every minute (and when the tab comes back) fetch index.html uncached and compare its build stamp window.SB_VER
 // with the one this page loaded. A new version shows a notice; the player chooses when to reload, never mid-battle.
 const CHANGELOG=[
+  {d:'10/28',t:'每日任務',items:['首頁新增每日任務：每天 3 個，完成就能領寶石（30～40 顆）','三個都完成再加 60 寶石，一天最多約 170 寶石，夠抽一次多','任務每天午夜換新，例如打贏天梯、拿冠冕、施放法術、摧毀塔、用指定元素出牌']},
   {d:'10/28',t:'全新介面風格',items:['首頁四個模式改成插畫磚：天梯（橘）、冒險（藍）、好友對戰（綠）、排行榜（紫），各有放射光、雲朵和主題插圖','新的競技場徽章：銅三角、銀圓、金方塊、紫水晶六角，顯示在首頁、個人頁和排行榜','個人頁新增競技場進度，看得到離下一個競技場還差幾座獎盃','召喚祭壇換上紫色光芒背景']},
   {d:'10/28',t:'全新 Logo',items:['新 Logo：戴著紫色巫師帽的小黑影巫師，兩隻拱形小腳就是「雙橋」','首頁標題與載入畫面加上 Logo（首頁標題之前被戰場蓋住，現在看得到了）','網站小圖示、手機主畫面圖示、分享連結的預覽圖都換成新 Logo']},
   {d:'10/28',t:'新系列：妖精、吸血鬼、狼人、女巫',items:['新增 16 張卡，總共 116 張','妖精：花仙子群、花冠妖精、月光妖精、妖精女王，以及法術「妖精之環」','吸血鬼：吸血鬼伯爵（倒下化成蝙蝠）、吸血鬼新娘、吸血鬼棺材，以及法術「血月術」','狼人：狼人、狼人首領（重傷時月下狂化），以及法術「月嚎術」、銀箭獵人','女巫：掃帚女巫、女巫大鍋、女巫集會']},
