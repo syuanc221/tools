@@ -14,7 +14,7 @@ body=src.replace(three,inject)
 head=('<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">'
  '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
  '<meta name="theme-color" content="#111a26"><meta name="description" content="秘法雙橋 SPELLBRIDGE：3D 巫師卡牌對戰。">'
- '<meta property="og:title" content="秘法雙橋 SPELLBRIDGE"><meta property="og:description" content="3D 巫師卡牌對戰，100 張元素卡牌、好友即時對戰、公會與雲端存檔。">'
+ '<meta property="og:title" content="秘法雙橋 SPELLBRIDGE"><meta property="og:description" content="3D 巫師卡牌對戰，116 張卡牌（妖精、吸血鬼、狼人、女巫）、好友即時對戰、公會與雲端存檔。">'
  '<meta property="og:type" content="website"><meta property="og:url" content="https://spellbridge.off-office.co/">'
  '<meta property="og:image" content="https://spellbridge.off-office.co/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">'
  '<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://spellbridge.off-office.co/og.png">'
