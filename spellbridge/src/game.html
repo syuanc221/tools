@@ -76,6 +76,19 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 .arena-tag{display:flex;align-items:center;gap:6px;z-index:2}.arena-tag .rbadge{width:22px;height:22px}
 .grow .num .rbadge{width:20px;height:20px;margin-right:2px}
 @media (prefers-reduced-motion:reduce){.mode .art svg{transition:none}}
+/* banner motion: turning rays, twinkling sparkles, bobbing gems, drifting cloud bumps, a breathing altar */
+.art .a-ray{transform-box:view-box;animation:aRay 60s linear infinite}
+.altar .art .a-ray{animation-duration:36s}
+.art .a-spark{transform-box:fill-box;transform-origin:center;animation:aSpark 2.4s ease-in-out infinite}
+.art .a-gem{animation:aGem 3.2s ease-in-out infinite}
+.art .a-cloud{animation:aCloud 7s ease-in-out infinite alternate}
+.altar img{animation:aAltar 3.4s ease-in-out infinite}
+@keyframes aRay{to{transform:rotate(360deg)}}
+@keyframes aSpark{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.45) rotate(45deg);opacity:.5}}
+@keyframes aGem{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes aCloud{from{transform:translateX(-6px)}to{transform:translateX(6px)}}
+@keyframes aAltar{0%,100%{transform:translateY(0);filter:drop-shadow(0 0 6px rgba(213,155,255,.35))}50%{transform:translateY(-6px);filter:drop-shadow(0 0 22px rgba(232,190,255,.85))}}
+@media (prefers-reduced-motion:reduce){.art .a-ray,.art .a-spark,.art .a-gem,.art .a-cloud,.altar img{animation:none}}
 .play,.adv{border:0;padding:14px 10px;cursor:pointer;font-family:var(--title);font-weight:900;font-size:21px;letter-spacing:.08em;display:flex;flex-direction:column;align-items:center;gap:2px}
 .play{background:#f5b82e;color:#2a1700;box-shadow:inset 0 -6px 0 #b97c0d}
 .adv{background:#3c74e8;box-shadow:inset 0 -6px 0 #23489c}
@@ -804,10 +817,11 @@ const EMB_SVG=[
 const ic=n=>{const i=el('i','ic');i.innerHTML=ICO[n];return i};
 // ================= illustrated tiles (flat, one hue per tile: rays, tonal clouds, sparkles, a faceted hero object) =================
 const SV=(w,h,b)=>`<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid slice">${b}</svg>`;
-function rays(cx,cy,n,col,rot=0){let d='';for(let i=0;i<n;i++){const a=rot+i*2*Math.PI/n,b=a+Math.PI/n*.62,R=700,f=v=>v.toFixed(1);d+=`M${cx} ${cy}L${f(cx+Math.cos(a)*R)} ${f(cy+Math.sin(a)*R)}L${f(cx+Math.cos(b)*R)} ${f(cy+Math.sin(b)*R)}Z`}return`<path d="${d}" fill="${col}"/>`}
-const spark=(x,y,s,c='#fff')=>`<path fill="${c}" d="M${x} ${y-s}L${x+s*.26} ${y-s*.26}L${x+s} ${y}L${x+s*.26} ${y+s*.26}L${x} ${y+s}L${x-s*.26} ${y+s*.26}L${x-s} ${y}L${x-s*.26} ${y-s*.26}Z"/>`;
-function clouds(y,col,w=200,h=200,step=34){let s=`<rect x="0" y="${y}" width="${w}" height="${h}" fill="${col}"/>`;for(let x=-10,i=0;x<w+30;x+=step,i++)s+=`<circle cx="${x}" cy="${y+4}" r="${18+(i*7)%16}" fill="${col}"/>`;return s}
-const gem=(x,y,s,a,b)=>`<path fill="${a}" d="M${x} ${y-s}L${x+s*.7} ${y}L${x} ${y+s*1.1}Z"/><path fill="${b}" d="M${x} ${y-s}L${x-s*.7} ${y}L${x} ${y+s*1.1}Z"/>`;
+function rays(cx,cy,n,col,rot=0){let d='';for(let i=0;i<n;i++){const a=rot+i*2*Math.PI/n,b=a+Math.PI/n*.62,R=700,f=v=>v.toFixed(1);d+=`M${cx} ${cy}L${f(cx+Math.cos(a)*R)} ${f(cy+Math.sin(a)*R)}L${f(cx+Math.cos(b)*R)} ${f(cy+Math.sin(b)*R)}Z`}return`<path class="a-ray" style="transform-origin:${cx}px ${cy}px" d="${d}" fill="${col}"/>`}
+let sparkN=0;
+const spark=(x,y,s,c='#fff')=>`<path class="a-spark" style="animation-delay:${-(sparkN++*.67)%2.4}s" fill="${c}" d="M${x} ${y-s}L${x+s*.26} ${y-s*.26}L${x+s} ${y}L${x+s*.26} ${y+s*.26}L${x} ${y+s}L${x-s*.26} ${y+s*.26}L${x-s} ${y}L${x-s*.26} ${y-s*.26}Z"/>`;
+function clouds(y,col,w=200,h=200,step=34){let s=`<rect x="0" y="${y}" width="${w}" height="${h}" fill="${col}"/>`;s+='<g class="a-cloud">';for(let x=-10,i=0;x<w+30;x+=step,i++)s+=`<circle cx="${x}" cy="${y+4}" r="${18+(i*7)%16}" fill="${col}"/>`;return s+'</g>'}
+const gem=(x,y,s,a,b)=>`<g class="a-gem" style="animation-delay:${-(x%7)*.4}s"><path fill="${a}" d="M${x} ${y-s}L${x+s*.7} ${y}L${x} ${y+s*1.1}Z"/><path fill="${b}" d="M${x} ${y-s}L${x-s*.7} ${y}L${x} ${y+s*1.1}Z"/></g>`;
 const ART={
   ranked:()=>SV(200,190,`<rect width="200" height="190" fill="#f07a2b"/>${rays(138,66,14,'#f6914a',.2)}${clouds(146,'#dc5f1d')}
     ${spark(54,34,8)}${spark(186,28,6)}${spark(96,16,4)}
@@ -1044,10 +1058,10 @@ const CHAPTERS=[
 ];
 const PLAYER_WIZ={robe:'#2c5fb8',trim:'#9fd0ff',style:'star'};
 const CHESTS={
-  wood:{name:'木製寶箱',secs:30,gold:[40,80],cards:4,gems:[0,0],col:'#8a5a2e',band:'#4a4a52'},
-  silver:{name:'白銀寶箱',secs:180,gold:[120,200],cards:10,gems:[0,5],col:'#5d6c82',band:'#dfe7f2'},
-  gold:{name:'黃金寶箱',secs:600,gold:[300,500],cards:24,gems:[5,15],col:'#7a4119',band:'#f3c55b'},
-  magic:{name:'魔法寶箱',secs:1800,gold:[800,1000],cards:45,gems:[20,40],col:'#3a2160',band:'#d59bff',epic:true},
+  wood:{name:'木製寶箱',secs:30,gold:[40,80],cards:4,kinds:3,gems:[2,5],col:'#8a5a2e',band:'#4a4a52'},
+  silver:{name:'白銀寶箱',secs:180,gold:[120,200],cards:10,kinds:5,gems:[5,15],col:'#5d6c82',band:'#dfe7f2'},
+  gold:{name:'黃金寶箱',secs:600,gold:[300,500],cards:24,kinds:7,gems:[20,40],col:'#7a4119',band:'#f3c55b'},
+  magic:{name:'魔法寶箱',secs:1800,gold:[800,1000],cards:45,kinds:10,gems:[50,80],col:'#3a2160',band:'#d59bff',epic:true},
 };
 const ARENAS=[[0,'見習草原'],[300,'灰河石橋'],[700,'焦土峽谷'],[1200,'影之王座']];
 // upgrades: Lv.1-10; copies needed depend on rarity; stars at Lv.4/7/10 add +5% stats and strengthen the card's ability
@@ -1109,6 +1123,8 @@ function persist(){S.ts=Date.now();try{localStorage.setItem('bd-save',JSON.strin
 function lvInfo(xp){let lv=1,need=100;while(xp>=need){xp-=need;lv++;need+=50}return{lv,cur:xp,need}}
 function addCard(k,n){const c=S.cards[k];if(!c){S.cards[k]={lvl:1,copies:n-1};return true}c.copies+=n;return false}
 const byRar=r=>Object.keys(CARDS).filter(k=>CARDS[k].rar===r);
+// half the draws come from cards the player doesn't own yet (until that rarity is complete); skip keys already in this pull
+function pickCard(rar,avoid){const all=byRar(rar),pool=all.filter(k=>!avoid||!avoid.includes(k)),from=pool.length?pool:all,miss=from.filter(k=>!S.cards[k]);return miss.length&&Math.random()<.5?pick(miss):pick(from)}
 function rollRarity(){let r=Math.random(),acc=0;for(const k of RORDER){acc+=RAR[k].rate;if(r<acc)return k}return 'legendary'}
 const arenaName=t=>ARENAS.filter(a=>t>=a[0]).pop()[1];
 
@@ -2245,13 +2261,13 @@ function slotTap(i){
 function rollChestType(){const r=Math.random();return r<.05?'magic':r<.2?'gold':r<.55?'silver':'wood'}
 function openChest(type){
   const c=CHESTS[type],gold=rint(...c.gold),gems=rint(...c.gems),items=[];
-  const take=(rar,n)=>{const k=pick(byRar(rar));const ex=items.find(i=>i.key===k);if(ex)ex.count+=n;else items.push({key:k,count:n})};
-  let left=c.cards;
-  if(c.epic){take('epic',2);left-=2;if(Math.random()<.3){take('legendary',1);left-=1}}
-  const stacks=Math.min(4,1+Math.floor(c.cards/8));
-  for(let i=0;i<stacks&&left>0;i++){
-    const share=i===stacks-1?left:Math.max(1,Math.round(left*.55)),rar=rollRarity();
-    take(rar,rar==='legendary'?1:rar==='epic'?Math.max(1,Math.round(share/6)):rar==='rare'?Math.max(1,Math.round(share/3)):share);left-=share;
+  const take=(rar,n)=>{const k=pickCard(rar,items.map(i=>i.key));const ex=items.find(i=>i.key===k);if(ex)ex.count+=n;else items.push({key:k,count:n})};
+  let left=c.cards,kinds=c.kinds;
+  if(c.epic){take('epic',2);left-=2;kinds--;if(Math.random()<.3){take('legendary',1);left-=1;kinds--}}
+  for(let i=0;i<kinds&&left>0;i++){
+    const share=i===kinds-1?left:clamp(Math.round(left/(kinds-i)*(.6+Math.random()*.8)),1,left-(kinds-1-i)),rar=i===kinds-1?'common':rollRarity();
+    // rarer stacks hold fewer copies; the last stack (common) takes whatever is left so the chest keeps its full card count
+    const n=rar==='legendary'?1:rar==='epic'?Math.max(1,Math.round(share/6)):rar==='rare'?Math.max(1,Math.round(share/3)):share;take(rar,n);left-=n;
   }
   items.sort((a,b)=>RORDER.indexOf(CARDS[a.key].rar)-RORDER.indexOf(CARDS[b.key].rar));
   for(const it of items)it.isNew=addCard(it.key,it.count);
@@ -2438,7 +2454,7 @@ function gacha(n){
     if(S.pity>=50)rar='legendary';
     if(n===10&&i===9&&!rare&&rar==='common')rar='rare';
     if(rar!=='common')rare=true;if(rar==='legendary')S.pity=0;
-    const k=pick(byRar(rar)),cnt=GACHA_N[rar];items.push({key:k,count:cnt,isNew:addCard(k,cnt)});
+    const k=pickCard(rar,items.map(i=>i.key)),cnt=GACHA_N[rar];items.push({key:k,count:cnt,isNew:addCard(k,cnt)});
   }
   S.xp+=n*2;persist();track('gacha',{n,best:items.reduce((b,it)=>Math.max(b,RORDER.indexOf(CARDS[it.key].rar)),0),pity:S.pity});reveal({title:n===10?'十連召喚':'召喚',img:ICON.altar,items});
 }
@@ -2564,7 +2580,7 @@ function end(){
   const gold=Math.round((won?100:lost?20:40)+15*p)*gb|0;S.gold+=gold;add('coin','+'+gold+(inGuild()?'（公會 +10%）':''));
   if(won&&S.dailyWin!==today){S.dailyWin=today;S.gold+=300;add('coin','每日首勝 +300')}
   if(won){
-    S.gems+=10;S.xp+=20;add('gem','+10');
+    S.gems+=20;S.xp+=20;add('gem','+20');
     let type=rollChestType();
     if(MODE==='story'&&chIdx+2>S.progress){S.progress=chIdx+2;S.gems+=100;type='gold';add('gem','首勝 +100')}
     const slot=S.chests.indexOf(null);
@@ -2925,6 +2941,7 @@ $('#nav-cards img').src=THUMB.knight;$('#nav-gacha img').src=ICON.altar;$('#nav-
 // Every minute (and when the tab comes back) fetch index.html uncached and compare its build stamp window.SB_VER
 // with the one this page loaded. A new version shows a notice; the player chooses when to reload, never mid-battle.
 const CHANGELOG=[
+  {d:'10/28',t:'卡片更多元、寶石加倍',items:['召喚和寶箱有一半機會給你還沒有的卡','寶箱的卡種變多：木製 3 種、白銀 5 種、黃金 7 種、魔法 10 種','勝利寶石 +20，寶箱寶石大幅提高（魔法寶箱 50～80）','首頁模式磚與召喚祭壇加上動畫']},
   {d:'10/28',t:'新手禮 500 寶石',items:['新玩家開局寶石從 600 提高到 1100','已經在玩的巫師一次性補發 500 寶石，上線就會收到']},
   {d:'10/28',t:'每日任務',items:['首頁新增每日任務：每天 3 個，完成就能領寶石（30～40 顆）','三個都完成再加 60 寶石，一天最多約 170 寶石，夠抽一次多','任務每天午夜換新，例如打贏天梯、拿冠冕、施放法術、摧毀塔、用指定元素出牌']},
   {d:'10/28',t:'全新介面風格',items:['首頁四個模式改成插畫磚：天梯（橘）、冒險（藍）、好友對戰（綠）、排行榜（紫），各有放射光、雲朵和主題插圖','新的競技場徽章：銅三角、銀圓、金方塊、紫水晶六角，顯示在首頁、個人頁和排行榜','個人頁新增競技場進度，看得到離下一個競技場還差幾座獎盃','召喚祭壇換上紫色光芒背景']},
