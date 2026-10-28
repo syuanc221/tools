@@ -53,9 +53,9 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 .hero{position:relative;height:clamp(190px,32vh,300px);overflow:hidden;flex:none;--cut:16px;background:#16233a}
 .hero canvas{position:absolute;inset:0}
 .logo{position:absolute;z-index:2;left:0;right:0;top:14px;text-align:center;pointer-events:none;font-family:var(--title);font-weight:900;font-size:40px;letter-spacing:.12em;
-  color:#ffd34d;text-shadow:-2px -2px 0 #3a2208,2px -2px 0 #3a2208,-2px 2px 0 #3a2208,2px 2px 0 #3a2208,0 6px 0 #3a2208}
+  color:#fff;text-shadow:0 3px 0 rgba(10,14,30,.55),0 8px 18px rgba(10,14,30,.45)}
 .logo .mk{display:block;width:58px;height:58px;margin:0 auto 4px;filter:drop-shadow(0 6px 10px rgba(11,20,32,.55))}.logo b{display:block;font-weight:900}
-.logo span{display:block;font-family:var(--display);font-weight:900;font-size:12px;letter-spacing:.5em;margin-top:2px;color:#cfe3ff;text-shadow:0 2px 0 #0b1420}
+.logo span{display:block;font-family:'Oswald',var(--display);font-weight:700;font-size:13px;letter-spacing:.55em;padding-left:.55em;margin-top:4px;color:#fff;text-shadow:0 2px 0 rgba(10,14,30,.7),0 2px 8px rgba(10,14,30,.6)}
 .arena-tag{position:absolute;left:10px;bottom:10px;background:rgba(8,12,18,.75);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:900;pointer-events:none}
 .bigbtns{display:grid;grid-template-columns:1.4fr 1fr;gap:8px}
 .modes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -663,6 +663,15 @@ const SFX={ctx:null,master:null,nbuf:null,last:{},
     leaf(){this.noise(.15,{vol:.08,type:'bandpass',f:1800,to:900,q:2})},
     spawn(){this.tone(300,.25,{type:'triangle',vol:.07,to:900});this.noise(.2,{vol:.07,type:'bandpass',f:1200,q:3})},
     charge(){this.noise(.25,{vol:.2,type:'lowpass',f:1500,to:200});this.tone(140,.25,{type:'square',vol:.08,to:60})},
+    dFairy(){[1568,2093,2637,3136,2637].forEach((f,i)=>this.tone(f,.18,{type:'sine',vol:.06,at:i*.045}));this.noise(.3,{vol:.05,type:'highpass',f:7000})},
+    dVamp(){[110,131,165].forEach(f=>this.tone(f,.7,{type:'sawtooth',vol:.04,attack:.08}));for(let i=0;i<4;i++)this.noise(.06,{vol:.1,type:'bandpass',f:2400,q:5,at:.15+i*.07})},
+    dBat(){for(let i=0;i<5;i++)this.noise(.04,{vol:.08,type:'bandpass',f:3000+i*200,q:6,at:i*.05})},
+    dHowl(){this.tone(320,.45,{type:'triangle',vol:.1,to:700,attack:.08});this.tone(700,.7,{type:'triangle',vol:.09,to:430,at:.42});this.tone(640,.5,{type:'sine',vol:.04,to:400,at:.5});this.noise(.6,{vol:.04,type:'bandpass',f:900,q:3,at:.1})},
+    dWitch(){[980,860,940,820,900,760].forEach((f,i)=>this.tone(f,.07,{type:'triangle',vol:.07,to:f*.8,at:i*.085}))},
+    dBrew(){for(let i=0;i<6;i++)this.tone(180+Math.random()*260,.09,{type:'sine',vol:.09,to:600,at:i*.07});this.noise(.4,{vol:.06,type:'lowpass',f:500})},
+    dCoffin(){this.tone(70,.6,{type:'sawtooth',vol:.06,to:150,attack:.1});this.noise(.25,{vol:.25,type:'lowpass',f:300,to:80,at:.55})},
+    dGhost(){this.tone(520,.6,{type:'sine',vol:.07,to:300,attack:.1});this.tone(530,.6,{type:'sine',vol:.05,to:290,attack:.1})},
+    dBuzz(){this.tone(210,.35,{type:'sawtooth',vol:.04,to:240});this.tone(215,.35,{type:'square',vol:.02,to:250})},
     awaken(){this.S.legend.call(this);[1046,1318,1568,2093].forEach((f,i)=>this.tone(f,.6,{type:'square',vol:.05,at:.4+i*.1}))},
   },
 };
@@ -1151,7 +1160,9 @@ function validDeploy(team,key,x,y){
   return !G.ents.some(e=>e.kind==='tower'&&!e.dead&&Math.hypot(e.x-x,e.y-y)<e.r+8);
 }
 const OLD_VOICE={knight:'dHuman',archers:'dHuman',assassin:'dHuman',archmage:'dHuman',mage:'dHuman',imps:'dBlob',skeletons:'dBone',golem:'dBuild',tower:'dBuild',cavalry:'dBeast',griffin:'dFlyer',wyvern:'dFlyer',dragon:'dFlyer'};
-function deployVoice(c){const m=c.m||{};return m.t==='old'?OLD_VOICE[m.k]||'deploy':{human:'dHuman',beast:'dBeast',flyer:'dFlyer',blob:'dBlob',construct:'dMech',build:'dBuild'}[m.t]||'deploy'}
+const CARD_VOICE={pixie:'dFairy',bloomfairy:'dFairy',moonfairy:'dFairy',fairyqueen:'dFairy',vampire:'dVamp',vampbride:'dVamp',coffin:'dCoffin',werewolf:'dHowl',alphawolf:'dHowl',broomwitch:'dWitch',coven:'dWitch',cursewitch:'dWitch',icewitch:'dWitch',cauldron:'dBrew',ghost:'dGhost',bats:'dBat',bees:'dBuzz',snowwolves:'dHowl',shadowhounds:'dHowl',wolfrider:'dHowl'};
+const SPELL_VOICE={fairyring:'dFairy',bloodmoon:'dVamp',moonhowl:'dHowl'};
+function deployVoice(c,key){if(CARD_VOICE[key])return CARD_VOICE[key];const m=c.m||{};return m.t==='old'?OLD_VOICE[m.k]||'deploy':{human:'dHuman',beast:'dBeast',flyer:'dFlyer',blob:'dBlob',construct:'dMech',build:'dBuild'}[m.t]||'deploy'}
 function enemyPlayed(key,x,y){
   const c=CARDS[key],st=$('#stage');if(!c||!st)return;
   const m=new T.Mesh(new T.RingGeometry(.8,1,48),new T.MeshBasicMaterial({color:'#ff4d5a',transparent:true,opacity:.9,depthWrite:false,side:T.DoubleSide}));m.rotation.x=-Math.PI/2;m.position.set(wx(x),1.6,wz(y));scene.add(m);effects.push({obj:m,life:1.4,max:1.4,r:c.type==='spell'?(+c.radius||40):26,kind:'ring'});
@@ -1166,7 +1177,7 @@ function play(team,i,x,y){
   if(!validDeploy(team,key,x,y)){if(team===0)say('不能放在這裡');return false}
   G.elixir[team]-=c.cost;d.hand[i]=d.queue.shift();d.queue.push(key);
   if(team===0){S.stats.played[key]=(S.stats.played[key]||0)+1;questTick('cards15');questTick('card',1,key);if(c.type==='spell')questTick('spells5');else if(c.type==='building')questTick('build3');else if(c.s.air)questTick('air6')}
-  if(c.type!=='spell'){sfx(deployVoice(c),.08);if(c.s.hp>=1500)sfx('roar',.5);if(c.rar==='legendary')sfx('sparkle',.3)}else if(c.fx==='meteor')sfx('whistle',.3);
+  if(c.type!=='spell'){sfx(deployVoice(c,key),.08);if(c.s.hp>=1500)sfx('roar',.5);if(c.rar==='legendary')sfx('sparkle',.3)}else if(c.fx==='meteor')sfx('whistle',.3);else if(SPELL_VOICE[key])sfx(SPELL_VOICE[key],.3);
   if(c.type==='spell')castSpell(team,key,x,y);
   else for(const[ox,oy]of offsFor(c.count))G.ents.push(makeUnit(key,team,clamp(x+ox,10,W-10),y+oy));
   if(team===1&&!G.guest)try{enemyPlayed(key,x,y)}catch(e){}
@@ -1251,7 +1262,7 @@ function updateEnt(u,dt){
     if(M.spawn&&(u.spawnT-=dt)<=0){u.spawnT=M.spawn[1];sfx('spawn',.4);spawnTokens(M.spawn[0],u.team,u.x,clamp(u.y+(u.team?1:-1)*(u.r+8),10,H-10),M.spawn[2],u.lvl)}
     if((M.heal||M.rage)&&(u.auraT-=dt)<=0){u.auraT=1;auraPulse(u)}
   }
-  if(M&&M.frenzy&&u.hp<u.maxHp*.5){u.rageT=Math.max(u.rageT,.3);if(!u.fr){u.fr=1;fx3d('aura',u.x,u.y,0,u.r*2.2,'#ff5a3a');sfx('roar',.4)}}
+  if(M&&M.frenzy&&u.hp<u.maxHp*.5){u.rageT=Math.max(u.rageT,.3);if(!u.fr){u.fr=1;fx3d('aura',u.x,u.y,0,u.r*2.2,'#ff5a3a');sfx(u.key==='werewolf'||u.key==='alphawolf'?'dHowl':'roar',.4)}}
   if(!(u.dmg>0))return;
   u.cd=Math.max(0,u.cd-dt*(u.rageT>0?1.4:1)*(u.slowT>0?1-u.slowF:1));u.retarget-=dt;
   let t=u.target;
