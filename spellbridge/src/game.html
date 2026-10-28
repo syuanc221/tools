@@ -404,7 +404,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
         <button class="pull" id="pull1">召喚 ×1<small><i class="gem"></i>100</small></button>
         <button class="pull" id="pull10">召喚 ×10<small><i class="gem"></i>900 · 必出稀有以上</small></button>
       </div>
-      <div class="panel"><h3>出現機率</h3><div class="rates" id="rates"></div><p class="muted">每次召喚得到一張卡的數張複本：普通 ×5、稀有 ×3、史詩與傳說 ×1。抽中沒有的卡就會解鎖。共 100 張各不相同的卡牌，分屬 7 種元素，每張都有自己的模型、數值和特殊能力。</p></div>
+      <div class="panel"><h3>出現機率</h3><div class="rates" id="rates"></div><p class="muted">每次召喚得到一張卡的數張複本：普通 ×5、稀有 ×3、史詩與傳說 ×1。抽中沒有的卡就會解鎖。共 116 張各不相同的卡牌，分屬 7 種元素，還有妖精、吸血鬼、狼人、女巫系列，每張都有自己的模型、數值和特殊能力。</p></div>
     </section>
     <section class="scr" id="scr-guild" hidden><div id="guildBody" style="display:flex;flex-direction:column;gap:12px"></div></section>
     <section class="scr" id="scr-profile" hidden>
@@ -772,7 +772,7 @@ const RAR={common:{name:'普通',col:'#a9b6c8',rate:.62},rare:{name:'稀有',col
 const RORDER=['common','rare','epic','legendary'];
 const ELEM={fire:{name:'火焰',col:'#e8573a'},ice:{name:'冰霜',col:'#5fc8f0'},thunder:{name:'雷霆',col:'#f2c93a'},dark:{name:'暗影',col:'#8a5ad9'},holy:{name:'聖光',col:'#f3e3a0'},nature:{name:'森林',col:'#4caf5a'},rune:{name:'符文',col:'#4f8ff0'}};
 const ELEM_KEYS=Object.keys(ELEM);
-// 100 distinct cards. s: hp dmg range hit speed r (+ air ta=targets air bo=buildings only splash proj life); x: special abilities; m: 3D model recipe.
+// 116 distinct cards. s: hp dmg range hit speed r (+ air ta=targets air bo=buildings only splash proj life); x: special abilities; m: 3D model recipe.
 // x keys: shield, heal:[amount,radius], rage:[radius], slow:[fraction,seconds], spawn:[token,every,count], dSpawn:[token,count], dDmg:[damage,radius], charge, chain:n, kami, steal:fraction
 const CARD_LIST=[
   // ---------- fire ----------
@@ -882,9 +882,28 @@ const CARD_LIST=[
   {k:'balloon',n:'熱氣球炸彈',r:'epic',c:5,e:'rune',s:{hp:1200,dmg:450,range:6,hit:2.5,speed:38,r:14,air:1,bo:1},x:{dDmg:[250,40]},m:{t:'flyer',k:'balloon'},d:'飛向敵方建築投下炸彈，被擊落時也會爆炸。'},
   {k:'archspire',n:'大法師之塔',r:'legendary',c:6,e:'rune',t:'building',s:{hp:1200,dmg:140,range:125,hit:1.2,r:16,life:40,ta:1,splash:30,proj:'orb'},m:{t:'build',k:'spire'},d:'強大的魔法塔，範圍轟擊空中和地面。'},
   {k:'runeshields',n:'符文盾兵',r:'common',c:3,e:'rune',cnt:2,s:{hp:300,dmg:60,range:8,hit:1.1,speed:45,r:10},x:{shield:200},m:{t:'human',body:'#5a6a85',head:'helm',hcol:'#4f8ff0',w:'mace',off:'shield'},d:'兩名持盾兵，各有 200 點護盾。'},
+  // ---------- moonlit series: fairies, vampires, werewolves, witches ----------
+  {k:'pixie',n:'花仙子群',r:'common',c:2,e:'nature',cnt:3,s:{hp:80,dmg:38,range:55,hit:1,speed:62,r:7,air:1,ta:1,proj:'spark'},m:{t:'flyer',k:'fairy',c:'#ff9ecb',hair:'#ffd86b',wc:'#ffc6ec',sc:.75},d:'三隻會飛的花仙子，灑出亮晶晶的花粉攻擊。'},
+  {k:'bloomfairy',n:'花冠妖精',r:'rare',c:3,e:'holy',s:{hp:380,dmg:50,range:70,hit:1.2,speed:50,r:9,air:1,ta:1,proj:'leaf'},x:{heal:[55,55]},m:{t:'flyer',k:'fairy',c:'#fff1b8',hair:'#f3a6c8',wc:'#fff6dc',crown:'#ff7ab0'},d:'在空中為身邊的隊友灑下治癒花瓣。'},
+  {k:'moonfairy',n:'月光妖精',r:'epic',c:4,e:'ice',s:{hp:420,dmg:80,range:85,hit:1.3,speed:50,r:10,air:1,ta:1,splash:18,proj:'frost'},x:{slow:[.4,1.5],chain:2},m:{t:'flyer',k:'fairy',c:'#a9c8ff',hair:'#e8f2ff',wc:'#bfe6ff',crown:'#ffffff'},d:'月光凝成的冰晶會連鎖到第二個敵人，並讓敵人變慢。'},
+  {k:'fairyqueen',n:'妖精女王',r:'legendary',c:6,e:'nature',s:{hp:800,dmg:95,range:90,hit:1.3,speed:45,r:13,air:1,ta:1,splash:24,proj:'orb'},x:{heal:[45,70],spawn:['pixie_t',9,2]},m:{t:'flyer',k:'fairy',c:'#7ad08a',hair:'#ffe9a0',wc:'#c8ffd8',crown:'#ffd86b',sc:1.35},d:'森林的女王：治療身邊的隊友，並定期召喚花仙子。'},
+  {k:'fairyring',n:'妖精之環',r:'rare',c:3,e:'nature',t:'spell',radius:45,heal:200,summon:['pixie_t',3],fx:'ring',vis:'flower',d:'長出一圈妖精環，治療隊友並召喚三隻花仙子。'},
+  {k:'vampire',n:'吸血鬼伯爵',r:'legendary',c:5,e:'dark',s:{hp:1050,dmg:125,range:9,hit:1.1,speed:55,r:12},x:{steal:.4,dSpawn:['bat_t',4]},m:{t:'human',body:'#1a1420',legs:'#15111a',head:'vamp',w:'sword',wc:'#e8e0ea',cape:'#8a1428'},d:'吸取四成傷害來回血，倒下時化成一群蝙蝠飛走。'},
+  {k:'vampbride',n:'吸血鬼新娘',r:'epic',c:4,e:'dark',s:{hp:620,dmg:95,range:8,hit:.85,speed:62,r:10},x:{steal:.25},m:{t:'human',robe:1,body:'#5a0f1e',head:'vampf',w:'daggers'},d:'動作優雅又迅速，每次攻擊都能吸血。'},
+  {k:'bloodmoon',n:'血月術',r:'epic',c:4,e:'dark',t:'spell',radius:55,dmg:200,towerDmg:60,rage:4,fx:'ring',vis:'moon',d:'血月降臨：傷害範圍內的敵人，同時讓我方部隊狂暴 4 秒。'},
+  {k:'coffin',n:'吸血鬼棺材',r:'rare',c:4,e:'dark',t:'building',s:{hp:650,dmg:0,range:0,hit:99,r:13,life:30},x:{spawn:['bat_t',5,2],dSpawn:['bat_t',4]},m:{t:'build',k:'coffin'},d:'每 5 秒飛出兩隻蝙蝠，被打破時再放出四隻。'},
+  {k:'werewolf',n:'狼人',r:'epic',c:5,e:'nature',s:{hp:1150,dmg:125,range:8,hit:1.1,speed:55,r:13},x:{charge:1,frenzy:1},m:{t:'human',heavy:1,body:'#5a4632',legs:'#4a3a2a',head:'wolf',hcol:'#5a4632',w:'claws',skin:'#4a3a2a'},d:'衝鋒第一擊雙倍傷害；血量低於一半時月下狂化，移動和攻擊都變快。'},
+  {k:'alphawolf',n:'狼人首領',r:'legendary',c:6,e:'nature',s:{hp:1300,dmg:140,range:9,hit:1.1,speed:55,r:15},x:{frenzy:1,spawn:['wolf_t',10,1]},m:{t:'human',heavy:1,body:'#3a3440',legs:'#2a2630',head:'wolf',hcol:'#6a6474',eye:'#7fd0ff',w:'claws',skin:'#3a3440',sc:1.25},d:'狼人之王：每 10 秒喚來一隻野狼，重傷時月下狂化。'},
+  {k:'moonhowl',n:'月嚎術',r:'rare',c:3,e:'ice',t:'spell',radius:40,summon:['wolf_t',3],rage:3,fx:'ring',vis:'howl',d:'月光下召喚三隻野狼，並讓範圍內的隊友狂暴。'},
+  {k:'silverhunter',n:'銀箭獵人',r:'rare',c:4,e:'holy',s:{hp:600,dmg:150,range:115,hit:1.5,speed:45,r:10,ta:1,proj:'arrow'},m:{t:'human',body:'#4a4a5a',head:'hood',hcol:'#2a2a33',w:'crossbow',cape:'#5a5a6a'},d:'專門獵殺狼人的銀箭獵人，射程遠、單發傷害高。'},
+  {k:'broomwitch',n:'掃帚女巫',r:'rare',c:3,e:'dark',s:{hp:350,dmg:85,range:75,hit:1.2,speed:58,r:10,air:1,ta:1,splash:16,proj:'orb'},m:{t:'flyer',k:'broom',c:'#3a2a4a',hcol:'#2a1a3d',hair:'#c0392b'},d:'騎著掃帚飛行的女巫，從空中丟出魔法球。'},
+  {k:'cauldron',n:'女巫大鍋',r:'epic',c:4,e:'nature',t:'building',s:{hp:800,dmg:100,range:120,hit:1.6,r:14,life:35,splash:30,proj:'orb'},x:{slow:[.4,2]},m:{t:'build',k:'cauldron'},d:'咕嘟咕嘟的毒藥鍋，丟出毒液範圍傷害並讓敵人變慢。'},
+  {k:'coven',n:'女巫集會',r:'epic',c:5,e:'rune',cnt:3,s:{hp:330,dmg:70,range:80,hit:1.3,speed:45,r:9,ta:1,proj:'orb'},x:{chain:2},m:{t:'human',robe:1,body:'#2f2a5a',head:'witch',hcol:'#1e1a3a',hair:'#9b5cff',w:'wand'},d:'三名女巫組成的集會，每道魔法都會連鎖到第二個敵人。'},
 ];
 // units that only appear by being summoned
 const TOKEN_LIST=[
+  {k:'pixie_t',n:'花仙子',e:'nature',s:{hp:80,dmg:38,range:55,hit:1,speed:62,r:7,air:1,ta:1,proj:'spark'},m:{t:'flyer',k:'fairy',c:'#ff9ecb',hair:'#ffd86b',wc:'#ffc6ec',sc:.75}},
+  {k:'bat_t',n:'蝙蝠',e:'dark',s:{hp:60,dmg:32,range:6,hit:.9,speed:68,r:7,air:1,ta:1},m:{t:'flyer',k:'bat',c:'#2a1a3d'}},
   {k:'lavarock',n:'熔岩碎石',e:'fire',s:{hp:450,dmg:70,range:7,hit:1.2,speed:40,r:10},m:{t:'old',k:'golem',ec:'#ff6a2a',sc:.45}},
   {k:'phoenixegg',n:'鳳凰蛋',e:'fire',t:'building',s:{hp:300,dmg:0,range:0,hit:99,r:9,life:4},x:{dSpawn:['phoenixchick',1]},m:{t:'blob',k:'egg'}},
   {k:'phoenixchick',n:'雛鳳',e:'fire',s:{hp:450,dmg:90,range:30,hit:1.2,speed:55,r:11,air:1,ta:1,splash:16,proj:'fire'},m:{t:'flyer',k:'bird',c:'#ff7a1a',c2:'#ffd34d',sc:.85}},
@@ -897,7 +916,7 @@ const TOKEN_LIST=[
 ];
 function mkCard(o){
   const c={name:o.n,rar:o.r||'common',cost:o.c||0,type:o.t||'troop',el:o.e,count:o.cnt||1,desc:o.d||'',m:o.m||{},mech:o.x||{}};
-  if(c.type==='spell')Object.assign(c,{radius:o.radius,dmg:o.dmg||0,towerDmg:o.towerDmg||0,fx:o.fx||'ball',freeze:o.freeze,slow:o.slow,rage:o.rage,heal:o.heal,shield:o.shield,chain:o.chain,summon:o.summon});
+  if(c.type==='spell')Object.assign(c,{vis:o.vis,radius:o.radius,dmg:o.dmg||0,towerDmg:o.towerDmg||0,fx:o.fx||'ball',freeze:o.freeze,slow:o.slow,rage:o.rage,heal:o.heal,shield:o.shield,chain:o.chain,summon:o.summon});
   else{const s=Object.assign({},o.s);s.targetsAir=!!s.ta;s.buildingsOnly=!!s.bo;s.air=!!s.air;s.speed=s.speed||0;s.life=s.life||0;s.splash=s.splash||0;c.s=s}
   return c;
 }
@@ -910,7 +929,7 @@ function mechText(c){
   const M=c.mech||{},o=[];
   if(M.shield)o.push('護盾 '+M.shield);if(M.heal)o.push('治療光環');if(M.rage)o.push('狂暴光環');if(M.slow)o.push('攻擊減速');
   if(M.spawn)o.push('召喚'+cardOf(M.spawn[0]).name);if(M.dSpawn)o.push('倒下時召喚'+cardOf(M.dSpawn[0]).name);if(M.dDmg)o.push('倒下時爆炸');
-  if(M.charge)o.push('衝鋒雙倍傷害');if(M.chain)o.push('連鎖 '+M.chain+' 個目標');if(M.kami)o.push('自爆');if(M.steal)o.push('吸血');
+  if(M.charge)o.push('衝鋒雙倍傷害');if(M.frenzy)o.push('重傷時狂化');if(M.chain)o.push('連鎖 '+M.chain+' 個目標');if(M.kami)o.push('自爆');if(M.steal)o.push('吸血');
   if(c.type==='spell'){if(c.freeze)o.push('冰凍 '+c.freeze+' 秒');if(c.slow)o.push('減速 '+c.slow[1]+' 秒');if(c.rage)o.push('狂暴 '+c.rage+' 秒');if(c.heal)o.push('治療 '+c.heal);if(c.shield)o.push('護盾 '+c.shield);if(c.summon)o.push('召喚 '+c.summon[1]+' 名'+cardOf(c.summon[0]).name);if(c.chain)o.push('連鎖 '+c.chain+' 個目標')}
   return o.join('、');
 }
@@ -1133,6 +1152,7 @@ function updateEnt(u,dt){
     if(M.spawn&&(u.spawnT-=dt)<=0){u.spawnT=M.spawn[1];sfx('spawn',.4);spawnTokens(M.spawn[0],u.team,u.x,clamp(u.y+(u.team?1:-1)*(u.r+8),10,H-10),M.spawn[2],u.lvl)}
     if((M.heal||M.rage)&&(u.auraT-=dt)<=0){u.auraT=1;auraPulse(u)}
   }
+  if(M&&M.frenzy&&u.hp<u.maxHp*.5){u.rageT=Math.max(u.rageT,.3);if(!u.fr){u.fr=1;fx3d('aura',u.x,u.y,0,u.r*2.2,'#ff5a3a');sfx('roar',.4)}}
   if(!(u.dmg>0))return;
   u.cd=Math.max(0,u.cd-dt*(u.rageT>0?1.4:1)*(u.slowT>0?1-u.slowF:1));u.retarget-=dt;
   let t=u.target;
@@ -1540,6 +1560,11 @@ function addHead(g,o,y){
   else if(t==='halo'){g.add(mesh(new T.SphereGeometry(3.3,8,6),skin,0,y,0));const h=mesh(new T.TorusGeometry(3.2,.4,6,20),glow('#ffe9a0',1.5),0,y+4.6,0);h.rotation.x=Math.PI/2;g.add(h)}
   else if(t==='elf'){g.add(mesh(new T.SphereGeometry(3.1,8,6),skin,0,y,0));for(const s of[-1,1])g.add(mesh(new T.ConeGeometry(.8,3.4,4),skin,s*3.2,y+.6,0).rotateZ(-s*1.2));g.add(mesh(new T.SphereGeometry(3.3,8,6,0,Math.PI*2,0,Math.PI*.5),hc,0,y+.3,-.3))}
   else if(t==='beast'){g.add(mesh(new T.BoxGeometry(6,5.5,5.5),hc,0,y,0));for(const s of[-1,1]){g.add(mesh(new T.ConeGeometry(1,2.4,4),hc,s*2.4,y+3.4,0));g.add(mesh(new T.SphereGeometry(.6,5,4),glow('#7fd0ff',1.4),s*1.4,y+.6,2.8))}}
+  else if(t==='vamp'||t==='vampf'){const pale=mat('#e8e0ea'),hair=mat(t==='vampf'?'#5a0f1e':'#15111a');g.add(mesh(new T.SphereGeometry(3.2,8,6),pale,0,y,0));g.add(mesh(new T.SphereGeometry(3.4,8,6,0,Math.PI*2,0,Math.PI*.45),hair,0,y+.3,-.2));for(const s of[-1,1])g.add(mesh(new T.SphereGeometry(.55,5,4),glow('#ff2a3a',1.8),s*1.2,y+.3,2.9));
+    if(t==='vamp')for(const s of[-1,1]){const c=mesh(new T.BoxGeometry(3.6,5,.5),mat('#8a1428'),s*2.4,y-1.5,-2.2);c.rotation.y=s*.5;c.rotation.z=s*-.2;g.add(c)}
+    else{g.add(mesh(new T.BoxGeometry(6,8,1.4),hair,0,y-2.6,-2.6));g.add(mesh(new T.ConeGeometry(.6,1.6,4),glow('#ff7ab0',1.2),0,y+3.4,1))}}
+  else if(t==='wolf'){const f=mat(o.hcol||'#5a4632');g.add(mesh(new T.BoxGeometry(5.6,5,5.4),f,0,y,0));g.add(mesh(new T.BoxGeometry(3,2.6,3.6),f,0,y-1,3.8));g.add(mesh(new T.BoxGeometry(1.2,.9,1),mat('#15111a'),0,y-.2,5.6));for(const s of[-1,1]){g.add(mesh(new T.ConeGeometry(1.1,3.4,4),f,s*1.9,y+3.6,-.4));g.add(mesh(new T.SphereGeometry(.55,5,4),glow(o.eye||'#ffcc33',1.8),s*1.4,y+.7,2.8));g.add(mesh(new T.ConeGeometry(.3,1.2,3),mat('#ffffff'),s*.8,y-2.6,5).rotateX(Math.PI))}g.add(mesh(new T.BoxGeometry(7,3,4),f,0,y-3.4,-1.2))}
+  else if(t==='witch'){g.add(mesh(new T.SphereGeometry(3.1,8,6),mat(o.skin||SKIN),0,y,0));g.add(mesh(new T.BoxGeometry(6,7,1.4),mat(o.hair||'#c0392b'),0,y-2.2,-2.4));g.add(mesh(new T.CylinderGeometry(6.4,6.4,.7,12),hc,0,y+2.2,0));const h=mesh(new T.ConeGeometry(3.6,10,8),hc,0,y+7,0);h.rotation.z=.25;h.rotation.x=-.15;g.add(h);g.add(mesh(new T.CylinderGeometry(3.5,3.5,1,8),mat('#9b5cff'),0,y+3.2,0));g.add(mesh(new T.BoxGeometry(1.4,1.4,.4),mat('#f3c55b'),0,y+3.2,3.4))}
   else if(t==='mask'){g.add(mesh(new T.SphereGeometry(3.4,8,6),mat('#2a2433'),0,y,0));g.add(mesh(new T.BoxGeometry(4.6,.8,1),glow(o.hcol||'#ff7a1a',1.6),0,y+.4,3.1))}
 }
 function addWeapon(g,o,S){
@@ -1559,6 +1584,7 @@ function addWeapon(g,o,S){
   else if(w==='bomb'){arm.add(mesh(new T.IcosahedronGeometry(2.6,1),mat('#2a2a2a'),0,2,0));arm.add(mesh(new T.CylinderGeometry(.3,.3,2,4),mat('#c9a646'),0,5,0));arm.add(mesh(new T.OctahedronGeometry(.8,0),glow('#ffb347',1.8),0,6.4,0));rest=0}
   else if(w==='fists'){arm.add(mesh(new T.BoxGeometry(3.6,3.6,3.6),mat(o.skin||o.body||SKIN),0,0,1));arm.add(mesh(new T.BoxGeometry(3.6,3.6,3.6),mat(o.skin||o.body||SKIN),-12.4*S,0,1));rest=.2}
   else if(w==='drum'){arm.position.set(0,9*S,4);arm.add(mesh(new T.CylinderGeometry(3.4,3.4,3,10),mat('#c0392b'),0,0,0).rotateX(Math.PI/2));arm.add(mesh(new T.CylinderGeometry(3.5,3.5,.4,10),mat('#efe6cf'),0,0,1.6).rotateX(Math.PI/2));rest=0}
+  else if(w==='claws'){const fc=mat(o.skin||o.body||SKIN),cl=mat('#efe6cf');for(const x of[0,-12.4*S]){arm.add(mesh(new T.BoxGeometry(3.4,3.4,3.4),fc,x,0,1));for(let i=-1;i<=1;i++)arm.add(mesh(new T.ConeGeometry(.35,2.6,3),cl,x+i*1,1.6,3).rotateX(1.2))}rest=.2}
   arm.rotation.x=rest;g.add(arm);g.userData.arm=arm;g.userData.armRest=rest;
 }
 function humanoid(o,col,ec){
@@ -1600,6 +1626,29 @@ function flyer(o,col,ec){
   else if(k==='gargoyle'){const c=mat(o.c||'#6a6470');g.add(mesh(new T.BoxGeometry(6,7,5),c));g.add(mesh(new T.BoxGeometry(4.4,4,4),c,0,5.4,1));for(const s of[-1,1]){g.add(mesh(new T.ConeGeometry(.8,3,4),mat('#3a3640'),s*1.6,8,1));g.add(mesh(new T.SphereGeometry(.6,5,4),glow('#ff4d4d',1.6),s*1.2,5.8,3.1))}addWings(g,'#4a4650',2,3);g.add(mesh(new T.BoxGeometry(6.4,1.4,5.4),mat(col),0,-1.5,0));const arm=new T.Group();arm.position.set(4,0,2);arm.add(mesh(new T.ConeGeometry(.8,4,4),mat('#3a3640'),0,-2,0));g.add(arm);g.userData.arm=arm;g.userData.armRest=0}
   else if(k==='angel'){const h=humanoid({robe:1,body:'#f1ece0',head:'halo',w:'sword',wc:'#ffe9a0'},col,ec);h.position.y=-10;g.add(h);addWings(g,'#fff6dc',4,2);g.userData.arm=h.userData.arm;g.userData.armRest=h.userData.armRest}
   else if(k==='balloon'){g.add(mesh(new T.SphereGeometry(8,10,8),mat(o.c||'#c0392b'),0,12,0));g.add(mesh(new T.TorusGeometry(8.05,.8,4,20),mat(col),0,12,0).rotateX(Math.PI/2));for(let i=0;i<4;i++){const a=i/4*Math.PI*2;g.add(mesh(new T.BoxGeometry(.4,8,.4),mat('#5a3d20'),Math.cos(a)*3,2,Math.sin(a)*3))}g.add(mesh(new T.BoxGeometry(6,4,6),mat('#9b6b3e'),0,-3,0));g.add(mesh(new T.IcosahedronGeometry(2.4,1),mat('#2a2a2a'),0,-6.5,0));g.add(mesh(new T.OctahedronGeometry(.9,0),glow('#ffb347',1.8),0,-3.6,0))}
+  else if(k==='fairy'){
+    const skin=mat('#ffe3d0'),dress=mat(o.c||'#ff9ecb');
+    g.add(mesh(new T.ConeGeometry(3.4,7,8),dress,0,-1,0));g.add(mesh(new T.SphereGeometry(1.6,8,6),dress,0,2.6,0));
+    g.add(mesh(new T.SphereGeometry(2.4,10,8),skin,0,5.6,0));g.add(mesh(new T.SphereGeometry(2.6,10,8,0,Math.PI*2,0,Math.PI*.55),mat(o.hair||'#ffd86b'),0,5.9,-.3));
+    g.add(mesh(new T.SphereGeometry(1.5,8,6),mat(o.hair||'#ffd86b'),0,5.2,-2.2));
+    for(const s of[-1,1]){g.add(mesh(new T.SphereGeometry(.4,5,4),mat('#3a2a4a'),s*.8,5.6,2.1));g.add(mesh(new T.SphereGeometry(.5,5,4),mat('#ffb3c8'),s*1.5,5,1.8))}
+    if(o.crown)for(let i=0;i<5;i++){const a=i/5*Math.PI*2;g.add(mesh(new T.IcosahedronGeometry(.7,0),glow(o.crown,1.2),Math.cos(a)*2.2,7.8,Math.sin(a)*2.2))}
+    const wm=new T.MeshStandardMaterial({color:o.wc||'#ffc6ec',emissive:o.wc||'#ffc6ec',emissiveIntensity:.55,transparent:true,opacity:.72,side:T.DoubleSide,flatShading:true,depthWrite:false});
+    const wings=[];for(const s of[-1,1]){const p=new T.Group();p.position.set(s*.6,3.4,-1.4);p.scale.x=s;const q=new T.Group();q.rotation.x=-1.05;p.add(q);
+      const up=new T.Mesh(new T.CircleGeometry(4.2,10),wm);up.scale.set(1,.62,1);up.position.set(3.8,0,1.4);up.rotation.x=-Math.PI/2;up.rotation.z=.5;q.add(up);
+      const lo=new T.Mesh(new T.CircleGeometry(2.6,8),wm);lo.scale.set(1,.7,1);lo.position.set(2.6,0,-2);lo.rotation.x=-Math.PI/2;lo.rotation.z=-.5;q.add(lo);g.add(p);wings.push(p)}
+    g.userData.wings=wings;g.userData.flap=70;
+    const arm=new T.Group();arm.position.set(2.6,3,1);arm.add(mesh(new T.CylinderGeometry(.2,.2,4,4),mat('#f3c55b'),0,2,0));arm.add(mesh(new T.OctahedronGeometry(.9,0),glow(o.crown||'#ffffff',1.8),0,4.4,0));g.add(arm);g.userData.arm=arm;g.userData.armRest=0;
+    g.add(mesh(new T.TorusGeometry(3.5,.4,4,14),mat(col),0,-3.6,0).rotateX(Math.PI/2));
+    for(let i=0;i<4;i++){const a=i/4*Math.PI*2;g.add(mesh(new T.OctahedronGeometry(.45,0),glow('#ffffff',1.6),Math.cos(a)*5,-2+i,Math.sin(a)*5))}
+  }
+  else if(k==='broom'){
+    const h=humanoid({robe:1,body:o.c||'#3a2a4a',head:'witch',hcol:o.hcol||'#2a1a3d',hair:o.hair||'#c0392b',w:'wand'},col,ec);h.scale.setScalar(.75);h.position.set(0,-6,-1);g.add(h);
+    const br=new T.Group();br.position.y=-5;br.add(mesh(new T.CylinderGeometry(.5,.5,20,5),mat(WOOD),0,0,1).rotateX(Math.PI/2));const bri=mesh(new T.ConeGeometry(2.4,6,7),mat('#c9a646'),0,0,-10);bri.rotation.x=-Math.PI/2;br.add(bri);
+    br.add(mesh(new T.TorusGeometry(1,.3,4,8),mat('#c0392b'),0,0,-7));g.add(br);
+    g.add(mesh(new T.OctahedronGeometry(.6,0),glow('#c79bff',1.6),0,-6,12));
+    g.userData.arm=h.userData.arm;g.userData.armRest=h.userData.armRest;
+  }
   return inner(g,o.sc);
 }
 function blob(o,col,ec){
@@ -1634,6 +1683,14 @@ function building(o,col,ec){
   else if(k==='ballista'){g.add(mesh(new T.CylinderGeometry(8,10,5,8),st,0,2.5,0));band(5.4);const bar=new T.Group();bar.position.set(0,9,0);bar.add(mesh(new T.BoxGeometry(2,2,16),mat(WOOD),0,0,2));bar.add(mesh(new T.BoxGeometry(16,1.4,1.4),mat('#5b3c20'),0,0,7));bar.add(mesh(new T.ConeGeometry(1.2,4,4),glow('#ffe9a0',1.2),0,0,11).rotateX(Math.PI/2));g.add(bar);g.userData.arm=bar;g.userData.armRest=0}
   else if(k==='tree'){g.add(mesh(new T.CylinderGeometry(3.6,6,18,7),mat('#5a3d22'),0,9,0));for(const[x,y,z,r]of[[0,24,0,9],[-6,20,2,6],[6,21,-2,6.5],[0,18,-6,5.5]])g.add(mesh(new T.IcosahedronGeometry(r,1),mat('#3f8f3a',{emissive:'#2a6a2a',emissiveIntensity:.3}),x,y,z));for(let i=0;i<6;i++){const a=i/6*Math.PI*2;g.add(mesh(new T.OctahedronGeometry(1.2,0),glow('#c8ff7a',1.5),Math.cos(a)*11,14+Math.sin(i)*3,Math.sin(a)*11))}g.add(mesh(new T.CylinderGeometry(6.4,6.4,1.6,7),mat(col),0,3,0))}
   else if(k==='spire'){g.add(mesh(new T.CylinderGeometry(7,9,6,6),st,0,3,0));band(6.4);g.add(mesh(new T.CylinderGeometry(2.6,4.6,20,6),mat('#3a4f7a'),0,16,0));g.add(mesh(new T.ConeGeometry(3,6,6),mat('#f3c55b'),0,29,0));const cr=mesh(new T.OctahedronGeometry(3.4,0),glow(ec,1.5),0,36,0);cr.scale.y=1.5;g.add(cr);g.userData.crystal=cr;for(let i=0;i<2;i++)g.add(mesh(new T.TorusGeometry(6-i*1.6,.4,4,20),glow('#9fd0ff',1.2),0,20+i*6,0).rotateX(Math.PI/2))}
+  else if(k==='coffin'){const wd=mat('#3a1e1a'),dk=mat('#1e0f0d');g.add(mesh(new T.BoxGeometry(14,2,9),mat(STONE_D),0,1,0));const c=mesh(new T.CylinderGeometry(4.6,3,16,6),wd,0,10,-.5);c.scale.z=.55;g.add(c);const l=mesh(new T.CylinderGeometry(4.2,2.7,15,6),dk,0,10,.6);l.scale.z=.3;g.add(l);
+    g.add(mesh(new T.BoxGeometry(1,7,.6),mat('#c9a646'),0,11,2));g.add(mesh(new T.BoxGeometry(4,1,.6),mat('#c9a646'),0,12.6,2));for(const s of[-1,1])g.add(mesh(new T.SphereGeometry(.5,5,4),glow('#ff2a3a',1.8),s*1.2,16,2));
+    const cr=mesh(new T.OctahedronGeometry(1.4,0),glow('#8a1428',1.4),0,21,0);g.add(cr);g.userData.crystal=cr;g.add(mesh(new T.BoxGeometry(14.4,1,9.4),mat(col),0,2.2,0))}
+  else if(k==='cauldron'){for(let i=0;i<4;i++){const a=i/4*Math.PI*2;const lg=mesh(new T.CylinderGeometry(.8,.8,9,5),mat(WOOD),Math.cos(a)*4,1.2,Math.sin(a)*4);lg.rotation.z=Math.PI/2;lg.rotation.y=a;g.add(lg)}
+    g.add(mesh(new T.ConeGeometry(4,5,6),glow('#ff7a1a',1.3),0,3,0));const pot=mesh(new T.SphereGeometry(8,12,8,0,Math.PI*2,Math.PI*.3,Math.PI*.7),mat('#2a2d33',{metalness:.3,roughness:.6}),0,11,0);g.add(pot);
+    g.add(mesh(new T.TorusGeometry(6.6,.8,6,18),mat('#3a3f4a'),0,16.8,0).rotateX(Math.PI/2));g.add(mesh(new T.CircleGeometry(6.2,16),glow('#7dff6a',.9),0,16.6,0).rotateX(-Math.PI/2));
+    for(let i=0;i<3;i++)g.add(mesh(new T.SphereGeometry(1-i*.2,6,5),glow('#b6ff9a',1),-2+i*2,17.6+i*.6,i-1));const bub=mesh(new T.SphereGeometry(1.2,6,5),glow('#b6ff9a',1.2),1,19,0);g.add(bub);g.userData.crystal=bub;
+    g.add(mesh(new T.TorusGeometry(8.2,.7,4,18),mat(col),0,8,0).rotateX(Math.PI/2));const arm=new T.Group();g.add(arm);g.userData.arm=arm;g.userData.armRest=0}
   return inner(g,o.sc);
 }
 function spellModel(c,ec){
@@ -1645,7 +1702,10 @@ function spellModel(c,ec){
   if(fx==='pillar'){g.add(mesh(new T.CylinderGeometry(4,4,30,10),mat(mix(ec,'#ffffff',.5),{emissive:ec,emissiveIntensity:1.2,transparent:true,opacity:.85}),0,15,0));g.add(mesh(new T.TorusGeometry(9,1,6,24),glow(ec,1.4)).rotateX(Math.PI/2));for(let i=0;i<4;i++){const a=i/4*Math.PI*2;g.add(mesh(new T.OctahedronGeometry(1.6,0),glow('#ffffff',1.4),Math.cos(a)*9,4,Math.sin(a)*9))}return g}
   // ring spells: freeze / summon / heal / rage / shield / slow
   const ring=mesh(new T.TorusGeometry(10,1,6,28),glow(ec,1.3));ring.rotation.x=Math.PI/2;g.add(ring);
-  if(c.summon){g.add(mesh(new T.BoxGeometry(6,3,13),mat('#4a3a2a'),0,2,0));g.add(mesh(new T.BoxGeometry(6.4,1,13.4),mat('#2a1e14'),0,4,0));for(let i=0;i<3;i++)g.add(mesh(new T.SphereGeometry(2.2,8,6),mat('#e9e4d4'),-6+i*6,7,5))}
+  if(c.vis==='flower'){for(let i=0;i<8;i++){const a=i/8*Math.PI*2,x=Math.cos(a)*9,z=Math.sin(a)*9;if(i%2){g.add(mesh(new T.CylinderGeometry(.8,1,3,6),mat('#efe6cf'),x,1.5,z));g.add(mesh(new T.SphereGeometry(2.2,8,5,0,Math.PI*2,0,Math.PI/2),mat('#ff7ab0'),x,3,z))}else for(let j=0;j<5;j++){const b=j/5*Math.PI*2;g.add(mesh(new T.SphereGeometry(.9,5,4),mat(['#fff1b8','#ffc6ec','#ffffff','#ffd86b'][i/2%4]),x+Math.cos(b)*1.2,1.4,z+Math.sin(b)*1.2))}}g.add(mesh(new T.OctahedronGeometry(2,0),glow('#ffc6ec',1.6),0,8,0))}
+  else if(c.vis==='moon'||c.vis==='howl'){const red=c.vis==='moon',mc=red?'#ff3a4a':'#dff3ff';const m=mesh(new T.SphereGeometry(7,14,10),glow(mc,red?1.1:.9),0,14,0);g.add(m);if(red)g.add(mesh(new T.SphereGeometry(6.4,14,10),mat('#2a0a12'),3,15.5,3.5));
+    for(const s of[-1,1]){if(red){const b=mesh(new T.ConeGeometry(1.2,6,3),mat('#2a1a3d'),s*9,8,3);b.rotation.z=s*1.3;g.add(b)}else{g.add(mesh(new T.BoxGeometry(3.4,3,4),mat('#5a6070'),s*6,3,4));g.add(mesh(new T.ConeGeometry(.8,2.4,4),mat('#5a6070'),s*6,5.6,4))}}}
+  else if(c.summon){g.add(mesh(new T.BoxGeometry(6,3,13),mat('#4a3a2a'),0,2,0));g.add(mesh(new T.BoxGeometry(6.4,1,13.4),mat('#2a1e14'),0,4,0));for(let i=0;i<3;i++)g.add(mesh(new T.SphereGeometry(2.2,8,6),mat('#e9e4d4'),-6+i*6,7,5))}
   else if(c.freeze){for(let i=0;i<5;i++){const m=mesh(new T.OctahedronGeometry(2.6,0),mat('#d7f2ff',{emissive:'#7fd0ff',emissiveIntensity:.6,roughness:.2}),(i-2)*3.6,6+(i%2)*3,0);m.scale.y=2.4;m.rotation.z=(i-2)*.25;g.add(m)}}
   else if(c.heal){g.add(mesh(new T.BoxGeometry(4,14,4),glow('#8cf08a',1.2),0,9,0));g.add(mesh(new T.BoxGeometry(14,4,4),glow('#8cf08a',1.2),0,11,0))}
   else if(c.rage){for(let i=0;i<5;i++){const a=i/5*Math.PI*2;g.add(mesh(new T.ConeGeometry(2,9,5),glow('#ff5a3a',1.4),Math.cos(a)*4,6,Math.sin(a)*4).rotateZ(Math.cos(a)*.4))}g.add(mesh(new T.IcosahedronGeometry(3,0),glow('#ffd34d',1.6),0,8,0))}
@@ -2706,6 +2766,7 @@ $('#nav-cards img').src=THUMB.knight;$('#nav-gacha img').src=ICON.altar;$('#nav-
 // Every minute (and when the tab comes back) fetch index.html uncached and compare its build stamp window.SB_VER
 // with the one this page loaded. A new version shows a notice; the player chooses when to reload, never mid-battle.
 const CHANGELOG=[
+  {d:'10/28',t:'新系列：妖精、吸血鬼、狼人、女巫',items:['新增 16 張卡，總共 116 張','妖精：花仙子群、花冠妖精、月光妖精、妖精女王，以及法術「妖精之環」','吸血鬼：吸血鬼伯爵（倒下化成蝙蝠）、吸血鬼新娘、吸血鬼棺材，以及法術「血月術」','狼人：狼人、狼人首領（重傷時月下狂化），以及法術「月嚎術」、銀箭獵人','女巫：掃帚女巫、女巫大鍋、女巫集會']},
   {d:'10/28',t:'平衡調整、更新提示',items:['用戰鬥模擬檢查全部卡牌，調整約 45 張：飛行單位、鳳凰、冰霜巨龍、僧侶等削弱，治療修女、聖泉、鼓手、攻城巨像、磁暴砲台等加強','修正兩隻以上的部隊一起過橋時會卡在河邊的問題（弓手、蜘蛛、衛兵終於打得到塔）','有新版本時畫面上方會提示，可以自己選擇何時更新']},
   {d:'10/28',t:'電腦更公平、金幣更好賺',items:['天梯電腦的卡牌等級跟你的牌組一樣，牌組最多 1 張傳說卡','遠古巨龍、星辰大賢者、聖劍勇者削弱','勝利 100 金幣起、每顆冠冕 +15，落敗和平手也有金幣，每日首勝 +300','寶箱金幣加倍，高等級升級費用降低']},
   {d:'10/22',t:'配樂、排行榜與新動畫',items:['全新背景音樂：主選單、戰鬥、魔王戰、冒險地圖、公會大廳，切換畫面會淡入淡出，設定可調音量','排行榜，未登入也看得到','召喚祭壇與寶箱開啟動畫、全新卡背與卡框','最後 10 秒倒數音效更清楚，好友對戰的對手也聽得到','遊戲內可以回報問題']},
