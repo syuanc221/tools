@@ -1,0 +1,10 @@
+import { chromium } from 'playwright';import fs from 'fs';
+const b = await chromium.launch({args:['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+const p=await b.newPage({viewport:{width:420,height:860}});
+p.on('pageerror',e=>console.log('PAGEERR',e.message,e.stack?.split('\n')[1]));
+await p.goto(process.env.SB_URL||'http://localhost:8766/',{waitUntil:'commit'});
+await p.waitForFunction(()=>document.querySelector('#loading')?.hidden,null,{timeout:180000});
+await p.addScriptTag({path:new URL('sim.js',import.meta.url).pathname});
+const t0=Date.now();const r=await p.evaluate(()=>{SFX.on=false;return SIM.run()});
+fs.writeFileSync(process.argv[2]||'sim.json',JSON.stringify(r));console.log('secs',(Date.now()-t0)/1000);
+await b.close();

@@ -55,3 +55,14 @@
 - 冒險三章劇情、天梯、寶箱、抽卡（50 抽保底）、卡牌升級、公會與聊天、好友即時對戰（房主模擬、對手看鏡像）
 - 3D 用 Three.js r128，卡圖與頭像都是即時從 3D 模型渲染；圖示全部是 SVG，不用 emoji；字體 Noto Sans TC 黑體；Poly 扁平風格
 - 音效用 Web Audio 即時合成；背景音樂是 `audio/` 裡的音檔
+
+## 平衡模擬
+
+`balance/` 用遊戲本身的引擎跑數值檢查（不畫畫面，約 3 秒）：每張非法術卡和其他所有卡單挑一次，再測 25 秒內對一座塔造成的傷害。
+
+1. 用任何靜態伺服器提供遊戲（例如在 `spellbridge/` 執行 `python3 -m http.server 8766`，three.js 要能載入）
+2. `SB_URL=http://localhost:8766/ node balance/run.mjs out.json`（需要 Playwright）
+3. `python3 balance/ana.py out.json`：依費用算出預期勝率，列出偏強（score 高）和偏弱的卡
+
+只打建築的卡（巨像、野豬騎士）、治療和自爆類卡單挑勝率本來就低，看塔傷和實際用途判斷。飛行單位因為地面近戰打不到，單挑數字會偏高。
+
