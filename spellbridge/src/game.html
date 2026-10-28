@@ -183,6 +183,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 .filters{display:flex;gap:6px;flex-wrap:wrap}
 .filters button{border:0;padding:5px 10px 8px;background:var(--panel-2);font-size:12px;font-weight:900;cursor:pointer;box-shadow:inset 0 -3px 0 var(--ec,#121b27)}
 .filters button[aria-pressed="true"]{background:var(--gold);color:#2a1700}
+.sorts{align-items:center}.sorts>span{font-size:12px;font-weight:900;color:var(--muted);margin-right:2px}
 .hint{margin:0;background:var(--panel-2);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .hint button{border:0;background:#0d1520;border-radius:8px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:700}
 
@@ -448,6 +449,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
       <p class="hint" id="swapHint" hidden><span>點選牌組中要被換掉的卡</span><button id="swapCancel">取消</button></p>
       <div class="sechead"><h2>卡牌圖鑑</h2><span id="collCount"></span><button class="sbtn" id="upAll" hidden></button></div>
       <div class="filters" id="collFilter"></div>
+      <div class="filters sorts" id="collSort"></div>
       <div class="coll" id="collGrid"></div>
     </section>
     <section class="scr" id="scr-gacha" hidden>
@@ -2358,6 +2360,10 @@ function skinCard(node,k,corner){
 
 // ================= cards =================
 let swapKey=null,collFilter='all';
+// deck + collection sort; tapping the active sort flips its direction; remembered per browser
+const SORTS={rar:['稀有度',k=>RORDER.indexOf(CARDS[k].rar)],cost:['魔力',k=>CARDS[k].cost],lvl:['等級',k=>S.cards[k]?S.cards[k].lvl:0],el:['元素',k=>ELEM_KEYS.indexOf(CARDS[k].el)]};
+let collSort={by:'rar',dir:1};try{const v=JSON.parse(localStorage.getItem('sb-sort')||'null');if(v&&SORTS[v.by])collSort={by:v.by,dir:v.dir===-1?-1:1}}catch(e){}
+function sortKeys(keys){const f=SORTS[collSort.by][1],d=collSort.dir;return keys.slice().sort((a,b)=>(f(a)-f(b))*d||RORDER.indexOf(CARDS[a].rar)-RORDER.indexOf(CARDS[b].rar)||ELEM_KEYS.indexOf(CARDS[a].el)-ELEM_KEYS.indexOf(CARDS[b].el)||CARDS[a].cost-CARDS[b].cost||CARDS[a].name.localeCompare(CARDS[b].name,'zh-Hant'))}
 function cardTile(k,inDeck){
   const c=CARDS[k],own=S.cards[k],b=el('button','cc');b.style.setProperty('--rc',RAR[c.rar].col);b.id=(inDeck?'d-':'c-')+k;
   b.append(el('span','cost',c.cost));const im=el('img');im.src=THUMB[k];im.alt='';b.append(im,el('span','nm',c.name));skinCard(b,k,true);
@@ -2370,11 +2376,13 @@ function cardTile(k,inDeck){
 }
 function renderCards(){
   const dg=$('#deckGrid');dg.innerHTML='';
-  for(const k of S.deck){const t=cardTile(k,true);if(swapKey)t.classList.add('swap');t.addEventListener('click',()=>{if(swapKey){S.deck[S.deck.indexOf(k)]=swapKey;swapKey=null;persist();renderCards();toast('已更換牌組')}else openCard(k)});dg.append(t)}
+  for(const k of sortKeys(S.deck)){const t=cardTile(k,true);if(swapKey)t.classList.add('swap');t.addEventListener('click',()=>{if(swapKey){S.deck[S.deck.indexOf(k)]=swapKey;swapKey=null;persist();renderCards();toast('已更換牌組')}else openCard(k)});dg.append(t)}
   $('#avgCost').textContent='平均魔力 '+(S.deck.reduce((s,k)=>s+CARDS[k].cost,0)/8).toFixed(1);
   $('#swapHint').hidden=!swapKey;
   const cg=$('#collGrid');cg.innerHTML='';
-  const keys=Object.keys(CARDS).sort((a,b)=>(!S.cards[a])-(!S.cards[b])||RORDER.indexOf(CARDS[a].rar)-RORDER.indexOf(CARDS[b].rar)||ELEM_KEYS.indexOf(CARDS[a].el)-ELEM_KEYS.indexOf(CARDS[b].el)||CARDS[a].cost-CARDS[b].cost);
+  const sorted=sortKeys(Object.keys(CARDS)),keys=[...sorted.filter(k=>S.cards[k]),...sorted.filter(k=>!S.cards[k])];
+  const sb=$('#collSort');sb.innerHTML='';sb.append(el('span',null,'排序'));
+  for(const[f,[label]]of Object.entries(SORTS)){const on=collSort.by===f,b=el('button',null,label+(on?(collSort.dir===1?' ↑':' ↓'):''));b.id='srt-'+f;b.setAttribute('aria-pressed',String(on));b.addEventListener('click',()=>{collSort=on?{by:f,dir:-collSort.dir}:{by:f,dir:f==='lvl'?-1:1};try{localStorage.setItem('sb-sort',JSON.stringify(collSort))}catch(e){}renderCards()});sb.append(b)}
   const fb=$('#collFilter');fb.innerHTML='';
   const nUp=upgradable().length;
   for(const[f,label]of[['all','全部'],['owned','已獲得'],['up','可升級 '+nUp],...ELEM_KEYS.map(e=>[e,ELEM[e].name])]){const b=el('button',null,label);b.id='flt-'+f;b.setAttribute('aria-pressed',String(collFilter===f));if(ELEM[f])b.style.setProperty('--ec',ELEM[f].col);b.addEventListener('click',()=>{collFilter=f;renderCards()});fb.append(b)}
@@ -2941,6 +2949,7 @@ $('#nav-cards img').src=THUMB.knight;$('#nav-gacha img').src=ICON.altar;$('#nav-
 // Every minute (and when the tab comes back) fetch index.html uncached and compare its build stamp window.SB_VER
 // with the one this page loaded. A new version shows a notice; the player chooses when to reload, never mid-battle.
 const CHANGELOG=[
+  {d:'10/28',t:'卡牌排序',items:['牌組和卡牌圖鑑可以依稀有度、魔力、等級、元素排序','再按一次同一個排序可以反過來排，會記住你上次的選擇']},
   {d:'10/28',t:'卡片更多元、寶石加倍',items:['召喚和寶箱有一半機會給你還沒有的卡','寶箱的卡種變多：木製 3 種、白銀 5 種、黃金 7 種、魔法 10 種','勝利寶石 +20，寶箱寶石大幅提高（魔法寶箱 50～80）','首頁模式磚與召喚祭壇加上動畫']},
   {d:'10/28',t:'新手禮 500 寶石',items:['新玩家開局寶石從 600 提高到 1100','已經在玩的巫師一次性補發 500 寶石，上線就會收到']},
   {d:'10/28',t:'每日任務',items:['首頁新增每日任務：每天 3 個，完成就能領寶石（30～40 顆）','三個都完成再加 60 寶石，一天最多約 170 寶石，夠抽一次多','任務每天午夜換新，例如打贏天梯、拿冠冕、施放法術、摧毀塔、用指定元素出牌']},
