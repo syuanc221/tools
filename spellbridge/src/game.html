@@ -3,7 +3,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Oswald:wght@600;700&display=swap" rel="stylesheet">
 <style>
 /* Layout: one-screen app — top resource bar, scrolling screen area, bottom nav; battle takes the whole screen. All type is heavy gothic (黑體). */
 :root{
@@ -58,6 +58,22 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 .logo span{display:block;font-family:var(--display);font-weight:900;font-size:12px;letter-spacing:.5em;margin-top:2px;color:#cfe3ff;text-shadow:0 2px 0 #0b1420}
 .arena-tag{position:absolute;left:10px;bottom:10px;background:rgba(8,12,18,.75);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:900;pointer-events:none}
 .bigbtns{display:grid;grid-template-columns:1.4fr 1fr;gap:8px}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mode{position:relative;border:0;padding:0;aspect-ratio:1/.92;overflow:hidden;cursor:pointer;color:#fff;text-align:left;background:#333;clip-path:polygon(12px 0,calc(100% - 12px) 0,100% 12px,100% calc(100% - 12px),calc(100% - 12px) 100%,12px 100%,0 calc(100% - 12px),0 12px)}
+.mode .art,.altar .art{position:absolute;inset:0;display:block}.mode .art svg,.altar .art svg{width:100%;height:100%;display:block}
+.mode .tx{position:absolute;left:12px;right:10px;bottom:10px;display:flex;flex-direction:column;gap:1px}
+.mode em{font-style:normal;font-family:'Oswald',var(--display);font-weight:700;font-size:12px;letter-spacing:.12em;opacity:.8}
+.mode b{font-family:var(--title);font-weight:900;font-size:24px;line-height:1.1;letter-spacing:.04em}
+.mode small{font-size:11px;font-weight:700;opacity:.92;line-height:1.35;display:flex;align-items:center;gap:3px;flex-wrap:wrap}
+.mode small .ic svg{width:13px;height:13px}
+.mode:active{transform:translateY(2px)}.mode .art svg{transition:transform .25s}.mode:hover .art svg{transform:scale(1.04)}
+.rbadge{display:inline-block;vertical-align:middle;flex:none}
+.panel.arenacard{display:flex;flex-direction:row;align-items:center;gap:14px}.arenacard .rbadge{width:78px;height:78px}
+.arenacard .ai{flex:1;display:flex;flex-direction:column;gap:4px}.arenacard .ai b{font-size:20px;font-family:var(--title)}.arenacard .ai small{color:var(--muted);font-weight:700;font-size:12px}
+.arenacard .pbar{height:8px;background:#0a1018;overflow:hidden}.arenacard .pbar i{display:block;height:100%;background:var(--gold)}
+.arena-tag{display:flex;align-items:center;gap:6px;z-index:2}.arena-tag .rbadge{width:22px;height:22px}
+.grow .num .rbadge{width:20px;height:20px;margin-right:2px}
+@media (prefers-reduced-motion:reduce){.mode .art svg{transition:none}}
 .play,.adv{border:0;padding:14px 10px;cursor:pointer;font-family:var(--title);font-weight:900;font-size:21px;letter-spacing:.08em;display:flex;flex-direction:column;align-items:center;gap:2px}
 .play{background:#f5b82e;color:#2a1700;box-shadow:inset 0 -6px 0 #b97c0d}
 .adv{background:#3c74e8;box-shadow:inset 0 -6px 0 #23489c}
@@ -145,7 +161,8 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 .hint button{border:0;background:#0d1520;border-radius:8px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:700}
 
 /* gacha */
-.altar{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 4px}
+.altar{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 0 12px;clip-path:polygon(12px 0,calc(100% - 12px) 0,100% 12px,100% calc(100% - 12px),calc(100% - 12px) 100%,12px 100%,0 calc(100% - 12px),0 12px)}
+.altar>:not(.art){position:relative}.altar .muted{color:#f3e6ff}
 .altar img{width:200px;height:200px;max-width:100%}
 .altar h2{font-family:var(--title);font-weight:900;margin:0;font-size:24px;letter-spacing:.1em}
 .pulls{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -386,9 +403,12 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
   <main id="screens">
     <section class="scr" id="scr-home">
       <div class="hero" id="heroSlot"><div class="logo"><svg class="mk" viewBox="0 0 512 512" aria-hidden="true"><defs><clipPath id="sbmk"><path d="M170 46h172l124 124v172L342 466H170L46 342V170z"/></clipPath></defs><path fill="#f3c55b" d="M160 20h192l140 140v192L352 492H160L20 352V160z"/><path fill="#1b2638" d="M170 46h172l124 124v172L342 466H170L46 342V170z"/><g clip-path="url(#sbmk)"><path fill="#2a3b57" d="M46 362h420v110H46z"/><path fill="#3b82f6" d="M46 318h420v44H46z"/><path fill="#9fd0ff" d="M214 334h84v10h-84z"/></g><path fill="#f3c55b" d="M72 362q68-128 136 0h-40q-28-62-56 0z"/><path fill="#f3c55b" d="M304 362q68-128 136 0h-40q-28-62-56 0z"/><path fill="#f4e6ff" d="M256 56l-74 86h148z"/><path fill="#e7c4ff" d="M182 142l74 160V142z"/><path fill="#b65cf0" d="M330 142l-74 160V142z"/><path fill="#d59bff" d="M256 56l74 86h-74z"/><path fill="#f4efe6" d="M378 104l9 22 22 9-22 9-9 22-9-22-22-9 22-9zM132 170l6 14 14 6-14 6-6 14-6-14-14-6 14-6z"/></svg><b>秘法雙橋</b><span>SPELLBRIDGE</span></div><div class="arena-tag" id="arenaTag"></div></div>
-      <div class="bigbtns"><button class="play" id="ladderBtn">天梯對戰<small id="ladderSub"></small></button><button class="adv" id="advBtn">冒險<small id="advSub"></small></button></div>
-      <button class="friend" id="friendBtn">好友對戰<small id="friendSub">建立房間或輸入房號，和朋友即時對打</small></button>
-      <button class="friend rankbtn" id="rankBtn">排行榜<small id="rankSub">全服獎盃與公會排名</small></button>
+      <div class="modes">
+        <button class="mode" id="ladderBtn"><i class="art" data-art="ranked" aria-hidden="true"></i><span class="tx"><em>RANKED</em><b>天梯對戰</b><small id="ladderSub"></small></span></button>
+        <button class="mode" id="advBtn"><i class="art" data-art="adventure" aria-hidden="true"></i><span class="tx"><em>ADVENTURE</em><b>冒險</b><small id="advSub"></small></span></button>
+        <button class="mode" id="friendBtn"><i class="art" data-art="friendly" aria-hidden="true"></i><span class="tx"><em>FRIENDLY</em><b>好友對戰</b><small id="friendSub">建立房間或輸入房號，和朋友即時對打</small></span></button>
+        <button class="mode" id="rankBtn"><i class="art" data-art="leaders" aria-hidden="true"></i><span class="tx"><em>LEADERBOARD</em><b>排行榜</b><small id="rankSub">全服獎盃與公會排名</small></span></button>
+      </div>
       <div class="sechead"><h2>寶箱</h2><button class="free" id="freeBtn"></button></div>
       <div class="chests" id="chestGrid"></div>
       <p class="muted">打贏對戰會掉寶箱。一次只能解鎖一個，也可以用寶石立刻打開。</p>
@@ -403,7 +423,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
       <div class="coll" id="collGrid"></div>
     </section>
     <section class="scr" id="scr-gacha" hidden>
-      <div class="altar"><img id="altarImg" alt=""><h2>召喚祭壇</h2><span class="muted" id="pityText"></span></div>
+      <div class="altar"><i class="art" data-art="summon" aria-hidden="true"></i><img id="altarImg" alt=""><h2>召喚祭壇</h2><span class="muted" id="pityText"></span></div>
       <div class="pulls">
         <button class="pull" id="pull1">召喚 ×1<small><i class="gem"></i>100</small></button>
         <button class="pull" id="pull10">召喚 ×10<small><i class="gem"></i>900 · 必出稀有以上</small></button>
@@ -417,6 +437,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
         <div class="sync" id="pfSync"><i></i><span></span></div>
       </div>
       <div class="panel" id="pfAccount" hidden><h3>帳號</h3><div id="accBody" style="display:flex;flex-direction:column;gap:10px"></div></div>
+      <div class="panel arenacard" id="pfArena"></div>
       <div class="statgrid" id="pfStats"></div>
       <div class="panel"><h3>頭像</h3><div class="avatars" id="pfAvatars"></div><p class="muted">在冒險模式擊敗對手，就能使用他們的頭像。</p></div>
       <div class="panel"><h3>最常使用的卡</h3><div class="list" id="pfFav"></div></div>
@@ -766,6 +787,63 @@ const EMB_SVG=[
   '<svg viewBox="0 0 24 24"><path fill="none" stroke="#fff" stroke-width="2.6" d="M12 1v22M2.5 6.5l19 11M2.5 17.5l19-11M9 3l3 3 3-3M9 21l3-3 3 3"/></svg>',
 ];
 const ic=n=>{const i=el('i','ic');i.innerHTML=ICO[n];return i};
+// ================= illustrated tiles (flat, one hue per tile: rays, tonal clouds, sparkles, a faceted hero object) =================
+const SV=(w,h,b)=>`<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid slice">${b}</svg>`;
+function rays(cx,cy,n,col,rot=0){let d='';for(let i=0;i<n;i++){const a=rot+i*2*Math.PI/n,b=a+Math.PI/n*.62,R=700,f=v=>v.toFixed(1);d+=`M${cx} ${cy}L${f(cx+Math.cos(a)*R)} ${f(cy+Math.sin(a)*R)}L${f(cx+Math.cos(b)*R)} ${f(cy+Math.sin(b)*R)}Z`}return`<path d="${d}" fill="${col}"/>`}
+const spark=(x,y,s,c='#fff')=>`<path fill="${c}" d="M${x} ${y-s}L${x+s*.26} ${y-s*.26}L${x+s} ${y}L${x+s*.26} ${y+s*.26}L${x} ${y+s}L${x-s*.26} ${y+s*.26}L${x-s} ${y}L${x-s*.26} ${y-s*.26}Z"/>`;
+function clouds(y,col,w=200,h=200,step=34){let s=`<rect x="0" y="${y}" width="${w}" height="${h}" fill="${col}"/>`;for(let x=-10,i=0;x<w+30;x+=step,i++)s+=`<circle cx="${x}" cy="${y+4}" r="${18+(i*7)%16}" fill="${col}"/>`;return s}
+const gem=(x,y,s,a,b)=>`<path fill="${a}" d="M${x} ${y-s}L${x+s*.7} ${y}L${x} ${y+s*1.1}Z"/><path fill="${b}" d="M${x} ${y-s}L${x-s*.7} ${y}L${x} ${y+s*1.1}Z"/>`;
+const ART={
+  ranked:()=>SV(200,190,`<rect width="200" height="190" fill="#f07a2b"/>${rays(138,66,14,'#f6914a',.2)}${clouds(146,'#dc5f1d')}
+    ${spark(54,34,8)}${spark(186,28,6)}${spark(96,16,4)}
+    <ellipse cx="74" cy="104" rx="15" ry="13" fill="#c98a1c"/><ellipse cx="72" cy="100" rx="15" ry="13" fill="#ffd34d"/><ellipse cx="72" cy="100" rx="9" ry="8" fill="#f5b82e"/><path d="M66 94h5v12h-5z" fill="#ffe8a0"/>
+    <ellipse cx="182" cy="118" rx="11" ry="10" fill="#c98a1c"/><ellipse cx="180" cy="115" rx="11" ry="10" fill="#ffd34d"/><ellipse cx="180" cy="115" rx="6" ry="5" fill="#f5b82e"/>
+    <path d="M112 38q-22 0-18 18 4 14 22 12" fill="none" stroke="#e8a21c" stroke-width="7"/><path d="M164 38q22 0 18 18-4 14-22 12" fill="none" stroke="#c98a1c" stroke-width="7"/>
+    <path d="M110 28h56l-6 38q-6 22-22 24-16-2-22-24z" fill="#ffd34d"/><path d="M138 28h28l-6 38q-6 22-22 24z" fill="#f5b82e"/><path d="M106 22h64v10h-64z" fill="#ffe08a"/>
+    <path d="M132 90h12v14h-12z" fill="#e8a21c"/><path d="M118 104h40v8h-40z" fill="#ffd34d"/><path d="M114 112h48v12h-48z" fill="#b97c0d"/><path d="M138 112h24v12h-24z" fill="#9a640a"/>
+    ${spark(138,54,11,'#fff6d0')}`),
+  adventure:()=>SV(200,190,`<rect width="200" height="190" fill="#4b8de6"/>
+    <path fill="#6aa3ef" d="M-5 20l60-14 30 30-20 40-55 6zM120 0h85v60l-40 14-35-30zM70 92l60-6 30 40-40 26-55-10z"/>
+    <path d="M10 170Q40 120 46 76T104 40T152 92" fill="none" stroke="#bcd9fb" stroke-width="5" stroke-dasharray="9 7" stroke-linecap="round"/>
+    <path fill="#5ccf3a" d="M46 54l22 16-8 26H32l-8-26z"/><path fill="#fff" d="M42 66q0-8 6-8t6 7q0 5-5 7v4h-4v-7q5-1 5-4 0-3-2-3t-2 4zm2 14h4v4h-4z"/>
+    <circle cx="104" cy="38" r="17" fill="#fff"/><circle cx="104" cy="38" r="13" fill="#d05be8"/>${spark(104,38,8)}
+    <path fill="#fff" d="M152 50l6 12 13-5-3 13 13 5-11 8 7 12-14 1 1 14-12-7-8 11-5-13-13 4 4-13-12-6 11-9-6-12 14 0-1-14 12 7z"/><circle cx="152" cy="94" r="0" fill="none"/>
+    <circle cx="153" cy="90" r="20" fill="#7cc4f7"/><path fill="#fff" d="M150 76h7v20h5v4h-6v8h-5v-8h-6v-4h5z"/>
+    ${clouds(150,'#1f3f86',200,200,40)}`),
+  friendly:()=>SV(200,190,`<rect width="200" height="190" fill="#3fae2c"/>${rays(130,74,12,'#55c23c',.1)}${clouds(148,'#2a8a1a')}
+    ${gem(48,40,9,'#7ee05a','#5cc43c')}${gem(184,92,7,'#7ee05a','#5cc43c')}${gem(72,118,6,'#7ee05a','#5cc43c')}${spark(178,26,7)}${spark(40,92,5)}
+    <g transform="translate(36 2) scale(.74)"><g transform="rotate(-38 130 80)"><path d="M125 30h6v108h-6z" fill="#b5773e"/><path d="M131 30h5v108h-5z" fill="#8a5428"/>${gem(130,20,12,'#e7c4ff','#b65cf0')}</g>
+    <g transform="rotate(38 130 80)"><path d="M125 30h6v108h-6z" fill="#b5773e"/><path d="M131 30h5v108h-5z" fill="#8a5428"/>${gem(130,20,12,'#bfe6ff','#3b82f6')}</g>
+    ${spark(130,72,16)}${spark(130,72,7,'#ffe14d')}</g>`),
+  leaders:()=>SV(200,190,`<rect width="200" height="190" fill="#8758f0"/>${rays(134,60,14,'#9b75f5',.15)}
+    <path fill="#ffd34d" d="M58 30l7 3-3 7-7-3z"/><path fill="#ff7ab0" d="M178 40l6 4-4 6-6-4z"/><path fill="#fff" d="M90 18l5 2-2 5-5-2z"/><path fill="#ffd34d" d="M186 96l5 3-3 5-5-3z"/>
+    <g transform="translate(32 -4) scale(.78)"><path d="M70 96h42v54H70z" fill="#efe8ff"/><path d="M70 90h42v6H70z" fill="#fff"/><path d="M158 108h38v42h-38z" fill="#e2d8ff"/><path d="M158 102h38v6h-38z" fill="#fff"/>
+    <path d="M112 72h46v78h-46z" fill="#ffffff"/><path d="M112 66h46v6h-46z" fill="#fff6d0"/>
+    <text x="135" y="104" text-anchor="middle" font-family="Oswald,sans-serif" font-weight="700" font-size="24" fill="#8758f0">1</text><text x="91" y="124" text-anchor="middle" font-family="Oswald,sans-serif" font-weight="700" font-size="18" fill="#a98af7">2</text><text x="177" y="133" text-anchor="middle" font-family="Oswald,sans-serif" font-weight="700" font-size="16" fill="#a98af7">3</text>
+    <path fill="#ffd34d" d="M116 52l-4-24 13 12 10-18 10 18 13-12-4 24z"/><path fill="#e8a21c" d="M135 52V22l10 18 13-12-4 24z"/><path d="M116 52h38v6h-38z" fill="#c98a1c"/></g>${spark(64,60,7)}${spark(186,70,6)}
+    ${clouds(148,'#6a3fd6')}`),
+  summon:()=>SV(400,300,`<rect width="400" height="300" fill="#8a3fd6"/>${rays(200,120,18,'#9d55e6')}${clouds(250,'#6f2bb8',400,100,46)}${spark(70,60,12)}${spark(330,50,9)}${spark(350,170,7)}${spark(50,180,6)}${gem(110,110,10,'#e7c4ff','#c88bff')}${gem(300,130,8,'#e7c4ff','#c88bff')}`),
+};
+document.querySelectorAll('[data-art]').forEach(e=>e.innerHTML=ART[e.dataset.art]());
+// glossy arena badges (bronze triangle, silver coin, gold block, amethyst hexagon), built from solid layers
+const BADGE=[
+  {s:'tri',b:'#e8885a',d:'#7a3618',l:'#f8b08a',k:'#c45e30'},
+  {s:'circle',b:'#c9cfe2',d:'#5c6380',l:'#eef1f9',k:'#9ea6c2'},
+  {s:'square',b:'#f5c518',d:'#8a5a00',l:'#ffe680',k:'#d29a00'},
+  {s:'hex',b:'#a24ee6',d:'#46157a',l:'#cf98f7',k:'#7426b8',star:1},
+];
+function badgeShape(s,k,fill,extra=''){
+  const tr=`transform="translate(50 52) scale(${k}) translate(-50 -52)"`;
+  if(s==='circle')return`<circle cx="50" cy="52" r="40" fill="${fill}" ${tr} ${extra}/>`;
+  const pts={tri:'50,10 92,84 8,84',square:'14,18 86,14 90,86 12,90',hex:'50,8 90,30 90,74 50,96 10,74 10,30'}[s];
+  return`<polygon points="${pts}" fill="${fill}" stroke="${fill}" stroke-width="12" stroke-linejoin="round" ${tr} ${extra}/>`;
+}
+function rankBadge(t){
+  const i=ARENAS.filter(a=>t>=a[0]).length-1,B=BADGE[Math.max(0,Math.min(BADGE.length-1,i))],sh=B.s==='tri'?[.62,58]:[.66,52];
+  const emb=B.star?`<path fill="#ffd34d" d="M50 34l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z"/><path fill="#e8a21c" d="M50 34l5 11 12 1-9 8 3 12-11-6z"/>`
+    :`<path fill="${B.k}" d="M50 ${sh[1]-16}l11 13-11 19-11-19z"/><path fill="${B.l}" d="M50 ${sh[1]-16}l11 13h-11z"/>`;
+  return`<svg class="rbadge" viewBox="0 0 100 100" aria-hidden="true">${badgeShape(B.s,1.04,B.d)}${badgeShape(B.s,.94,B.b)}${badgeShape(B.s,sh[0],B.k)}${badgeShape(B.s,sh[0]-.06,B.b)}${emb}<ellipse cx="34" cy="${B.s==='tri'?52:32}" rx="13" ry="5" fill="#fff" opacity=".45" transform="rotate(-30 34 ${B.s==='tri'?52:32})"/></svg>`;
+}
 document.querySelectorAll('[data-ic]').forEach(e=>e.innerHTML=ICO[e.dataset.ic]);
 document.querySelectorAll('#emotes button').forEach(b=>b.innerHTML=EMO_SVG[+b.dataset.e]);
 
@@ -2067,7 +2145,7 @@ function chestState(c){if(!c)return 'empty';if(c.unlockAt==null)return 'locked';
 const fmt=s=>{s=Math.max(0,Math.ceil(s));const h=s/3600|0,m=(s%3600)/60|0,x=s%60;return h?`${h}:${String(m).padStart(2,'0')}:${String(x).padStart(2,'0')}`:`${m}:${String(x).padStart(2,'0')}`};
 const gemCost=c=>{const left=chestState(c)==='unlocking'?(c.unlockAt-Date.now())/1000:CHESTS[c.type].secs;return Math.max(1,Math.ceil(left/60))*6};
 function renderHome(){
-  $('#arenaTag').textContent='競技場 · '+arenaName(S.trophies);
+  $('#arenaTag').innerHTML=rankBadge(S.trophies)+'<span>競技場 · '+arenaName(S.trophies)+'</span>';
   const cfg=ladderCfg(),ls=$('#ladderSub');ls.innerHTML='';ls.append(ic('trophy'),` ${S.trophies} · 對手 Lv.${cfg.aiLvl}`);
   $('#advSub').textContent=S.progress>3?'已通關':`第 ${S.progress} 章`;
   $('#friendSub').textContent=NET.role==='host'&&NET.room?`房號 ${NET.code} · 等待朋友加入…`:'建立房間或輸入房號，和朋友即時對打';
@@ -2299,6 +2377,8 @@ function renderProfile(){
   $('#pfLv').textContent='等級 '+L.lv;$('#pfXp').textContent=`${L.cur} / ${L.need} 經驗`;$('#pfLvBar').style.width=L.cur/L.need*100+'%';
   const sy=$('#pfSync');sy.classList.toggle('on',cloud.state==='on');sy.querySelector('span').textContent=cloud.state==='on'?'雲端存檔已啟用，換裝置登入也能接著玩':cloud.state==='pending'?'正在連線雲端…':(window.AUTH?'存檔只在這個瀏覽器（登入帳號後會改用雲端存檔）':'存檔只在這個瀏覽器（登入 claude.ai 後會改用雲端存檔）');
   const st=S.stats,rate=st.battles?Math.round(st.wins/st.battles*100)+'%':'—';
+  const ai=ARENAS.filter(a=>S.trophies>=a[0]).length-1,nx=ARENAS[ai+1],ac=$('#pfArena');
+  ac.innerHTML=rankBadge(S.trophies)+`<div class="ai"><small>目前競技場</small><b>${ARENAS[ai][1]}</b><span class="pbar"><i style="width:${nx?Math.round((S.trophies-ARENAS[ai][0])/(nx[0]-ARENAS[ai][0])*100):100}%"></i></span><small>${nx?`再拿 ${nx[0]-S.trophies} 座獎盃進入「${nx[1]}」`:'已到達最高競技場'}</small></div>`;
   const g=$('#pfStats');g.innerHTML='';
   for(const[a,b]of[['獎盃',S.trophies],['最高獎盃',S.best],['競技場',arenaName(S.trophies)],['勝場',st.wins],['敗場',st.losses],['勝率',rate],['三冠勝',st.three],['總王冠',st.crowns],['卡牌收集',Object.keys(S.cards).length+'/'+Object.keys(CARDS).length]]){const d=el('div','stat');d.append(el('b',null,String(b)),el('span',null,a));g.append(d)}
   const av=$('#pfAvatars');av.innerHTML='';
@@ -2524,7 +2604,7 @@ function renderRank(box,list){
   if(!ps.length)box.append(el('p','muted','還沒有玩家紀錄。'));
   ps.forEach((p,i)=>{const r=el('div','grow');const im=el('img');im.src=avatarSrc(str(p.avatar,10));im.alt='';const info=el('div','info');const g=GUILDS.get(p.guild);
     info.append(el('b',null,(str(p.nick,12)||'無名巫師')+(p.id===cloud.id?'（你）':'')),el('small',null,`Lv.${+p.level||1}${g?' · '+str(g.name,14):''}${p.id===p.guild?' · 會長':''}`));
-    const nm=el('span','num');nm.append(ic('trophy'),' '+(+p.trophies||0));r.append(el('span','rk',String(i+1)),im,info,nm);box.append(r)});
+    const nm=el('span','num');nm.insertAdjacentHTML('beforeend',rankBadge(+p.trophies||0));nm.append(ic('trophy'),' '+(+p.trophies||0));r.append(el('span','rk',String(i+1)),im,info,nm);box.append(r)});
 }
 // problem reports: kind + message (+ optional contact) go to public.reports through the shim; the shim attaches version, device and recent errors
 let repKind='bug',repAt=0;
@@ -2770,6 +2850,7 @@ $('#nav-cards img').src=THUMB.knight;$('#nav-gacha img').src=ICON.altar;$('#nav-
 // Every minute (and when the tab comes back) fetch index.html uncached and compare its build stamp window.SB_VER
 // with the one this page loaded. A new version shows a notice; the player chooses when to reload, never mid-battle.
 const CHANGELOG=[
+  {d:'10/28',t:'全新介面風格',items:['首頁四個模式改成插畫磚：天梯（橘）、冒險（藍）、好友對戰（綠）、排行榜（紫），各有放射光、雲朵和主題插圖','新的競技場徽章：銅三角、銀圓、金方塊、紫水晶六角，顯示在首頁、個人頁和排行榜','個人頁新增競技場進度，看得到離下一個競技場還差幾座獎盃','召喚祭壇換上紫色光芒背景']},
   {d:'10/28',t:'全新 Logo',items:['新 Logo：金色八角徽章裡，魔法水晶懸在河面與兩座橋上方','首頁標題與載入畫面加上 Logo（首頁標題之前被戰場蓋住，現在看得到了）','網站小圖示、手機主畫面圖示、分享連結的預覽圖都換成新 Logo']},
   {d:'10/28',t:'新系列：妖精、吸血鬼、狼人、女巫',items:['新增 16 張卡，總共 116 張','妖精：花仙子群、花冠妖精、月光妖精、妖精女王，以及法術「妖精之環」','吸血鬼：吸血鬼伯爵（倒下化成蝙蝠）、吸血鬼新娘、吸血鬼棺材，以及法術「血月術」','狼人：狼人、狼人首領（重傷時月下狂化），以及法術「月嚎術」、銀箭獵人','女巫：掃帚女巫、女巫大鍋、女巫集會']},
   {d:'10/28',t:'平衡調整、更新提示',items:['用戰鬥模擬檢查全部卡牌，調整約 45 張：飛行單位、鳳凰、冰霜巨龍、僧侶等削弱，治療修女、聖泉、鼓手、攻城巨像、磁暴砲台等加強','修正兩隻以上的部隊一起過橋時會卡在河邊的問題（弓手、蜘蛛、衛兵終於打得到塔）','有新版本時畫面上方會提示，可以自己選擇何時更新']},
