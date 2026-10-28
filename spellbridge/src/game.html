@@ -1084,10 +1084,13 @@ function starPerks(c){
 const EMBLEMS=['#3b82f6','#8b4fe0','#2fb37a','#d49a1c','#d23f44','#2ba7d6'];
 
 // ================= save =================
-function freshSave(){return{v:1,nick:'艾倫',avatar:'player',gold:300,gems:600,xp:0,trophies:0,best:0,cards:Object.fromEntries(STARTER.map(k=>[k,{lvl:1,copies:0}])),deck:STARTER.slice(),chests:[{type:'silver',unlockAt:null},null,null,null],freeAt:0,pity:0,progress:1,guild:null,stats:{wins:0,losses:0,draws:0,three:0,crowns:0,battles:0,played:{}},ts:0}}
-let SAVE_COMP=0;
+function freshSave(){return{v:1,nick:'艾倫',avatar:'player',gold:300,gems:1100,gift500:1,xp:0,trophies:0,best:0,cards:Object.fromEntries(STARTER.map(k=>[k,{lvl:1,copies:0}])),deck:STARTER.slice(),chests:[{type:'silver',unlockAt:null},null,null,null],freeAt:0,pity:0,progress:1,guild:null,stats:{wins:0,losses:0,draws:0,three:0,crowns:0,battles:0,played:{}},ts:0}}
+let SAVE_COMP=0,SAVE_GIFT=0,giftShown=false;
 function fixSave(s){
+  const old=s&&typeof s==='object'&&!s.gift500;
   const d=freshSave();s=Object.assign(d,s&&typeof s==='object'?s:{});
+  // saves from before the 1100-gem start get a one-time 500 gems
+  if(old){s.gems=(+s.gems||0)+500;SAVE_GIFT=500}
   s.stats=Object.assign(freshSave().stats,s.stats||{});s.stats.played=s.stats.played||{};
   if(!s.cards||typeof s.cards!=='object')s.cards=d.cards;
   let comp=0;for(const k of Object.keys(s.cards))if(!CARDS[k]){const o=s.cards[k]||{};comp+=50*(+o.lvl||1)+5*(+o.copies||0);delete s.cards[k]}
@@ -2129,6 +2132,8 @@ function render(dt,now){
 }
 
 // ================= UI: shell =================
+// keeps S.ts so a stale local save never outranks a newer cloud save
+function giftNotice(){if(!SAVE_GIFT)return;SAVE_GIFT=0;try{localStorage.setItem('bd-save',JSON.stringify(S))}catch(e){}cloudSave();renderTop();if(giftShown)return;giftShown=true;setTimeout(()=>{const show=()=>confirmBox('新手禮：送你 500 寶石！到祭壇召喚新卡吧。',()=>{});const n=$('#newsOv');if(n&&!n.hidden)$('#newsOk').addEventListener('click',()=>setTimeout(show,300),{once:true});else show()},1200)}
 function compNotice(){if(!SAVE_COMP)return;const g=SAVE_COMP;SAVE_COMP=0;persist();setTimeout(()=>confirmBox(`卡牌全面改版：100 張卡現在都是不同的兵種。舊版元素卡已收回，補償你 ${g} 金幣。`,()=>{}),600)}
 function toast(t){const e=$('#gtoast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,1800)}
 function confirmBox(text,yes){$('#cfText').textContent=text;$('#confirmOv').hidden=false;$('#cfYes').onclick=()=>{$('#confirmOv').hidden=true;yes()};$('#cfYes').focus()}
@@ -2614,7 +2619,7 @@ async function initCloud(){
     const id=await user.id();if(!id){watchBoards(db);return cloudOff()}
     cloud.db=db;cloud.id=id;cloud.canWrite=await user.can('data.write');
     const snap=await db.doc(`data/users/${id}/save`).get().catch(()=>null);
-    if(snap&&snap.exists){const d=snap.data().save;if(d&&(d.ts||0)>(S.ts||0)){S=fixSave(JSON.parse(JSON.stringify(d)));try{localStorage.setItem('bd-save',JSON.stringify(S))}catch(e){}renderTop();compNotice();if(VIEW!=='battle')showScreen(VIEW)}}
+    if(snap&&snap.exists){const d=snap.data().save;if(d&&(d.ts||0)>(S.ts||0)){S=fixSave(JSON.parse(JSON.stringify(d)));try{localStorage.setItem('bd-save',JSON.stringify(S))}catch(e){}renderTop();compNotice();giftNotice();if(VIEW!=='battle')showScreen(VIEW)}}
     cloud.state='on';
     watchBoards(db);
     cloudSave(true);
@@ -2920,6 +2925,7 @@ $('#nav-cards img').src=THUMB.knight;$('#nav-gacha img').src=ICON.altar;$('#nav-
 // Every minute (and when the tab comes back) fetch index.html uncached and compare its build stamp window.SB_VER
 // with the one this page loaded. A new version shows a notice; the player chooses when to reload, never mid-battle.
 const CHANGELOG=[
+  {d:'10/28',t:'新手禮 500 寶石',items:['新玩家開局寶石從 600 提高到 1100','已經在玩的巫師一次性補發 500 寶石，上線就會收到']},
   {d:'10/28',t:'每日任務',items:['首頁新增每日任務：每天 3 個，完成就能領寶石（30～40 顆）','三個都完成再加 60 寶石，一天最多約 170 寶石，夠抽一次多','任務每天午夜換新，例如打贏天梯、拿冠冕、施放法術、摧毀塔、用指定元素出牌']},
   {d:'10/28',t:'全新介面風格',items:['首頁四個模式改成插畫磚：天梯（橘）、冒險（藍）、好友對戰（綠）、排行榜（紫），各有放射光、雲朵和主題插圖','新的競技場徽章：銅三角、銀圓、金方塊、紫水晶六角，顯示在首頁、個人頁和排行榜','個人頁新增競技場進度，看得到離下一個競技場還差幾座獎盃','召喚祭壇換上紫色光芒背景']},
   {d:'10/28',t:'全新 Logo',items:['新 Logo：戴巫師帽的白色小幽靈貼紙，黑色粗邊配彩虹外框，兩隻拱形小腳就是「雙橋」','載入畫面加上 Logo；首頁標題之前被戰場蓋住，現在看得到了','網站小圖示、手機主畫面圖示、分享連結的預覽圖都換成新 Logo']},
@@ -2967,7 +2973,7 @@ $('#updLater').addEventListener('click',()=>{UPD.skip=UPD.latest;$('#updBar').hi
 $('#newsOk').addEventListener('click',()=>$('#newsOv').hidden=true);
 $('#pfNews').addEventListener('click',()=>UPD.news(false));
 $('#pfCheck').addEventListener('click',()=>UPD.latest?UPD.go():UPD.check(true));
-setMute(!SFX.on);renderTop();showScreen('home');compNotice();UPD.start();
+setMute(!SFX.on);renderTop();showScreen('home');compNotice();giftNotice();UPD.start();
 new ResizeObserver(()=>{if(cv.parentElement===$('#heroSlot'))fitCamera()}).observe($('#heroSlot'));
 new ResizeObserver(()=>{if(cv.parentElement===$('#stage'))fitCamera()}).observe($('#stage'));
 $('#loading').hidden=true;
