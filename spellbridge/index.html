@@ -518,7 +518,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 <div id="loading">召喚戰場中…</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script>window.SB_URL="https://kenzsxyyqhfijbkeqnjz.supabase.co";window.SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlbnpzeHl5cWhmaWpia2Vxbmp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NDQ2OTUsImV4cCI6MjEwODIyMDY5NX0.PZZgqGtDdlSynKVLhnHj2ak40v2JV6uE_4cFxfMY3c0";window.SB_VER="20261022-2212";</script>
+<script>window.SB_URL="https://kenzsxyyqhfijbkeqnjz.supabase.co";window.SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlbnpzeHl5cWhmaWpia2Vxbmp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NDQ2OTUsImV4cCI6MjEwODIyMDY5NX0.PZZgqGtDdlSynKVLhnHj2ak40v2JV6uE_4cFxfMY3c0";window.SB_VER="20261028-0346";</script>
 <script>// Standalone backend: maps the game's claude.use('db' | 'user' | 'room') calls onto Supabase (auth, a single docs table, realtime channels).
 (function(){
   const URL=window.SB_URL,KEY=window.SB_KEY;
@@ -858,7 +858,7 @@ const CARD_LIST=[
   {k:'fireball',n:'火球術',r:'rare',c:4,e:'fire',t:'spell',radius:45,dmg:330,towerDmg:110,fx:'ball',d:'中範圍高傷害法術，也能打塔。'},
   {k:'meteor',n:'隕石術',r:'epic',c:6,e:'fire',t:'spell',radius:42,dmg:700,towerDmg:220,fx:'meteor',d:'延遲一秒後從天而降，威力巨大。'},
   {k:'firerain',n:'火雨術',r:'common',c:3,e:'fire',t:'spell',radius:70,dmg:140,towerDmg:42,fx:'rain',d:'大範圍火雨，清掉成群小兵。'},
-  {k:'dragon',n:'遠古巨龍',r:'legendary',c:7,e:'fire',s:{hp:2200,dmg:160,range:70,hit:1.7,speed:32,r:18,air:1,ta:1,splash:34,proj:'fire'},m:{t:'old',k:'dragon'},d:'傳說中的巨龍，空中範圍噴火，血量驚人。'},
+  {k:'dragon',n:'遠古巨龍',r:'legendary',c:7,e:'fire',s:{hp:1800,dmg:130,range:70,hit:1.8,speed:32,r:18,air:1,ta:1,splash:30,proj:'fire'},m:{t:'old',k:'dragon'},d:'傳說中的巨龍，空中範圍噴火，血量驚人。'},
   {k:'flameknight',n:'火焰騎士',r:'rare',c:4,e:'fire',s:{hp:950,dmg:125,range:9,hit:1.2,speed:66,r:13},x:{charge:1},m:{t:'old',k:'cavalry'},d:'衝鋒後的第一擊造成雙倍傷害。'},
   // ---------- ice ----------
   {k:'frostsprite',n:'冰霜精靈',r:'common',c:1,e:'ice',s:{hp:90,dmg:90,range:6,hit:1,speed:75,r:7,splash:30,ta:1},x:{kami:1,slow:[.5,2]},m:{t:'blob',k:'sprite',c:'#bfeaff'},d:'撞上敵人後碎裂，讓周圍敵人減速。'},
@@ -908,7 +908,7 @@ const CARD_LIST=[
   {k:'ghost',n:'幽魂',r:'common',c:3,e:'dark',s:{hp:420,dmg:85,range:8,hit:1,speed:55,r:10,air:1},m:{t:'blob',k:'ghost',c:'#c8b8e8'},d:'飄在空中，只攻擊地面敵人。'},
   // ---------- holy ----------
   {k:'griffin',n:'獅鷲騎士',r:'rare',c:4,e:'holy',s:{hp:650,dmg:110,range:10,hit:1.2,speed:62,r:12,air:1,ta:1},m:{t:'old',k:'griffin'},d:'騎著獅鷲的飛行騎士，速度快，空中與地面都能攻擊。'},
-  {k:'archmage',n:'星辰大賢者',r:'legendary',c:6,e:'holy',s:{hp:1000,dmg:190,range:100,hit:1.5,speed:40,r:13,ta:1,splash:40,proj:'orb'},m:{t:'old',k:'archmage'},d:'學院創始人的魂魄，法球同時轟擊大範圍敵人。'},
+  {k:'archmage',n:'星辰大賢者',r:'legendary',c:6,e:'holy',s:{hp:820,dmg:150,range:100,hit:1.7,speed:40,r:13,ta:1,splash:32,proj:'orb'},m:{t:'old',k:'archmage'},d:'學院創始人的魂魄，法球同時轟擊大範圍敵人。'},
   {k:'paladin',n:'聖騎士',r:'rare',c:5,e:'holy',s:{hp:900,dmg:120,range:8,hit:1.2,speed:42,r:13},x:{shield:600},m:{t:'human',heavy:1,body:'#e8e2cc',head:'helm',hcol:'#f3c55b',w:'sword',off:'shield',wc:'#ffe9a0'},d:'聖盾會先吸收 600 點傷害。'},
   {k:'healer',n:'治療修女',r:'rare',c:4,e:'holy',s:{hp:500,dmg:45,range:80,hit:1.3,speed:45,r:10,ta:1,proj:'orb'},x:{heal:[70,60]},m:{t:'human',robe:1,body:'#f1ece0',head:'hood',hcol:'#3a5a9a',w:'staff',wc:'#ffe9a0',off:'book'},d:'每秒治療附近的隊友。'},
   {k:'angel',n:'天使守衛',r:'epic',c:5,e:'holy',s:{hp:1000,dmg:110,range:10,hit:1.1,speed:50,r:13,air:1,ta:1},x:{heal:[40,50]},m:{t:'flyer',k:'angel'},d:'飛行的守衛，持續治療身邊的隊友。'},
@@ -920,7 +920,7 @@ const CARD_LIST=[
   {k:'unicorn',n:'聖光獨角獸',r:'epic',c:5,e:'holy',s:{hp:1100,dmg:120,range:9,hit:1.1,speed:62,r:13},x:{charge:1,heal:[30,50]},m:{t:'beast',k:'unicorn',c:'#f4f1ea',c2:'#ffd86b'},d:'衝鋒第一擊雙倍傷害，並治療身邊的隊友。'},
   {k:'fountain',n:'聖泉',r:'rare',c:4,e:'holy',t:'building',s:{hp:700,dmg:0,range:0,hit:99,r:14,life:30},x:{heal:[90,80]},m:{t:'build',k:'fountain'},d:'持續治療範圍內的隊友。'},
   {k:'lightsprite',n:'光之精靈',r:'common',c:1,e:'holy',s:{hp:90,dmg:110,range:6,hit:1,speed:75,r:7,splash:28,ta:1},x:{kami:1},m:{t:'blob',k:'sprite',c:'#fff1b8'},d:'撞上敵人後爆出聖光，範圍傷害。'},
-  {k:'herosword',n:'聖劍勇者',r:'legendary',c:5,e:'holy',s:{hp:1300,dmg:190,range:9,hit:1.1,speed:50,r:12},x:{charge:1,shield:300},m:{t:'human',body:'#3a5aa0',head:'crown',hcol:'#ffd86b',w:'sword',cape:'#c0392b',wc:'#ffe9a0'},d:'傳說中的勇者：有護盾，衝鋒第一擊雙倍傷害。'},
+  {k:'herosword',n:'聖劍勇者',r:'legendary',c:6,e:'holy',s:{hp:1100,dmg:160,range:9,hit:1.2,speed:50,r:12},x:{charge:1,shield:200},m:{t:'human',body:'#3a5aa0',head:'crown',hcol:'#ffd86b',w:'sword',cape:'#c0392b',wc:'#ffe9a0'},d:'傳說中的勇者：有護盾，衝鋒第一擊雙倍傷害。'},
   // ---------- nature ----------
   {k:'archers',n:'精靈弓手',r:'common',c:3,e:'nature',cnt:2,s:{hp:220,dmg:55,range:105,hit:1,speed:45,r:9,ta:1,proj:'arrow'},m:{t:'old',k:'archers'},d:'兩名遠程弓手，可以射擊空中單位。'},
   {k:'ancienttree',n:'古樹守衛',r:'epic',c:6,e:'nature',s:{hp:2600,dmg:140,range:9,hit:1.5,speed:28,r:16},x:{dSpawn:['sapling',3]},m:{t:'construct',k:'treant',sc:1.4},d:'會走路的古樹，倒下時長出三棵小樹苗。'},
@@ -985,7 +985,7 @@ function mechText(c){
   return o.join('、');
 }
 const STARTER=['knight','archers','imps','hail','crystal','golem','fireball','wyvern'];
-const DIFF={easy:{mult:.8,think:1.6,attackAt:9.5},normal:{mult:1,think:.9,attackAt:8},hard:{mult:1.15,think:.45,attackAt:6.5}};
+const DIFF={easy:{mult:.8,think:1.6,attackAt:9.5},normal:{mult:1,think:.9,attackAt:8},hard:{mult:1.05,think:.6,attackAt:7}};
 const CHAPTERS=[
   {chap:'第一章 · 河畔試煉',name:'學徒 莉拉',diff:'easy',diffLabel:'簡單',color:'#2fb37a',wiz:{robe:'#25865c',trim:'#9dffcf',style:'plain'},deck:STARTER,
    intro:'師父說，只要打贏你，我就能出師。別手下留情喔！',win:'我……還要再練練。法典的線索在灰河上游，炎魔摩格守在那裡。',lose:'哈！看來我可以出師了。'},
@@ -996,16 +996,16 @@ const CHAPTERS=[
 ];
 const PLAYER_WIZ={robe:'#2c5fb8',trim:'#9fd0ff',style:'star'};
 const CHESTS={
-  wood:{name:'木製寶箱',secs:30,gold:[20,40],cards:4,gems:[0,0],col:'#8a5a2e',band:'#4a4a52'},
-  silver:{name:'白銀寶箱',secs:180,gold:[60,100],cards:10,gems:[0,5],col:'#5d6c82',band:'#dfe7f2'},
-  gold:{name:'黃金寶箱',secs:600,gold:[150,250],cards:24,gems:[5,15],col:'#7a4119',band:'#f3c55b'},
-  magic:{name:'魔法寶箱',secs:1800,gold:[400,500],cards:45,gems:[20,40],col:'#3a2160',band:'#d59bff',epic:true},
+  wood:{name:'木製寶箱',secs:30,gold:[40,80],cards:4,gems:[0,0],col:'#8a5a2e',band:'#4a4a52'},
+  silver:{name:'白銀寶箱',secs:180,gold:[120,200],cards:10,gems:[0,5],col:'#5d6c82',band:'#dfe7f2'},
+  gold:{name:'黃金寶箱',secs:600,gold:[300,500],cards:24,gems:[5,15],col:'#7a4119',band:'#f3c55b'},
+  magic:{name:'魔法寶箱',secs:1800,gold:[800,1000],cards:45,gems:[20,40],col:'#3a2160',band:'#d59bff',epic:true},
 };
 const ARENAS=[[0,'見習草原'],[300,'灰河石橋'],[700,'焦土峽谷'],[1200,'影之王座']];
 // upgrades: Lv.1-10; copies needed depend on rarity; stars at Lv.4/7/10 add +5% stats and strengthen the card's ability
 const MAXLV=10,STAR_LV=[4,7,10];
 const NEEDS={common:[0,2,4,10,20,50,100,200,400,800],rare:[0,2,4,8,15,30,50,100,200,300],epic:[0,1,2,4,8,12,20,30,50,80],legendary:[0,1,1,2,3,5,8,12,16,20]};
-const COST=[0,20,50,150,400,1000,2000,4000,8000,15000];
+const COST=[0,20,50,100,250,500,1000,2000,4000,7000];
 const COPY_GOLD={common:5,rare:20,epic:100,legendary:400};
 const needFor=(k,l)=>NEEDS[CARDS[k].rar][l];
 const starOf=l=>STAR_LV.filter(x=>l>=x).length;
@@ -2318,10 +2318,20 @@ $('#pfNick').addEventListener('change',e=>{const v=e.target.value.trim().slice(0
 
 // ================= battle =================
 const tray=$('#tray');
-function ladderCfg(){const t=S.trophies;return{diff:t<150?'easy':t<500?'normal':'hard',aiLvl:Math.min(8,1+Math.floor(t/220))}}
+const deckLvl=()=>S.deck.reduce((s,k)=>s+(S.cards[k]?.lvl||1),0)/S.deck.length;
+function ladderCfg(){const t=S.trophies,d=t<150?'easy':t<500?'normal':'hard';return{diff:d,aiLvl:clamp(Math.round(deckLvl())-(d==='easy'?1:0),1,MAXLV),deck1:aiDeck(t)}}
+// at most one legendary (none below 300 trophies), a capped number of epics, 1-2 spells, at most one building, and something that hits air
+function aiDeck(t){
+  const cap={legendary:t<300?0:1,epic:t<150?1:2,rare:4,common:8},used={legendary:0,epic:0,rare:0,common:0},deck=[];
+  const pool=shuffle(Object.keys(CARDS)),okR=k=>used[CARDS[k].rar]<cap[CARDS[k].rar];
+  const take=(f,n)=>{for(const k of pool){if(n<=0||deck.length>=8)break;if(deck.includes(k)||!okR(k)||!f(CARDS[k]))continue;deck.push(k);used[CARDS[k].rar]++;n--}};
+  take(c=>c.type==='spell'&&c.dmg>0,1);take(c=>c.type==='spell',Math.random()<.5?1:0);take(c=>c.type==='building',Math.random()<.6?1:0);
+  take(c=>c.type==='troop'&&c.s.targetsAir&&c.s.dmg>0,2);take(c=>c.type==='troop',8);
+  return deck;
+}
 function startBattle(mode,ch){
   MODE=mode;chIdx=ch;track('battle_start',{m:mode,ch});const c=CHAPTERS[ch];
-  const cfg=mode==='story'?{diff:c.diff,aiLvl:ch+1,deck1:c.deck}:Object.assign(ladderCfg(),{deck1:shuffle(Object.keys(CARDS)).slice(0,8)});
+  const cfg=mode==='story'?{diff:c.diff,aiLvl:clamp(Math.min(ch+1,Math.round(deckLvl())+1),1,MAXLV),deck1:c.deck}:ladderCfg();
   document.documentElement.style.setProperty('--enemy',c.color);
   $('#hudE').src=PORTRAIT[ch];$('#nameE').textContent=mode==='story'?c.name:c.name+'的幻影';
   $('#hudP').src=avatarSrc(S.avatar);$('#nameP').textContent=S.nick;
@@ -2399,8 +2409,11 @@ function end(){
   st.battles++;st.crowns+=p;if(won){st.wins++;if(p===3)st.three++}else if(lost)st.losses++;else st.draws++;
   const loot=[];const add=(icon,txt)=>loot.push([icon,txt]);
   if(MODE==='ladder'){const d=won?30:lost?-20:0;S.trophies=Math.max(0,S.trophies+d);S.best=Math.max(S.best,S.trophies);add('trophy',(d>=0?'+':'')+d)}
+  const today=new Date().toDateString(),gb=inGuild()?1.1:1;
+  const gold=Math.round((won?100:lost?20:40)+15*p)*gb|0;S.gold+=gold;add('coin','+'+gold+(inGuild()?'（公會 +10%）':''));
+  if(won&&S.dailyWin!==today){S.dailyWin=today;S.gold+=300;add('coin','每日首勝 +300')}
   if(won){
-    const gold=Math.round(50*(inGuild()?1.1:1));S.gold+=gold;S.gems+=10;S.xp+=20;add('coin','+'+gold+(inGuild()?'（公會 +10%）':''));add('gem','+10');
+    S.gems+=10;S.xp+=20;add('gem','+10');
     let type=rollChestType();
     if(MODE==='story'&&chIdx+2>S.progress){S.progress=chIdx+2;S.gems+=100;type='gold';add('gem','首勝 +100')}
     const slot=S.chests.indexOf(null);
