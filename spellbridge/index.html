@@ -330,6 +330,20 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 .prog{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:700}
 .prog .pbar{height:8px;border-radius:4px;background:#0a1018;overflow:hidden}
 .prog .pbar i{display:block;height:100%;background:var(--ok)}
+#updBar{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:60;width:min(400px,calc(100% - 24px));box-sizing:border-box;background:var(--panel);box-shadow:inset 0 0 0 2px var(--ok),0 8px 24px rgba(0,0,0,.45);padding:10px 10px 10px 12px;display:flex;align-items:center;gap:10px;clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px);animation:upddrop .35s cubic-bezier(.2,1.4,.4,1)}
+#updBar .ui svg{width:30px;height:30px;display:block}
+#updBar .ut{flex:1;display:flex;flex-direction:column;gap:1px;min-width:0}#updBar .ut b{font-size:14px}#updBar .ut small{font-size:11.5px;color:var(--muted);font-weight:700}
+#updBar .ub{display:flex;gap:6px}#updBar .ub button{padding:7px 12px;font-size:13px;min-width:0}
+@keyframes upddrop{from{transform:translate(-50%,-120%)}to{transform:translate(-50%,0)}}
+.newsbox .nh{display:flex;flex-direction:column;gap:2px}.newsbox h2{margin:0}.newsbox .nh small{color:var(--muted);font-weight:700}
+.newsbox .tag{align-self:flex-start;background:var(--ok);color:#05140d;font-size:11px;font-weight:900;padding:2px 8px}
+.nlist{display:flex;flex-direction:column;gap:10px;max-height:min(52vh,420px);overflow-y:auto}
+.nlist section{background:#121c29;padding:10px 12px}.nlist section.cur{box-shadow:inset 3px 0 0 var(--gold)}
+.nlist h4{margin:0 0 4px;font-size:14px;display:flex;justify-content:space-between;gap:8px}.nlist h4 span{color:var(--muted);font-size:12px;flex:none}
+.nlist ul{margin:0;padding-left:18px;font-size:12.5px;line-height:1.55;color:#d4dce8}
+.verrow small{display:block;color:var(--muted);font-size:11px;font-weight:700}.verrow .vb{display:flex;gap:6px}
+.verrow small.new{color:var(--ok)}
+@media (prefers-reduced-motion:reduce){#updBar{animation:none}}
 #gtoast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:rgba(8,12,18,.92);padding:8px 16px;border-radius:14px;font-size:14px;font-weight:900;z-index:9;pointer-events:none;box-shadow:0 0 0 1px var(--line);max-width:80%;text-align:center}
 #loading{position:fixed;inset:0;display:grid;place-items:center;background:var(--bg);z-index:10;font-size:14px;font-weight:700;color:var(--muted)}
 
@@ -402,7 +416,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
       <div class="statgrid" id="pfStats"></div>
       <div class="panel"><h3>頭像</h3><div class="avatars" id="pfAvatars"></div><p class="muted">在冒險模式擊敗對手，就能使用他們的頭像。</p></div>
       <div class="panel"><h3>最常使用的卡</h3><div class="list" id="pfFav"></div></div>
-      <div class="panel"><h3>設定</h3><div class="setrow">音效<button class="sbtn" id="pfMute"></button></div><div class="setrow">背景音樂<button class="sbtn" id="pfMusic"></button></div><div class="setrow">音樂音量<input type="range" class="vol" id="pfMusicVol" min="0" max="100" step="5" aria-label="音樂音量"></div><div class="setrow">問題回報<button class="sbtn" id="pfReport">回報問題</button></div></div>
+      <div class="panel"><h3>設定</h3><div class="setrow">音效<button class="sbtn" id="pfMute"></button></div><div class="setrow">背景音樂<button class="sbtn" id="pfMusic"></button></div><div class="setrow">音樂音量<input type="range" class="vol" id="pfMusicVol" min="0" max="100" step="5" aria-label="音樂音量"></div><div class="setrow">問題回報<button class="sbtn" id="pfReport">回報問題</button></div><div class="setrow verrow"><span>遊戲版本<small id="pfVer"></small></span><span class="vb"><button class="sbtn" id="pfNews">更新內容</button><button class="sbtn" id="pfCheck">檢查更新</button></span></div></div>
     </section>
     <section class="scr" id="scr-battle" hidden>
       <div id="hud">
@@ -515,10 +529,22 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
   <div class="box"><p class="lore" id="cfText"></p><div class="btns"><button class="go" id="cfYes">確定</button><button class="ghost" id="cfNo">取消</button></div></div>
 </div>
 <div id="gtoast" hidden></div>
+<div id="updBar" role="status" hidden>
+  <i class="ui" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2l8 5v10l-8 5-8-5V7z" fill="#3fcf8e"/><path d="M12 6v8M8.5 11l3.5 3.5 3.5-3.5M8 17h8" fill="none" stroke="#05140d" stroke-width="2.4"/></svg></i>
+  <div class="ut"><b>遊戲有新版本了！</b><small>更新會重新整理網頁，存檔和登入都會保留。</small></div>
+  <div class="ub"><button class="ghost" id="updLater">稍後</button><button class="go" id="updGo">更新</button></div>
+</div>
+<div class="ov" id="newsOv" hidden>
+  <div class="box newsbox">
+    <div class="nh"><span class="tag" id="newsTag">更新完成</span><h2>更新內容</h2><small id="newsVer"></small></div>
+    <div class="nlist" id="newsList"></div>
+    <button class="go" id="newsOk">開始遊戲</button>
+  </div>
+</div>
 <div id="loading">召喚戰場中…</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script>window.SB_URL="https://kenzsxyyqhfijbkeqnjz.supabase.co";window.SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlbnpzeHl5cWhmaWpia2Vxbmp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NDQ2OTUsImV4cCI6MjEwODIyMDY5NX0.PZZgqGtDdlSynKVLhnHj2ak40v2JV6uE_4cFxfMY3c0";window.SB_VER="20261028-0349";</script>
+<script>window.SB_URL="https://kenzsxyyqhfijbkeqnjz.supabase.co";window.SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlbnpzeHl5cWhmaWpia2Vxbmp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NDQ2OTUsImV4cCI6MjEwODIyMDY5NX0.PZZgqGtDdlSynKVLhnHj2ak40v2JV6uE_4cFxfMY3c0";window.SB_VER="20261028-0352";</script>
 <script>// Standalone backend: maps the game's claude.use('db' | 'user' | 'room') calls onto Supabase (auth, a single docs table, realtime channels).
 (function(){
   const URL=window.SB_URL,KEY=window.SB_KEY;
@@ -2055,6 +2081,7 @@ function showScreen(name){
   VIEW=name;
   for(const s of document.querySelectorAll('#screens > .scr'))s.hidden=s.id!=='scr-'+name;
   const battle=name==='battle';$('#top').hidden=battle;$('#nav').hidden=battle;
+  if(window.UPDREF){if(battle)$('#updBar').hidden=true;else UPDREF.show()}
   document.querySelectorAll('#nav button').forEach(b=>{if(b.dataset.s===name)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   if(name==='home'){if(!G||G.running||G.over){chIdx=Math.min(2,S.progress-1);newGame()}$('#heroSlot').appendChild(cv);renderHome()}
   if(battle)$('#stage').insertBefore(cv,$('#toast'));
@@ -2771,7 +2798,54 @@ function renderAccount(){
 // ================= boot =================
 makeThumbs();buildWorld();
 $('#nav-cards img').src=THUMB.knight;$('#nav-gacha img').src=ICON.altar;$('#nav-home img').src=ICON.castle;$('#nav-guild img').src=ICON.banner;
-setMute(!SFX.on);renderTop();showScreen('home');compNotice();
+// ================= update notice (same flow as 3D 市長大人) =================
+// Every minute (and when the tab comes back) fetch index.html uncached and compare its build stamp window.SB_VER
+// with the one this page loaded. A new version shows a notice; the player chooses when to reload, never mid-battle.
+const CHANGELOG=[
+  {d:'10/28',t:'平衡調整、更新提示',items:['用戰鬥模擬檢查全部卡牌，調整約 45 張：飛行單位、鳳凰、冰霜巨龍、僧侶等削弱，治療修女、聖泉、鼓手、攻城巨像、磁暴砲台等加強','修正兩隻以上的部隊一起過橋時會卡在河邊的問題（弓手、蜘蛛、衛兵終於打得到塔）','有新版本時畫面上方會提示，可以自己選擇何時更新']},
+  {d:'10/28',t:'電腦更公平、金幣更好賺',items:['天梯電腦的卡牌等級跟你的牌組一樣，牌組最多 1 張傳說卡','遠古巨龍、星辰大賢者、聖劍勇者削弱','勝利 100 金幣起、每顆冠冕 +15，落敗和平手也有金幣，每日首勝 +300','寶箱金幣加倍，高等級升級費用降低']},
+  {d:'10/22',t:'配樂、排行榜與新動畫',items:['全新背景音樂：主選單、戰鬥、魔王戰、冒險地圖、公會大廳，切換畫面會淡入淡出，設定可調音量','排行榜，未登入也看得到','召喚祭壇與寶箱開啟動畫、全新卡背與卡框','最後 10 秒倒數音效更清楚，好友對戰的對手也聽得到','遊戲內可以回報問題']},
+  {d:'10/22',t:'卡牌升級與音效',items:['卡牌最高 Lv.10，Lv.4、7、10 覺醒得到星星並強化特殊能力','升級動畫、全部升級、可升級提示','血條更明顯，塔上顯示血量數字','各兵種出場音效與能力音效']},
+  {d:'10/22',t:'100 張全新卡牌',items:['100 張卡都是不同的兵種，各有 3D 造型與特殊能力','舊版元素卡自動換成金幣補償']},
+];
+const verLabel=v=>{const m=/^(\d{4})(\d\d)(\d\d)-(\d\d)(\d\d)$/.exec(v||'');return m?`${+m[2]}/${+m[3]} ${m[4]}:${m[5]}`:(v||'')};
+const UPD={mine:window.SB_VER||'',latest:null,skip:null,busy:false,
+  start(){
+    if(!this.mine){this.status();return}
+    let seen=null;try{seen=localStorage.getItem('sb-seen-ver');localStorage.setItem('sb-seen-ver',this.mine)}catch(e){}
+    if(seen&&seen!==this.mine)setTimeout(()=>this.news(true),900);
+    setInterval(()=>this.check(),60000);setTimeout(()=>this.check(),8000);
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)this.check()});
+    this.status();
+  },
+  async check(manual){
+    if(!this.mine||this.busy)return;this.busy=true;
+    try{
+      const r=await fetch(location.pathname+'?check='+Date.now(),{cache:'no-store'}),h=await r.text();
+      const v=(/window\.SB_VER="([^"]+)"/.exec(h)||[])[1];
+      if(v&&v!==this.mine){this.latest=v;if(manual)this.skip=null;this.show()}
+      else if(manual)toast('已經是最新版本');
+    }catch(e){if(manual)toast('無法連線，請稍後再試')}
+    this.busy=false;this.status();
+  },
+  show(){if(!this.latest||this.latest===this.skip||VIEW==='battle')return;if($('#updBar').hidden)SFX.play('chime');$('#updBar').hidden=false},
+  status(){const e=$('#pfVer');if(!e)return;e.textContent=this.mine?verLabel(this.mine)+(this.latest?' · 有新版本':' · 最新'):'claude.ai 版';e.classList.toggle('new',!!this.latest);$('#pfCheck').hidden=!this.mine;$('#pfCheck').textContent=this.latest?'立即更新':'檢查更新'},
+  go(){try{persist()}catch(e){}$('#updBar').hidden=true;location.reload()},
+  news(updated){
+    const L=$('#newsList');L.innerHTML='';
+    CHANGELOG.forEach((c,i)=>{const s=el('section',i?null:'cur'),h=el('h4');h.append(el('b',null,c.t),el('span',null,c.d));const u=el('ul');for(const it of c.items)u.append(el('li',null,it));s.append(h,u);L.append(s)});
+    $('#newsTag').hidden=!updated;$('#newsVer').textContent=this.mine?'目前版本 '+verLabel(this.mine):'';
+    $('#newsOk').textContent=updated?'開始遊戲':'關閉';$('#newsOv').hidden=false;$('#newsOk').focus();
+    if(updated)SFX.play('chime');
+  },
+};
+window.UPDREF=UPD;
+$('#updGo').addEventListener('click',()=>UPD.go());
+$('#updLater').addEventListener('click',()=>{UPD.skip=UPD.latest;$('#updBar').hidden=true});
+$('#newsOk').addEventListener('click',()=>$('#newsOv').hidden=true);
+$('#pfNews').addEventListener('click',()=>UPD.news(false));
+$('#pfCheck').addEventListener('click',()=>UPD.latest?UPD.go():UPD.check(true));
+setMute(!SFX.on);renderTop();showScreen('home');compNotice();UPD.start();
 new ResizeObserver(()=>{if(cv.parentElement===$('#heroSlot'))fitCamera()}).observe($('#heroSlot'));
 new ResizeObserver(()=>{if(cv.parentElement===$('#stage'))fitCamera()}).observe($('#stage'));
 $('#loading').hidden=true;
