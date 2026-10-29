@@ -320,6 +320,12 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 .ch small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
 .ch .tag{font-size:11px;font-weight:900;padding:3px 8px;border-radius:10px;background:#0a1018;color:var(--muted)}
 .ch .tag.done{color:var(--gold)}
+.stgh{margin:4px 0 -4px;font-family:var(--title);font-size:17px;display:flex;align-items:baseline;justify-content:space-between}.stgh small{font-size:12px;color:var(--muted);font-family:inherit}
+.stages{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.stg{border:0;padding:6px 0 8px;background:var(--panel-2);box-shadow:inset 0 -4px 0 #121b27,inset 0 3px 0 var(--ec);display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;color:var(--ink)}
+.stg b{font-family:var(--display);font-size:16px}.stg small{font-size:10px;color:var(--muted);font-weight:900}
+.stg.boss{background:#2a2410}.stg.boss b{color:var(--gold)}.stg.done small{color:var(--ok)}
+.stg:disabled{opacity:.4;cursor:default}
 .ch:disabled{opacity:.45;cursor:not-allowed}
 .talk{display:grid;grid-template-columns:72px 1fr;gap:12px;align-items:start}
 .talk img{width:72px;height:72px;border-radius:12px;background:var(--panel-2)}
@@ -538,6 +544,8 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
     <h1>冒險<span>雙 巫 師 之 戰</span></h1>
     <p class="lore">灰河兩岸曾是同一座魔法學院。百年前學院分裂，河上的兩座石橋從此成了巫師決鬥的地方。擊敗三位對手，奪回被奪走的《星之法典》。</p>
     <div class="chapters" id="chapters"></div>
+    <h2 class="stgh">關卡挑戰 <small id="stageSub"></small></h2>
+    <div class="stages" id="stages"></div>
     <button class="ghost" id="closeStart">返回首頁</button>
   </div>
 </div>
@@ -1110,7 +1118,7 @@ function mechText(c){
   return o.join('、');
 }
 const STARTER=['knight','archers','imps','hail','crystal','golem','fireball','wyvern'];
-const DIFF={easy:{mult:.8,think:1.6,attackAt:9.5},normal:{mult:1,think:.9,attackAt:8},hard:{mult:1.05,think:.6,attackAt:7}};
+const DIFF={easy:{mult:.8,think:1.6,attackAt:9.5},normal:{mult:1,think:.9,attackAt:8},hard:{mult:1.05,think:.6,attackAt:7},expert:{mult:1.15,think:.45,attackAt:6.5},boss:{mult:1.25,think:.4,attackAt:6}};
 const CHAPTERS=[
   {chap:'第一章 · 河畔試煉',name:'學徒 莉拉',diff:'easy',diffLabel:'簡單',color:'#2fb37a',wiz:{robe:'#25865c',trim:'#9dffcf',style:'plain'},deck:STARTER,
    intro:'師父說，只要打贏你，我就能出師。別手下留情喔！',win:'我……還要再練練。法典的線索在灰河上游，炎魔摩格守在那裡。',lose:'哈！看來我可以出師了。'},
@@ -1119,6 +1127,25 @@ const CHAPTERS=[
   {chap:'第三章 · 影之王座',name:'暗影大巫師 薩洛斯',diff:'hard',diffLabel:'困難',color:'#a45cff',wiz:{robe:'#3a2160',trim:'#d59bff',style:'hood'},deck:['knight','archers','assassin','hail','thunder','golem','fireball','dragon'],
    intro:'百年前，是我親手撕裂了學院。今天，輪到你。',win:'法典……歸你了。星辰的光，終究比影子長。',lose:'影子會吞沒一切，包括你。'},
 ];
+// stage ladder: 30 opponents, one element per stage cycling through all seven; level, rarity caps and AI speed climb every few stages, every 5th is a boss
+const STAGE_N=30,STAGE_TIER=['學徒','術士','法師','大法師','賢者','魔導王'],STAGE_STYLE=['plain','beard','hood','plain','beard','hood'];
+function stageOpp(n){
+  const e=ELEM_KEYS[(n-1)%ELEM_KEYS.length],t=Math.floor((n-1)/5),boss=n%5===0;
+  const diff=boss?(n>=20?'boss':n>=10?'expert':'hard'):n<=3?'easy':n<=10?'normal':n<=20?'hard':'expert';
+  return{stage:n,el:e,boss,diff,diffLabel:{easy:'簡單',normal:'普通',hard:'困難',expert:'極難',boss:'首領'}[diff],color:ELEM[e].col,
+    name:ELEM[e].name+STAGE_TIER[t]+(boss?' · 首領':''),chap:'第 '+n+' 關',img:'el_'+e,
+    intro:boss?'能走到這裡，算你有本事。不過到此為止了。':'讓我看看你的牌組有多少斤兩！',win:boss?'下一個階段的對手，可不會像我這麼客氣。':'這次算你贏，下一關可沒這麼簡單。',lose:'回去把卡牌練強一點再來吧。',
+    deck:stageDeck(n,e),lvl:clamp(1+Math.floor((n-1)/3)+(boss?1:0),1,MAXLV)};
+}
+// deterministic per stage: half the deck from the stage's element, rarity caps rising with the stage
+function stageDeck(n,e){
+  let seed=n*9301+49297;const rnd=()=>(seed=(seed*9301+49297)%233280)/233280;
+  const cap={legendary:n<8?0:n<20?1:2,epic:n<4?1:n<15?2:3,rare:4,common:8},used={legendary:0,epic:0,rare:0,common:0},deck=[];
+  const pool=Object.keys(CARDS).sort(()=>rnd()-.5),okR=k=>used[CARDS[k].rar]<cap[CARDS[k].rar];
+  const take=(f,n2)=>{for(const k of pool){if(n2<=0||deck.length>=8)break;if(deck.includes(k)||!okR(k)||!f(CARDS[k]))continue;deck.push(k);used[CARDS[k].rar]++;n2--}};
+  take(c=>c.type==='spell'&&c.dmg>0,1);take(c=>c.type!=='spell'&&c.s.targetsAir&&c.s.dmg>0,2);take(c=>c.el===e,4);take(c=>c.type!=='spell',8);
+  return deck;
+}
 const PLAYER_WIZ={robe:'#2c5fb8',trim:'#9fd0ff',style:'star'};
 const CHESTS={
   wood:{name:'木製寶箱',secs:30,gold:[40,80],cards:4,kinds:3,gems:[2,5],col:'#8a5a2e',band:'#4a4a52'},
@@ -1161,7 +1188,7 @@ function starPerks(c){
 const EMBLEMS=['#3b82f6','#8b4fe0','#2fb37a','#d49a1c','#d23f44','#2ba7d6'];
 
 // ================= save =================
-function freshSave(){return{v:1,nick:'艾倫',avatar:'player',gold:300,gems:1100,gift500:1,xp:0,trophies:0,best:0,cards:Object.fromEntries(STARTER.map(k=>[k,{lvl:1,copies:0}])),deck:STARTER.slice(),chests:[{type:'silver',unlockAt:null},null,null,null],freeAt:0,pity:0,progress:1,guild:null,stats:{wins:0,losses:0,draws:0,three:0,crowns:0,battles:0,played:{}},ts:0}}
+function freshSave(){return{v:1,nick:'艾倫',avatar:'player',gold:300,gems:1100,gift500:1,stage:1,xp:0,trophies:0,best:0,cards:Object.fromEntries(STARTER.map(k=>[k,{lvl:1,copies:0}])),deck:STARTER.slice(),chests:[{type:'silver',unlockAt:null},null,null,null],freeAt:0,pity:0,progress:1,guild:null,stats:{wins:0,losses:0,draws:0,three:0,crowns:0,battles:0,played:{}},ts:0}}
 let SAVE_COMP=0,SAVE_GIFT=0,giftShown=false;
 function fixSave(s){
   const old=s&&typeof s==='object'&&!s.gift500;
@@ -1187,7 +1214,9 @@ function lvInfo(xp){let lv=1,need=100;while(xp>=need){xp-=need;lv++;need+=50}ret
 function addCard(k,n){const c=S.cards[k];if(!c){S.cards[k]={lvl:1,copies:n-1};return true}c.copies+=n;return false}
 const byRar=r=>Object.keys(CARDS).filter(k=>CARDS[k].rar===r);
 // half the draws come from cards the player doesn't own yet (until that rarity is complete); skip keys already in this pull
-function pickCard(rar,avoid){const all=byRar(rar),pool=all.filter(k=>!avoid||!avoid.includes(k)),from=pool.length?pool:all,miss=from.filter(k=>!S.cards[k]);return miss.length&&Math.random()<.5?pick(miss):pick(from)}
+// 40% of picks go to cards in the battle deck that can still level up, so the cards you play grow faster
+function pickCard(rar,avoid){const mine=S.deck.filter(k=>CARDS[k]&&CARDS[k].rar===rar&&S.cards[k]&&S.cards[k].lvl<MAXLV&&!(avoid&&avoid.includes(k)));if(mine.length&&Math.random()<.4)return pick(mine);
+  const all=byRar(rar),pool=all.filter(k=>!avoid||!avoid.includes(k)),from=pool.length?pool:all,miss=from.filter(k=>!S.cards[k]);return miss.length&&Math.random()<.5?pick(miss):pick(from)}
 function rollRarity(){let r=Math.random(),acc=0;for(const k of RORDER){acc+=RAR[k].rate;if(r<acc)return k}return 'legendary'}
 const arenaName=t=>ARENAS.filter(a=>t>=a[0]).pop()[1];
 
@@ -1988,7 +2017,7 @@ function makeThumbs(){
   const shot=(obj,look,dist,lift)=>{s.add(obj);obj.updateMatrixWorld(true);const box=new T.Box3().setFromObject(obj);const c=look||box.getCenter(new T.Vector3());const sz=box.getSize(new T.Vector3());const m=dist||Math.max(sz.x,sz.y,sz.z)*2.1;cam.position.set(c.x+m*.42,c.y+m*(lift??.32),c.z+m*.84);cam.lookAt(c);r.render(s,cam);const url=r.domElement.toDataURL();s.remove(obj);return url};
   for(const k in CARDS){const o=cardModel(k,PLAYER_COL);o.rotation.y=-.35;THUMB[k]=shot(o)}
   const wizShot=c=>{const o=makeWizard(c);o.userData.staff.visible=false;o.rotation.y=-.25;return shot(o,new T.Vector3(0,31,0),46,.06)};
-  PORTRAIT.player=wizShot(PLAYER_WIZ);CHAPTERS.forEach((c,i)=>PORTRAIT[i]=wizShot(c.wiz));
+  PORTRAIT.player=wizShot(PLAYER_WIZ);CHAPTERS.forEach((c,i)=>PORTRAIT[i]=wizShot(c.wiz));ELEM_KEYS.forEach((e,i)=>PORTRAIT['el_'+e]=wizShot({robe:ELEM[e].col,trim:'#ffffff',style:STAGE_STYLE[i%STAGE_STYLE.length]}));
   for(const k in CHESTS){const o=makeChest(k);o.rotation.y=-.45;CHEST_IMG[k]=shot(o,null,null,.45)}
   r.setSize(240,240);ICON.altar=shot(makeAltar(),null,128,.4);r.setSize(160,160);
   ICON.banner=shot(makeBanner());
@@ -2616,11 +2645,13 @@ function aiDeck(t){
   take(c=>c.type==='troop'&&c.s.targetsAir&&c.s.dmg>0,2);take(c=>c.type==='troop',8);
   return deck;
 }
+let OPP=null;
 function startBattle(mode,ch){
-  MODE=mode;chIdx=ch;track('battle_start',{m:mode,ch});const c=CHAPTERS[ch];
-  const cfg=mode==='story'?{diff:c.diff,aiLvl:clamp(Math.min(ch+1,Math.round(deckLvl())+1),1,MAXLV),deck1:c.deck}:ladderCfg();
+  MODE=mode;chIdx=ch;track('battle_start',{m:mode,ch});const c=OPP=mode==='stage'?stageOpp(ch):Object.assign({img:ch},CHAPTERS[ch]);
+  // stage opponents never fall more than one level behind your deck, so they stay a challenge
+  const cfg=mode==='story'?{diff:c.diff,aiLvl:clamp(Math.min(ch+1,Math.round(deckLvl())+1),1,MAXLV),deck1:c.deck}:mode==='stage'?{diff:c.diff,aiLvl:clamp(Math.max(c.lvl,Math.round(deckLvl())-1+(c.boss?1:0)),1,MAXLV),deck1:c.deck}:ladderCfg();
   document.documentElement.style.setProperty('--enemy',c.color);
-  $('#hudE').src=PORTRAIT[ch];$('#nameE').textContent=mode==='story'?c.name:c.name+'的幻影';
+  $('#hudE').src=PORTRAIT[c.img];$('#nameE').textContent=mode==='ladder'?c.name+'的幻影':c.name;
   $('#hudP').src=avatarSrc(S.avatar);$('#nameP').textContent=S.nick;
   newGame(Object.assign({deck0:S.deck},cfg));G.running=true;$('#emotes').hidden=true;
   $('#talkOv').hidden=true;$('#endOv').hidden=true;$('#startOv').hidden=true;showScreen('battle');
@@ -2680,10 +2711,18 @@ function renderChapters(){
     const tag=el('span','tag'+(i+1<S.progress?' done':''),i+1<S.progress?'已擊敗':i+1>S.progress?'未解鎖':c.diffLabel);
     b.append(im,d,tag);b.addEventListener('click',()=>openTalk(i));box.append(b);
   });
+  const sg=$('#stages');sg.innerHTML='';
+  $('#stageSub').textContent=S.stage>STAGE_N?'全部通關！':`已通過 ${S.stage-1} / ${STAGE_N} 關`;
+  for(let n=1;n<=STAGE_N;n++){
+    const o=stageOpp(n),b=el('button','stg'+(o.boss?' boss':'')+(n<S.stage?' done':''));b.disabled=n>S.stage;b.style.setProperty('--ec',o.color);
+    b.append(el('b',null,String(n)),el('small',null,n<S.stage?'✓':n>S.stage?'未開':o.diffLabel));b.setAttribute('aria-label',`第 ${n} 關 ${o.name}`);
+    b.addEventListener('click',()=>openTalk(n,'stage'));sg.append(b);
+  }
 }
-function openTalk(i){
-  chIdx=i;const c=CHAPTERS[i];
-  $('#talkImg').src=PORTRAIT[i];$('#talkChap').textContent=c.chap;$('#talkName').textContent=c.name;$('#talkLine').textContent='「'+c.intro+'」';
+let talkMode='story';
+function openTalk(i,mode){
+  talkMode=mode||'story';chIdx=i;const c=talkMode==='stage'?stageOpp(i):Object.assign({img:i},CHAPTERS[i]);
+  $('#talkImg').src=PORTRAIT[c.img];$('#talkChap').textContent=c.chap;$('#talkName').textContent=c.name;$('#talkLine').textContent='「'+c.intro+'」';
   $('#startOv').hidden=true;$('#endOv').hidden=true;$('#talkOv').hidden=false;$('#fightBtn').focus();
 }
 const inGuild=()=>!!S.guild&&(cloud.state!=='on'||GUILDS.has(S.guild));
@@ -2691,10 +2730,10 @@ function end(){
   G.over=true;G.sel=null;
   if(MODE==='friend')return friendEnd();
   $('#againBtn').hidden=false;$('#againBtn').textContent='再戰一次';
-  const[p,e]=G.crowns,won=p>e,lost=p<e,c=CHAPTERS[chIdx],st=S.stats;
+  const[p,e]=G.crowns,won=p>e,lost=p<e,c=OPP||CHAPTERS[chIdx],st=S.stats;
   track('battle_end',{m:MODE,ch:chIdx,r:won?'win':lost?'lose':'draw',cr:[p,e],ot:!!G.overtime,tro:S.trophies});
   st.battles++;st.crowns+=p;if(won){st.wins++;if(p===3)st.three++}else if(lost)st.losses++;else st.draws++;
-  questTick('play3');questTick('crowns5',p);questTick('towers3',G.ents.filter(e=>e.kind==='tower'&&e.team===1&&e.dead).length);if(MODE==='ladder'&&won)questTick('win2');if(MODE==='story')questTick('story1');
+  questTick('play3');questTick('crowns5',p);questTick('towers3',G.ents.filter(e=>e.kind==='tower'&&e.team===1&&e.dead).length);if(MODE==='ladder'&&won)questTick('win2');if(MODE==='story'||MODE==='stage')questTick('story1');
   const loot=[];const add=(icon,txt)=>loot.push([icon,txt]);let wonChest=null;
   if(MODE==='ladder'){const d=won?30:lost?-20:0;S.trophies=Math.max(0,S.trophies+d);S.best=Math.max(S.best,S.trophies);add('trophy',(d>=0?'+':'')+d)}
   const today=new Date().toDateString(),gb=inGuild()?1.1:1;
@@ -2704,6 +2743,7 @@ function end(){
     S.gems+=20;S.xp+=20;add('gem','+20');
     let type=rollChestType();
     if(MODE==='story'&&chIdx+2>S.progress){S.progress=chIdx+2;S.gems+=100;type='gold';add('gem','首勝 +100')}
+    if(MODE==='stage'&&chIdx>=S.stage){S.stage=chIdx+1;const g=c.boss?100:30;S.gems+=g;type=c.boss?(chIdx>=20?'magic':'gold'):'silver';add('gem','首次過關 +'+g)}
     const slot=S.chests.indexOf(null);
     if(slot>=0){S.chests[slot]={type,unlockAt:null};wonChest=type}else add('chest','寶箱欄已滿，沒拿到寶箱');
   }else S.xp+=5;
@@ -2711,12 +2751,12 @@ function end(){
   const r=$('#result');
   r.textContent=won?'勝利':lost?'落敗':'平手';r.style.color=won?'var(--gold)':lost?'var(--red)':'var(--ink)';
   $('#resultSub').textContent=`${S.nick} ${p} 冠 · ${$('#nameE').textContent} ${e} 冠`;
-  $('#endImg').src=PORTRAIT[chIdx];$('#endName').textContent=$('#nameE').textContent;
+  $('#endImg').src=PORTRAIT[c.img!=null?c.img:chIdx];$('#endName').textContent=$('#nameE').textContent;
   $('#endLine').textContent='「'+(won?c.win:lost?c.lose:'下次，我們再分個高下。')+'」';
-  $('#endTalk').hidden=MODE!=='story';
+  $('#endTalk').hidden=MODE!=='story'&&MODE!=='stage';
   const lb=$('#endLoot');lb.innerHTML='';for(const[i,t]of loot){const s=el('span');s.append(i==='coin'||i==='gem'?el('i',i):ic(i),' '+t);lb.append(s)}
   $('#ending').hidden=!(MODE==='story'&&won&&chIdx===CHAPTERS.length-1);
-  $('#nextBtn').hidden=!(MODE==='story'&&won&&chIdx<CHAPTERS.length-1);
+  $('#nextBtn').hidden=!(won&&(MODE==='story'&&chIdx<CHAPTERS.length-1||MODE==='stage'&&chIdx<STAGE_N));$('#nextBtn').textContent=MODE==='stage'?'下一關':'下一章';
   endTimer=setTimeout(()=>{$('#endOv').hidden=false;endFx(won?'win':lost?'lose':'draw',p,wonChest);($('#nextBtn').hidden?$('#homeBtn'):$('#nextBtn')).focus()},900);
 }
 // plays the end screen's entrance: title stamp/sag, crowns one by one, loot pills, a won chest; sounds follow the same beats
@@ -2737,10 +2777,10 @@ function endFx(kind,crowns,chest){
 $('#ladderBtn').addEventListener('click',()=>startBattle('ladder',rint(0,2)));
 $('#advBtn').addEventListener('click',()=>{renderChapters();$('#startOv').hidden=false});
 $('#closeStart').addEventListener('click',()=>$('#startOv').hidden=true);
-$('#fightBtn').addEventListener('click',()=>startBattle('story',chIdx));
+$('#fightBtn').addEventListener('click',()=>startBattle(talkMode,chIdx));
 $('#backBtn').addEventListener('click',()=>{$('#talkOv').hidden=true;if(VIEW!=='home')showScreen('home');renderChapters();$('#startOv').hidden=false});
-$('#nextBtn').addEventListener('click',()=>openTalk(chIdx+1));
-$('#againBtn').addEventListener('click',()=>{if(MODE==='friend'){if(NET.role==='host'&&NET.guestP)startFriend(NET.guestP);return}if(MODE==='story')openTalk(chIdx);else startBattle('ladder',rint(0,2))});
+$('#nextBtn').addEventListener('click',()=>openTalk(chIdx+1,MODE==='stage'?'stage':'story'));
+$('#againBtn').addEventListener('click',()=>{if(MODE==='friend'){if(NET.role==='host'&&NET.guestP)startFriend(NET.guestP);return}if(MODE==='story'||MODE==='stage')openTalk(chIdx,MODE);else startBattle('ladder',rint(0,2))});
 $('#homeBtn').addEventListener('click',()=>{$('#endOv').hidden=true;if(MODE==='friend')leaveRoom();showScreen('home')});
 
 // ================= cloud save + guilds =================
@@ -3077,6 +3117,7 @@ $('#nav-cards img').src=THUMB.knight;$('#nav-gacha img').src=ICON.altar;$('#nav-
 // Every minute (and when the tab comes back) fetch index.html uncached and compare its build stamp window.SB_VER
 // with the one this page loaded. A new version shows a notice; the player chooses when to reload, never mid-battle.
 const CHANGELOG=[
+  {d:'10/30',t:'關卡挑戰，牌組卡升級更快',items:['冒險裡新增 30 關關卡挑戰，每一關換一種元素的對手，越後面越強，每 5 關有首領','首次過關送寶石和寶箱，首領關送黃金或魔法寶箱','寶箱和召喚抽到的卡，會優先給你牌組裡的卡，升級更快']},
   {d:'10/30',t:'四個新角色，重複的卡各有新能力',items:['修理工匠：幫我方的塔和建築修回血','鐵壁守衛：逼附近的敵人改打它','復活祭司：讓倒下的隊友帶半血站起來','挖地礦工：可以放在場上任何地方','38 張原本玩法重複的卡各加了不同能力：擊退、燃燒、麻痺、詛咒、暴擊、反傷、獵殺殘血、剋大型等']},
   {d:'10/29',t:'新卡：分身術',items:['史詩咒文，3 魔力','範圍內每個隊友各多出一個半透明分身，攻擊力一樣但只有 1 點血']},
   {d:'10/29',t:'勝利、寶箱與升級動畫',items:['勝利時標題蓋章、彩帶和金色光芒，冠冕一顆顆亮起','打贏拿到的寶箱會掉進結算畫面','卡牌升級先蓄力再爆光，新的等級和數值依序跳出','勝利號角、冠冕、寶箱落地、升級蓄力等新音效']},
