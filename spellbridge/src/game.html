@@ -167,14 +167,27 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 .upbox .rays{position:absolute;top:-40px;left:50%;width:340px;height:340px;margin-left:-170px;fill:var(--gold);opacity:.13}
 #upOv.anim .rays{animation:spin 8s linear infinite}
 #upImg{width:130px;height:130px;background-color:var(--eb,var(--panel-2));background-image:var(--pat,none);background-size:26px 26px;box-shadow:var(--fr,inset 0 0 0 2px #6d7a8f)}
-#upOv.anim #upImg{animation:uppop .7s cubic-bezier(.2,1.6,.4,1)}
+#upOv.anim #upImg{animation:upcharge .8s ease-in backwards,uppop .55s .8s cubic-bezier(.2,1.6,.4,1)}
+/* upgrade: the card charges up in its rarity colour, flashes, then sparks rise while the new level and stats pop in */
+.upfx{position:absolute;left:50%;top:22px;width:130px;height:130px;margin-left:-65px;pointer-events:none;z-index:2}
+.upfx .flash{position:absolute;inset:0;border-radius:50%;background:#fff;opacity:0}
+.upfx .ring{position:absolute;inset:-30px;border-radius:50%;box-shadow:0 0 0 4px var(--rc),0 0 24px var(--rc);opacity:0}
+.upfx i{position:absolute;left:var(--x);bottom:10px;width:6px;height:6px;background:var(--rc);box-shadow:0 0 8px var(--rc);opacity:0;transform:rotate(45deg)}
+#upOv.anim .upfx .ring{animation:upring .8s ease-in forwards}
+#upOv.anim .upfx .flash{animation:upflash .5s .78s ease-out}
+#upOv.anim .upfx i{animation:uprise var(--d) var(--w) ease-out forwards}
+#upOv.anim .cstats>div{animation:lootin .3s ease-out both;animation-delay:calc(1.15s + var(--i)*.1s)}
+@keyframes upcharge{0%{opacity:0;transform:scale(.6)}20%{opacity:1;transform:scale(.9)}40%{transform:scale(.9) translateX(-2px);filter:drop-shadow(0 0 4px var(--rc))}50%{transform:scale(.92) translateX(2px)}60%{transform:scale(.94) translateX(-3px)}70%{transform:scale(.96) translateX(3px)}80%{transform:scale(.98) translateX(-3px)}100%{transform:scale(1);filter:drop-shadow(0 0 22px var(--rc)) brightness(1.5)}}
+@keyframes upring{0%{opacity:0;transform:scale(1.4)}30%{opacity:1}100%{opacity:0;transform:scale(.5)}}
+@keyframes upflash{0%{opacity:.95;transform:scale(.6)}100%{opacity:0;transform:scale(2.6)}}
+@keyframes uprise{0%{opacity:0;transform:translateY(0) rotate(45deg)}15%{opacity:1}100%{opacity:0;transform:translateY(-150px) rotate(225deg)}}
 #upName{margin:0;font-size:22px}
 .uplv{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:900;font-size:22px}
 .uplv span{color:var(--muted)}.uplv svg{width:24px;height:24px;fill:var(--ok)}.uplv b{color:var(--gold);font-size:30px}
-#upOv.anim .uplv b{animation:uppop .6s .35s cubic-bezier(.2,1.6,.4,1) both}
+#upOv.anim .uplv b{animation:uppop .6s .9s cubic-bezier(.2,1.6,.4,1) both}
 .upstar{display:flex;flex-direction:column;gap:2px;background:#2a2410;box-shadow:inset 0 0 0 2px var(--gold);padding:8px 12px;width:100%;box-sizing:border-box}
 .upstar b{color:var(--gold);font-size:16px}.upstar small{color:#e9dcb0;font-weight:700}
-#upOv.anim .upstar{animation:uppop .6s .6s cubic-bezier(.2,1.6,.4,1) both}
+#upOv.anim .upstar{animation:uppop .6s 1.2s cubic-bezier(.2,1.6,.4,1) both}
 .upbox .cstats{width:100%}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes uppop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
@@ -317,7 +330,33 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 .go:disabled{filter:grayscale(.9) brightness(.7);cursor:not-allowed}
 .ghost{border:0;padding:10px 10px 13px;background:var(--panel-2);font-weight:900;font-size:14px;cursor:pointer;box-shadow:inset 0 -4px 0 #121b27}
 .btns{display:flex;flex-direction:column;gap:8px}
-#result{font-family:var(--title);font-weight:900;font-size:44px;text-align:center;margin:0;letter-spacing:.1em}
+#result{font-family:var(--title);font-weight:900;font-size:44px;text-align:center;margin:0;letter-spacing:.1em;position:relative}
+/* end screen: a win stamps the title over spinning gold rays with confetti, crowns pop in one by one and a won chest drops in; a loss sags */
+#endOv .box{position:relative;overflow:hidden}
+#endOv .box>*{position:relative}
+#endOv .endfx{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.endfx .rays{position:absolute;left:50%;top:-110px;width:340px;height:340px;margin-left:-170px;fill:var(--gold);opacity:0}
+.endfx i{position:absolute;top:-14px;left:var(--x);width:7px;height:12px;background:var(--c);opacity:0}
+.endcrowns{display:flex;justify-content:center;gap:12px;order:-1;margin-bottom:-8px}
+#endOv .endcrowns .ic{width:38px;height:38px}.endcrowns .off{filter:grayscale(1) brightness(.45)}
+.endchest{display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:900;font-size:13px;color:var(--gold)}
+.endchest img{width:92px;height:92px;filter:drop-shadow(0 0 14px rgba(245,184,46,.55))}
+#endOv.fx-win .endfx .rays{animation:endrays 1s .1s ease-out forwards,spin 14s linear infinite}
+#endOv.fx-win #result{animation:stamp .55s cubic-bezier(.2,1.5,.4,1) both;text-shadow:0 0 18px rgba(245,184,46,.6)}
+#endOv.fx-win .endfx i{animation:confetti var(--d) var(--w) linear forwards}
+#endOv.fx-lose #result{animation:sag .9s ease-out both}
+#endOv.fx-lose .box{animation:dim .9s ease-out}
+#endOv[class*=fx-] .endcrowns .ic{animation:uppop .45s cubic-bezier(.2,1.6,.4,1) both;animation-delay:calc(.55s + var(--i)*.28s)}
+#endOv[class*=fx-] #endLoot span{animation:lootin .35s ease-out both;animation-delay:calc(1.1s + var(--i)*.12s)}
+#endOv[class*=fx-] .endchest{animation:chestdrop .7s 1.5s cubic-bezier(.3,1.4,.5,1) both}
+#endOv[class*=fx-] .endchest img{animation:aGem 1.6s 2.2s ease-in-out infinite}
+@keyframes endrays{from{opacity:0;transform:scale(.3)}to{opacity:.16;transform:scale(1)}}
+@keyframes stamp{0%{opacity:0;transform:scale(2.6)}60%{opacity:1;transform:scale(.92)}100%{transform:scale(1)}}
+@keyframes confetti{0%{opacity:1;transform:translateY(0) rotate(0)}100%{opacity:0;transform:translateY(560px) translateX(var(--dx)) rotate(var(--r))}}
+@keyframes sag{0%{opacity:0;transform:translateY(-30px)}55%{opacity:1;transform:translateY(4px) rotate(-3deg)}100%{transform:rotate(-2deg)}}
+@keyframes dim{from{filter:brightness(.5) saturate(.3)}}
+@keyframes lootin{from{opacity:0;transform:translateY(10px) scale(.8)}}
+@keyframes chestdrop{0%{opacity:0;transform:translateY(-140px) scale(.6)}60%{opacity:1;transform:translateY(6px) scale(1.08,.9)}100%{transform:none}}
 #resultSub{text-align:center;color:var(--muted);margin:-6px 0 0;font-size:14px;font-weight:700}
 #ending{margin:0;font-size:14px;line-height:1.75;color:var(--gold);text-align:center;font-weight:700}
 .loot{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
@@ -419,7 +458,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 .cc .lv{top:auto!important;bottom:30px;right:4px;border-radius:0!important}
 .cc .nm,.card .nm{position:relative;z-index:1;text-shadow:0 1px 0 rgba(0,0,0,.6)}
 .card.sel{filter:brightness(1.25);box-shadow:var(--fr),inset 0 -6px 0 var(--gold),inset 0 0 0 40px rgba(243,197,91,.12)!important}
-@media (prefers-reduced-motion:reduce){#eplays .ep,.droptag{animation:none!important}#upOv.anim *,.cc .upb{animation:none!important}.card,.rcard .in{transition:none}.cc.swap,#revImg.shake{animation:none}.reveal .revstage *,.reveal .rcard,.reveal .rcard .b{animation:none!important}}
+@media (prefers-reduced-motion:reduce){#eplays .ep,.droptag{animation:none!important}#upOv.anim *,.cc .upb,#endOv *{animation:none!important}.upfx,.endfx{display:none}.card,.rcard .in{transition:none}.cc.swap,#revImg.shake{animation:none}.reveal .revstage *,.reveal .rcard,.reveal .rcard .b{animation:none!important}}
 </style>
 
 <div id="app">
@@ -530,10 +569,13 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
 </div>
 <div class="ov" id="endOv" hidden>
   <div class="box">
+    <div class="endfx" aria-hidden="true"><svg class="rays" viewBox="0 0 100 100"><path d="M50 50L46 0h8zM50 50L96 30v8zM50 50l38 42-6 5zM50 50L14 97l-6-5zM50 50L0 38v-8zM50 50L4 22l3-7zM50 50L93 15l3 7zM50 50l4 50h-8z"/></svg></div>
     <p id="result">勝利</p>
+    <div class="endcrowns" id="endCrowns" aria-hidden="true"></div>
     <p id="resultSub"></p>
     <div class="talk" id="endTalk"><img id="endImg" alt=""><div><div class="nm" id="endName"></div><p id="endLine"></p></div></div>
     <div class="loot" id="endLoot"></div>
+    <div class="endchest" id="endChest" hidden><img alt=""><span></span></div>
     <p id="ending" hidden>你奪回了《星之法典》。灰河兩岸再次響起學院的鐘聲。</p>
     <div class="btns"><button class="go" id="nextBtn">下一章</button><button class="ghost" id="againBtn">再戰一次</button><button class="ghost" id="homeBtn">回到首頁</button></div>
     <div class="adslot" id="adEnd" hidden></div>
@@ -566,6 +608,7 @@ input{font-family:var(--body);font-size:15px;color:var(--ink);background:#0d1520
   <div class="box upbox">
     <svg class="rays" viewBox="0 0 100 100" aria-hidden="true"><path d="M50 50L46 0h8zM50 50L96 30v8zM50 50l38 42-6 5zM50 50L14 97l-6-5zM50 50L0 38v-8zM50 50L4 22l3-7zM50 50L93 15l3 7zM50 50l4 50h-8z"/></svg>
     <img id="upImg" alt="">
+    <div class="upfx" id="upFx" aria-hidden="true"><div class="ring"></div><div class="flash"></div></div>
     <h2 id="upName"></h2>
     <div class="uplv"><span id="upFrom"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h11V5l7 7-7 7v-5H3z"/></svg><b id="upTo"></b></div>
     <div class="upstar" id="upStar" hidden></div>
@@ -649,7 +692,7 @@ const SFX={ctx:null,master:null,nbuf:null,last:{},
     epic(){[659,831,988,1318].forEach((f,i)=>this.tone(f,.5,{type:'triangle',vol:.12,at:i*.05}))},
     legend(){[523,659,784,1046,1318,1568].forEach((f,i)=>this.tone(f,1.2,{vol:.12,at:i*.06}));this.noise(1,{vol:.1,type:'highpass',f:5000})},
     summon(){this.tone(200,1,{type:'sawtooth',vol:.06,to:1600});this.noise(1,{vol:.12,type:'bandpass',f:300,to:4000,q:4})},
-    upgrade(){[523,659,784,1046].forEach((f,i)=>this.tone(f,.25,{type:'square',vol:.07,at:i*.08}))},
+    upgrade(){this.noise(.3,{vol:.12,type:'highpass',f:3000,to:8000});[523,659,784,1046,1318].forEach((f,i)=>this.tone(f,i>3?.6:.25,{type:'square',vol:.07,at:i*.07}));[1568,2093,2637].forEach((f,i)=>this.tone(f,.4,{vol:.04,at:.4+i*.08}))},
     coin(){this.tone(1318,.08,{type:'square',vol:.06});this.tone(1760,.2,{type:'square',vol:.06,at:.07})},
     // deploy voices by unit body
     dHuman(){this.noise(.12,{vol:.14,type:'bandpass',f:2600,q:3});this.tone(660,.07,{type:'square',vol:.04,at:.04});this.tone(990,.12,{type:'triangle',vol:.06,at:.08})},
@@ -678,6 +721,13 @@ const SFX={ctx:null,master:null,nbuf:null,last:{},
     leaf(){this.noise(.15,{vol:.08,type:'bandpass',f:1800,to:900,q:2})},
     spawn(){this.tone(300,.25,{type:'triangle',vol:.07,to:900});this.noise(.2,{vol:.07,type:'bandpass',f:1200,q:3})},
     charge(){this.noise(.25,{vol:.2,type:'lowpass',f:1500,to:200});this.tone(140,.25,{type:'square',vol:.08,to:60})},
+    // results and upgrades
+    stamp(){this.noise(.18,{vol:.35,type:'lowpass',f:1400,to:200});this.tone(130,.35,{vol:.35,to:55});this.noise(.5,{vol:.08,type:'highpass',f:6000,at:.05})},
+    fanfare(){[[523,0],[523,.12],[523,.24],[659,.36],[784,.6],[1046,.84]].forEach(([f,a],i)=>{this.tone(f,i>4?.9:.2,{type:'square',vol:.07,at:a});this.tone(f/2,i>4?.9:.2,{type:'triangle',vol:.1,at:a})});[1318,1568,2093].forEach((f,i)=>this.tone(f,.8,{vol:.05,at:.9+i*.05}))},
+    crownPop(){const f=[784,988,1318][this.ci||0];this.tone(f,.35,{type:'triangle',vol:.16});this.tone(f*2,.2,{vol:.05,at:.03});this.noise(.1,{vol:.06,type:'highpass',f:5000})},
+    sad(){this.tone(392,.5,{type:'triangle',vol:.13,to:370});this.tone(311,.7,{type:'triangle',vol:.13,to:294,at:.3});this.tone(262,1.1,{type:'triangle',vol:.13,to:233,at:.65});this.noise(.6,{vol:.05,type:'lowpass',f:400,at:.6})},
+    chestLand(){this.noise(.25,{vol:.35,type:'lowpass',f:600,to:90});this.tone(95,.3,{vol:.3,to:50});[1318,1568,2093,2637].forEach((f,i)=>this.tone(f,.3,{vol:.05,at:.15+i*.06}))},
+    upCharge(){this.tone(220,.8,{type:'sawtooth',vol:.06,to:1320});this.tone(330,.8,{type:'square',vol:.03,to:1980});this.noise(.8,{vol:.1,type:'bandpass',f:400,to:5000,q:5})},
     awaken(){this.S.legend.call(this);[1046,1318,1568,2093].forEach((f,i)=>this.tone(f,.6,{type:'square',vol:.05,at:.4+i*.1}))},
   },
 };
@@ -2423,14 +2473,18 @@ $('#cdClose').addEventListener('click',()=>$('#cardOv').hidden=true);
 function canUp(k,ignoreGold){const o=S.cards[k];return !!o&&o.lvl<MAXLV&&o.copies>=needFor(k,o.lvl)&&(ignoreGold||S.gold>=COST[o.lvl])}
 const upgradable=()=>Object.keys(S.cards).filter(k=>CARDS[k]&&canUp(k,true));
 function doUpgrade(k){if(!canUp(k))return false;const o=S.cards[k];questTick('upgrade1');o.copies-=needFor(k,o.lvl);S.gold-=COST[o.lvl];o.lvl++;track('upgrade',{k,lv:o.lvl});S.xp+=o.lvl*10*(1+RORDER.indexOf(CARDS[k].rar));return true}
+let upTimer=0;
 function showUpgrade(k,from){
   const c=CARDS[k],to=S.cards[k].lvl,star=starOf(to)>starOf(from);
   $('#upImg').src=THUMB[k];skinCard($('#upImg'),k);$('#upName').textContent=c.name;$('#upFrom').textContent='Lv.'+from;$('#upTo').textContent='Lv.'+to;
   const st=$('#upStats');st.innerHTML='';
   for(const[a,b,up]of statRows(k,from))if(up){const d=el('div');d.append(el('span',null,a));const v=el('b',null,String(b));v.append(el('em',null,up));d.append(v);st.append(d)}
   const sr=$('#upStar');sr.hidden=!star;if(star){const n=starOf(to);sr.innerHTML='';sr.append(el('b',null,'★'.repeat(n)+' 覺醒！'),el('small',null,starPerks(c)[n-1]))}
+  [...st.children].forEach((d,i)=>d.style.setProperty('--i',i));
+  const fx=$('#upFx');fx.parentNode.style.setProperty('--rc',RAR[c.rar].col);fx.querySelectorAll('i').forEach(x=>x.remove());
+  for(let i=0;i<16;i++){const p=el('i');p.style.cssText=`--x:${rint(0,100)}%;--d:${(.8+Math.random()*.7).toFixed(2)}s;--w:${(.8+Math.random()*.5).toFixed(2)}s`;fx.append(p)}
   const ov=$('#upOv');ov.hidden=false;ov.classList.remove('anim');void ov.offsetWidth;ov.classList.add('anim');
-  SFX.play(star?'awaken':'upgrade');$('#upOk').focus();
+  SFX.play('upCharge');clearTimeout(upTimer);upTimer=setTimeout(()=>{if(!ov.hidden)SFX.play(star?'awaken':'upgrade')},780);$('#upOk').focus();
 }
 $('#upOk').addEventListener('click',()=>{$('#upOv').hidden=true});
 $('#cdUp').addEventListener('click',()=>{
@@ -2582,7 +2636,7 @@ function end(){
   track('battle_end',{m:MODE,ch:chIdx,r:won?'win':lost?'lose':'draw',cr:[p,e],ot:!!G.overtime,tro:S.trophies});
   st.battles++;st.crowns+=p;if(won){st.wins++;if(p===3)st.three++}else if(lost)st.losses++;else st.draws++;
   questTick('play3');questTick('crowns5',p);questTick('towers3',G.ents.filter(e=>e.kind==='tower'&&e.team===1&&e.dead).length);if(MODE==='ladder'&&won)questTick('win2');if(MODE==='story')questTick('story1');
-  const loot=[];const add=(icon,txt)=>loot.push([icon,txt]);
+  const loot=[];const add=(icon,txt)=>loot.push([icon,txt]);let wonChest=null;
   if(MODE==='ladder'){const d=won?30:lost?-20:0;S.trophies=Math.max(0,S.trophies+d);S.best=Math.max(S.best,S.trophies);add('trophy',(d>=0?'+':'')+d)}
   const today=new Date().toDateString(),gb=inGuild()?1.1:1;
   const gold=Math.round((won?100:lost?20:40)+15*p)*gb|0;S.gold+=gold;add('coin','+'+gold+(inGuild()?'（公會 +10%）':''));
@@ -2592,7 +2646,7 @@ function end(){
     let type=rollChestType();
     if(MODE==='story'&&chIdx+2>S.progress){S.progress=chIdx+2;S.gems+=100;type='gold';add('gem','首勝 +100')}
     const slot=S.chests.indexOf(null);
-    if(slot>=0){S.chests[slot]={type,unlockAt:null};add('chest','獲得'+CHESTS[type].name)}else add('chest','寶箱欄已滿，沒拿到寶箱');
+    if(slot>=0){S.chests[slot]={type,unlockAt:null};wonChest=type}else add('chest','寶箱欄已滿，沒拿到寶箱');
   }else S.xp+=5;
   persist();
   const r=$('#result');
@@ -2604,7 +2658,22 @@ function end(){
   const lb=$('#endLoot');lb.innerHTML='';for(const[i,t]of loot){const s=el('span');s.append(i==='coin'||i==='gem'?el('i',i):ic(i),' '+t);lb.append(s)}
   $('#ending').hidden=!(MODE==='story'&&won&&chIdx===CHAPTERS.length-1);
   $('#nextBtn').hidden=!(MODE==='story'&&won&&chIdx<CHAPTERS.length-1);
-  endTimer=setTimeout(()=>{SFX.play(won?'win':lost?'lose':'chime');$('#endOv').hidden=false;($('#nextBtn').hidden?$('#homeBtn'):$('#nextBtn')).focus()},900);
+  endTimer=setTimeout(()=>{$('#endOv').hidden=false;endFx(won?'win':lost?'lose':'draw',p,wonChest);($('#nextBtn').hidden?$('#homeBtn'):$('#nextBtn')).focus()},900);
+}
+// plays the end screen's entrance: title stamp/sag, crowns one by one, loot pills, a won chest; sounds follow the same beats
+function endFx(kind,crowns,chest){
+  const ov=$('#endOv'),cr=$('#endCrowns'),fx=ov.querySelector('.endfx');
+  cr.innerHTML='';cr.hidden=crowns==null;
+  if(crowns!=null)for(let i=0;i<3;i++){const s=ic('crown');s.style.setProperty('--i',i);if(i>=crowns)s.classList.add('off');cr.append(s)}
+  [...$('#endLoot').children].forEach((s,i)=>s.style.setProperty('--i',i));
+  const ch=$('#endChest');ch.hidden=!chest;if(chest){ch.querySelector('img').src=CHEST_IMG[chest];ch.querySelector('span').textContent='獲得'+CHESTS[chest].name}
+  fx.querySelectorAll('i').forEach(x=>x.remove());
+  if(kind==='win')for(let i=0;i<34;i++){const c=el('i');c.style.cssText=`--x:${rint(0,100)}%;--c:${pick(['#f5b82e','#ffe08a','#3fcf8e','#5aa9ff','#ff7ab0','#c58bff'])};--d:${(1.6+Math.random()*1.4).toFixed(2)}s;--w:${(Math.random()*.9).toFixed(2)}s;--dx:${rint(-60,60)}px;--r:${rint(-540,540)}deg`;fx.append(c)}
+  ov.classList.remove('fx-win','fx-lose','fx-draw');void ov.offsetWidth;ov.classList.add('fx-'+kind);
+  const at=(ms,f)=>setTimeout(()=>{if(!ov.hidden)f()},ms);
+  if(kind==='win'){SFX.play('stamp');at(250,()=>SFX.play('fanfare'))}else SFX.play(kind==='lose'?'sad':'chime');
+  if(crowns)for(let i=0;i<crowns;i++)at(600+i*280,()=>{SFX.ci=i;SFX.play('crownPop',0)});
+  if(chest)at(1800,()=>SFX.play('chestLand'));
 }
 $('#ladderBtn').addEventListener('click',()=>startBattle('ladder',rint(0,2)));
 $('#advBtn').addEventListener('click',()=>{renderChapters();$('#startOv').hidden=false});
@@ -2925,7 +2994,7 @@ function showFriendResult(mine,theirs,note){
   const lb=$('#endLoot');lb.innerHTML='';lb.append(el('span',null,'友誼戰 · 不影響獎盃和寶箱'));
   if(NET.role==='guest'&&!note)lb.append(el('span',null,'等待房主開下一場…'));
   $('#againBtn').hidden=NET.role!=='host'||!!note;$('#againBtn').textContent='再來一場';
-  clearTimeout(endTimer);endTimer=setTimeout(()=>{SFX.play(note?'chime':won?'win':lost?'lose':'chime');$('#endOv').hidden=false;$('#homeBtn').focus()},note?0:900);
+  clearTimeout(endTimer);endTimer=setTimeout(()=>{$('#endOv').hidden=false;endFx(note?'draw':won?'win':lost?'lose':'draw',note?null:mine,null);$('#homeBtn').focus()},note?0:900);
 }
 function friendEnd(){const[p,e]=G.crowns;track('battle_end',{m:'friend',r:p>e?'win':p<e?'lose':'draw',cr:[p,e],host:!G.guest});S.stats.battles++;persist();showFriendResult(G.crowns[0],G.crowns[1]);if(NET.room)NET.room.presence({st:encodeState()}).catch(()=>{})}
 function guestEnd(){G.over=true;G.sel=null;S.stats.battles++;persist();showFriendResult(G.crowns[0],G.crowns[1])}
@@ -2949,6 +3018,7 @@ $('#nav-cards img').src=THUMB.knight;$('#nav-gacha img').src=ICON.altar;$('#nav-
 // Every minute (and when the tab comes back) fetch index.html uncached and compare its build stamp window.SB_VER
 // with the one this page loaded. A new version shows a notice; the player chooses when to reload, never mid-battle.
 const CHANGELOG=[
+  {d:'10/29',t:'勝利、寶箱與升級動畫',items:['勝利時標題蓋章、彩帶和金色光芒，冠冕一顆顆亮起','打贏拿到的寶箱會掉進結算畫面','卡牌升級先蓄力再爆光，新的等級和數值依序跳出','勝利號角、冠冕、寶箱落地、升級蓄力等新音效']},
   {d:'10/28',t:'卡牌排序',items:['牌組和卡牌圖鑑可以依稀有度、魔力、等級、元素排序','再按一次同一個排序可以反過來排，會記住你上次的選擇']},
   {d:'10/28',t:'卡片更多元、寶石加倍',items:['召喚和寶箱有一半機會給你還沒有的卡','寶箱的卡種變多：木製 3 種、白銀 5 種、黃金 7 種、魔法 10 種','勝利寶石 +20，寶箱寶石大幅提高（魔法寶箱 50～80）','首頁模式磚與召喚祭壇加上動畫']},
   {d:'10/28',t:'新手禮 500 寶石',items:['新玩家開局寶石從 600 提高到 1100','已經在玩的巫師一次性補發 500 寶石，上線就會收到']},
