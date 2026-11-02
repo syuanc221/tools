@@ -951,7 +951,7 @@ const RAR={common:{name:'普通',col:'#a9b6c8',rate:.62},rare:{name:'稀有',col
 const RORDER=['common','rare','epic','legendary'];
 const ELEM={fire:{name:'火焰',col:'#e8573a'},ice:{name:'冰霜',col:'#5fc8f0'},thunder:{name:'雷霆',col:'#f2c93a'},dark:{name:'暗影',col:'#8a5ad9'},holy:{name:'聖光',col:'#f3e3a0'},nature:{name:'森林',col:'#4caf5a'},rune:{name:'符文',col:'#4f8ff0'}};
 const ELEM_KEYS=Object.keys(ELEM);
-// 121 distinct cards. s: hp dmg range hit speed r (+ air ta=targets air bo=buildings only splash proj life); x: special abilities; m: 3D model recipe.
+// 122 distinct cards. s: hp dmg range hit speed r (+ air ta=targets air bo=buildings only splash proj life); x: special abilities; m: 3D model recipe.
 // x keys: shield, heal:[amount,radius], rage:[radius], slow:[fraction,seconds], spawn:[token,every,count], dSpawn:[token,count], dDmg:[damage,radius], charge, chain:n, kami, steal:fraction
 const CARD_LIST=[
   // ---------- fire ----------
@@ -1076,6 +1076,7 @@ const CARD_LIST=[
   {k:'moonhowl',n:'月嚎術',r:'rare',c:3,e:'ice',t:'spell',radius:40,summon:['wolf_t',3],rage:3,fx:'ring',vis:'howl',d:'月光下召喚三隻野狼，並讓範圍內的隊友狂暴。'},
   {k:'mirrorspell',n:'分身術',r:'epic',c:3,e:'rune',t:'spell',radius:50,clone:1,fx:'ring',vis:'mirror',d:'範圍內每個隊友各多出一個分身。分身的攻擊力一樣，但只有 1 點血，一碰就消失（覺醒後分身血量變多）。'},
   {k:'tinker',n:'修理工匠',r:'rare',c:3,e:'rune',s:{hp:560,dmg:0,range:16,hit:1,speed:52,r:10},x:{repair:[45,1]},m:{t:'human',body:'#8a5a32',head:'helm',hcol:'#f2c93a',w:'hammer',wc:'#c9d2de'},d:'不會攻擊。會走到我方受傷的塔或建築旁邊，每秒修回 45 點血。'},
+  {k:'manamine',n:'魔力礦井',r:'rare',c:5,e:'rune',t:'building',s:{hp:640,dmg:0,range:0,hit:99,r:14,life:60},x:{mine:[8.5,1]},m:{t:'build',k:'mine'},d:'不會攻擊。站著的 60 秒內，每 8.5 秒挖出 1 點魔力，撐到最後共挖 7 點。蓋在後方，別讓敵人拆掉。'},
   {k:'wallguard',n:'鐵壁守衛',r:'rare',c:4,e:'holy',s:{hp:1500,dmg:55,range:8,hit:1.3,speed:38,r:14},x:{taunt:75},m:{t:'human',heavy:1,body:'#8a8f9c',head:'helm',hcol:'#e8e2cc',w:'mace',off:'shield',wc:'#ffe9a0'},d:'皮很厚的守衛，會逼附近的敵人改打它，保護後排。'},
   {k:'revpriest',n:'復活祭司',r:'epic',c:4,e:'holy',s:{hp:560,dmg:55,range:85,hit:1.3,speed:45,r:10,ta:1,proj:'orb'},x:{revive:[.5,95,7]},m:{t:'human',robe:1,body:'#f4efe2',head:'hood',hcol:'#c9a23a',w:'staff',wc:'#ffe9a0',off:'book'},d:'附近的隊友倒下時，讓它帶著一半血量站起來（每 7 秒一次）。'},
   {k:'miner',n:'挖地礦工',r:'rare',c:3,e:'nature',s:{hp:950,dmg:85,range:8,hit:1.2,speed:55,r:11},x:{burrow:1},m:{t:'human',body:'#6a4a2a',head:'helm',hcol:'#f2c93a',w:'axe',wc:'#9aa3ad'},d:'可以放在場上任何地方，從地底鑽出來偷襲。打塔傷害減半。'},
@@ -1113,7 +1114,7 @@ function mechText(c){
   const M=c.mech||{},o=[];
   if(M.shield)o.push('護盾 '+M.shield);if(M.heal)o.push('治療光環');if(M.rage)o.push('狂暴光環');if(M.slow)o.push('攻擊減速');
   if(M.spawn)o.push('召喚'+cardOf(M.spawn[0]).name);if(M.dSpawn)o.push('倒下時召喚'+cardOf(M.dSpawn[0]).name);if(M.dDmg)o.push('倒下時爆炸');
-  if(M.charge)o.push('衝鋒雙倍傷害');if(M.stun)o.push('機率暈眩');if(M.dot)o.push('持續傷害');if(M.knock)o.push('擊退');if(M.crit)o.push('暴擊');if(M.bane)o.push('剋大型敵人');if(M.thorns)o.push('反傷');if(M.hunt)o.push('專打殘血');if(M.taunt)o.push('挑釁');if(M.repair)o.push('修理塔和建築');if(M.revive)o.push('復活隊友');if(M.burrow)o.push('可放任何地方');if(M.frenzy)o.push('重傷時狂化');if(M.chain)o.push('連鎖 '+M.chain+' 個目標');if(M.kami)o.push('自爆');if(M.steal)o.push('吸血');
+  if(M.charge)o.push('衝鋒雙倍傷害');if(M.stun)o.push('機率暈眩');if(M.dot)o.push('持續傷害');if(M.knock)o.push('擊退');if(M.crit)o.push('暴擊');if(M.bane)o.push('剋大型敵人');if(M.thorns)o.push('反傷');if(M.hunt)o.push('專打殘血');if(M.taunt)o.push('挑釁');if(M.repair)o.push('修理塔和建築');if(M.mine)o.push('挖魔力');if(M.revive)o.push('復活隊友');if(M.burrow)o.push('可放任何地方');if(M.frenzy)o.push('重傷時狂化');if(M.chain)o.push('連鎖 '+M.chain+' 個目標');if(M.kami)o.push('自爆');if(M.steal)o.push('吸血');
   if(c.type==='spell'){if(c.freeze)o.push('冰凍 '+c.freeze+' 秒');if(c.slow)o.push('減速 '+c.slow[1]+' 秒');if(c.rage)o.push('狂暴 '+c.rage+' 秒');if(c.heal)o.push('治療 '+c.heal);if(c.shield)o.push('護盾 '+c.shield);if(c.summon)o.push('召喚 '+c.summon[1]+' 名'+cardOf(c.summon[0]).name);if(c.chain)o.push('連鎖 '+c.chain+' 個目標');if(c.clone)o.push('複製範圍內的隊友');if(c.knock)o.push('擊退');if(c.dot)o.push('燃燒 '+c.dot[1]+' 秒');if(c.stun)o.push('麻痺 '+c.stun+' 秒');if(c.curse)o.push('詛咒 '+c.curse+' 秒');if(c.weak)o.push('削弱 '+c.weak+' 秒');if(c.airx)o.push('對空 ×'+c.airx)}
   return o.join('、');
 }
@@ -1129,11 +1130,12 @@ const CHAPTERS=[
 ];
 // stage ladder: 30 opponents, one element per stage cycling through all seven; level, rarity caps and AI speed climb every few stages, every 5th is a boss
 const STAGE_N=30,STAGE_TIER=['學徒','術士','法師','大法師','賢者','魔導王'],STAGE_STYLE=['plain','beard','hood','plain','beard','hood'];
+const stageWiz=e=>({robe:ELEM[e].col,trim:'#ffffff',style:STAGE_STYLE[ELEM_KEYS.indexOf(e)%STAGE_STYLE.length]});
 function stageOpp(n){
   const e=ELEM_KEYS[(n-1)%ELEM_KEYS.length],t=Math.floor((n-1)/5),boss=n%5===0;
   const diff=boss?(n>=20?'boss':n>=10?'expert':'hard'):n<=3?'easy':n<=10?'normal':n<=20?'hard':'expert';
   return{stage:n,el:e,boss,diff,diffLabel:{easy:'簡單',normal:'普通',hard:'困難',expert:'極難',boss:'首領'}[diff],color:ELEM[e].col,
-    name:ELEM[e].name+STAGE_TIER[t]+(boss?' · 首領':''),chap:'第 '+n+' 關',img:'el_'+e,
+    name:ELEM[e].name+STAGE_TIER[t]+(boss?' · 首領':''),chap:'第 '+n+' 關',img:'el_'+e,wiz:stageWiz(e),
     intro:boss?'能走到這裡，算你有本事。不過到此為止了。':'讓我看看你的牌組有多少斤兩！',win:boss?'下一個階段的對手，可不會像我這麼客氣。':'這次算你贏，下一關可沒這麼簡單。',lose:'回去把卡牌練強一點再來吧。',
     deck:stageDeck(n,e),lvl:clamp(1+Math.floor((n-1)/3)+(boss?1:0),1,MAXLV)};
 }
@@ -1167,7 +1169,7 @@ function mechFor(M,l){
   if(o.shield)o.shield*=k;if(o.heal)o.heal=[o.heal[0]*k,o.heal[1]];if(o.rage)o.rage=[o.rage[0]*(1+.15*s)];
   if(o.slow)o.slow=[o.slow[0],o.slow[1]+.5*s];if(o.spawn)o.spawn=[o.spawn[0],o.spawn[1]*(1-.12*Math.min(s,2)),o.spawn[2]+(s>=3?1:0)];
   if(o.dSpawn&&s>=2)o.dSpawn=[o.dSpawn[0],o.dSpawn[1]+1];if(o.dDmg)o.dDmg=[o.dDmg[0]*k,o.dDmg[1]];
-  if(o.chain)o.chain+=(s>=2)+(s>=3);if(o.steal)o.steal+=.05*s;if(o.charge)o.charge=2+.25*s;
+  if(o.mine)o.mine=[o.mine[0]-.5*s,o.mine[1]];if(o.chain)o.chain+=(s>=2)+(s>=3);if(o.steal)o.steal+=.05*s;if(o.charge)o.charge=2+.25*s;
   return o;
 }
 function spellFor(c,l){
@@ -1181,7 +1183,7 @@ function starPerks(c){
   return[1,2,3].map(s=>{
     const o=[sp?(c.dmg?'傷害 +5%':'效果 +5%'):'血量與傷害 +5%'];
     if(sp){if(c.freeze)o.push('冰凍 +0.5 秒');if(c.slow)o.push('減速 +0.5 秒');if(c.rage)o.push('狂暴 +1 秒');if(c.summon&&s>=2)o.push('召喚 +1');if(c.chain&&s>=2)o.push('連鎖 +1');if(c.clone)o.push('分身保留 '+s*10+'% 血量')}
-    else{if(M.shield)o.push('護盾 +25%');if(M.heal)o.push('治療 +25%');if(M.rage)o.push('光環範圍 +15%');if(M.slow)o.push('減速 +0.5 秒');if(M.spawn)o.push(s<3?'召喚加快':'每次多召喚 1 隻');if(M.dSpawn&&s===2)o.push('倒下多召喚 1 隻');if(M.dDmg)o.push('爆炸傷害 +25%');if(M.chain&&s>=2)o.push('連鎖 +1');if(M.steal)o.push('吸血 +5%');if(M.charge)o.push('衝鋒傷害 +25%')}
+    else{if(M.shield)o.push('護盾 +25%');if(M.heal)o.push('治療 +25%');if(M.rage)o.push('光環範圍 +15%');if(M.slow)o.push('減速 +0.5 秒');if(M.spawn)o.push(s<3?'召喚加快':'每次多召喚 1 隻');if(M.dSpawn&&s===2)o.push('倒下多召喚 1 隻');if(M.dDmg)o.push('爆炸傷害 +25%');if(M.chain&&s>=2)o.push('連鎖 +1');if(M.steal)o.push('吸血 +5%');if(M.mine)o.push('挖礦加快 0.5 秒');if(M.charge)o.push('衝鋒傷害 +25%')}
     return o.join('、');
   });
 }
@@ -1221,9 +1223,10 @@ function rollRarity(){let r=Math.random(),acc=0;for(const k of RORDER){acc+=RAR[
 const arenaName=t=>ARENAS.filter(a=>t>=a[0]).pop()[1];
 
 // ================= game rules (2D logic, y = depth) =================
-let chIdx=0,G=null,endTimer=0,MODE='story';
+let chIdx=0,G=null,endTimer=0,MODE='story',OPP=null;
 const edge=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y)-a.r-b.r;
-const teamCol=t=>t===0?PLAYER_COL:CHAPTERS[chIdx].color;
+const oppOf=()=>MODE==='stage'&&OPP?OPP:CHAPTERS[chIdx]||CHAPTERS[0];
+const teamCol=t=>t===0?PLAYER_COL:oppOf().color;
 const diff=()=>DIFF[G.diff];
 const sfx=(n,gap)=>{if(VIEW==='battle')SFX.play(n,gap)};
 function makeDeck(keys){const k=shuffle(keys);return{hand:k.slice(0,4),queue:k.slice(4)}}
@@ -1240,7 +1243,7 @@ const SPELL_DELAY={ball:.6,meteor:1.1,strike:.35,pillar:.45,rain:.55,ring:.25};
 function makeUnit(key,team,x,y,lv){
   const c=cardOf(key),s=c.s,tok=!CARDS[key],l=lv||unitLvl(team,key),M=mechFor(c.mech||{},l),m=lvMult(l),dep=tok?.35:1;
   return{id:G.nextId++,key,team,kind:c.type==='building'?'building':'unit',x,y,r:s.r,hp:s.hp*m,maxHp:s.hp*m,dmg:s.dmg*m,range:s.range,hit:s.hit,cd:.4,speed:s.speed,air:!!s.air,targetsAir:!!s.targetsAir,buildingsOnly:!!s.buildingsOnly,splash:s.splash||0,proj:s.proj||null,deploy:dep,deployMax:dep,life:s.life||0,target:null,retarget:0,atk:0,
-    lvl:l,mech:M,shield:(M.shield||0)*m,slowT:0,slowF:0,freezeT:0,rageT:0,auraT:.5,spawnT:M.spawn?M.spawn[1]*.5:0,moved:0};
+    lvl:l,mech:M,shield:(M.shield||0)*m,slowT:0,slowF:0,freezeT:0,rageT:0,auraT:.5,spawnT:M.spawn?M.spawn[1]*.5:0,mineT:M.mine?M.mine[0]:0,moved:0};
 }
 function spawnTokens(key,team,x,y,n,lvl,spread){
   const o=offsFor(n);
@@ -1385,6 +1388,7 @@ function updateEnt(u,dt){
   if(M){
     if(M.spawn&&(u.spawnT-=dt)<=0){u.spawnT=M.spawn[1];sfx('spawn',.4);spawnTokens(M.spawn[0],u.team,u.x,clamp(u.y+(u.team?1:-1)*(u.r+8),10,H-10),M.spawn[2],u.lvl)}
     if((M.heal||M.rage)&&(u.auraT-=dt)<=0){u.auraT=1;auraPulse(u)}
+    if(M.mine&&(u.mineT-=dt)<=0){u.mineT=M.mine[0];G.elixir[u.team]=Math.min(10,G.elixir[u.team]+M.mine[1]);fx3d('aura',u.x,u.y,0,u.r*1.6,'#c77dff');if(u.team===0){sfx('chime',.5);G.msg={text:'挖到魔力 +'+M.mine[1],t:1}}}
   }
   if(M&&M.frenzy&&u.hp<u.maxHp*.5){u.rageT=Math.max(u.rageT,.3);if(!u.fr){u.fr=1;fx3d('aura',u.x,u.y,0,u.r*2.2,'#ff5a3a');sfx('roar',.4)}}
   if(!(u.dmg>0))return;
@@ -1520,10 +1524,11 @@ function aiUpdate(dt){
   const ptw=G.ents.filter(e=>e.team===0&&e.kind==='tower'&&!e.dead);
   for(const k of pick(c=>c.type==='spell'&&c.towerDmg>0&&c.fx!=='rain')){const c=CARDS[k],weak=ptw.find(e=>e.hp<=c.towerDmg*lvMult(G.aiLvl));if(weak&&play(1,hand.indexOf(k),weak.x,weak.y))return}
   const pr=ptw.filter(e=>!e.king).sort((a,b)=>a.hp-b.hp);
+  if(el>=6)for(const k of pick(c=>c.mech&&c.mech.mine))if(tryAt(k,W/2+(Math.random()<.5?-50:50),80))return;
   if(el>=D.attackAt-1)for(const k of pick(c=>c.mech&&c.mech.burrow)){const tw=pr[0]||ptw[0];if(tw&&tryAt(k,tw.x,tw.y-34))return}
   if(el>=D.attackAt-1)for(const k of pick(c=>c.summon)){const tw=pr[0]||ptw[0];if(tw&&play(1,hand.indexOf(k),tw.x,tw.y))return}
   if(el>=D.attackAt){
-    const units=hand.filter(k=>CARDS[k].type!=='spell'&&has(k));if(!units.length)return;
+    const units=hand.filter(k=>CARDS[k].type!=='spell'&&!(CARDS[k].mech&&CARDS[k].mech.mine)&&has(k));if(!units.length)return;
     const k=units[Math.random()*units.length|0],c=CARDS[k];
     const lane=pr.length?pr[0].lane:(Math.random()*2|0);
     const isTank=c=>c&&c.type==='troop'&&c.s.hp>=1500;
@@ -1606,7 +1611,7 @@ function makeKingTower(team){
   for(let i=0;i<10;i++){const a=i/10*Math.PI*2;g.add(mesh(new T.BoxGeometry(6,6,4),mat(STONE_D),Math.cos(a)*25.5,36,Math.sin(a)*25.5).rotateY(-a))}
   for(const s of[-1,1]){g.add(mesh(new T.BoxGeometry(8,14,.8),mat(col),s*12,18,team?24.5:-24.5));}
   g.add(mesh(new T.BoxGeometry(8,10,1.5),mat('#3a2a1c'),0,5,team?27:-27));
-  const wiz=makeWizard(team===0?PLAYER_WIZ:CHAPTERS[chIdx].wiz);wiz.position.y=34;wiz.scale.setScalar(.95);g.add(wiz);g.userData.wizard=wiz;
+  const wiz=makeWizard(team===0?PLAYER_WIZ:oppOf().wiz);wiz.position.y=34;wiz.scale.setScalar(.95);g.add(wiz);g.userData.wizard=wiz;
   return g;
 }
 function makeRubble(){
@@ -1935,6 +1940,7 @@ function building(o,col,ec){
   else if(k==='tomb'){g.add(mesh(new T.BoxGeometry(14,2,9),mat('#4a3a2a'),0,1,0));g.add(mesh(new T.BoxGeometry(8,12,3),sd,0,8,-1));const top=mesh(new T.SphereGeometry(4,10,6,0,Math.PI*2,0,Math.PI/2),sd,0,14,-1);top.scale.z=.375;g.add(top);g.add(mesh(new T.BoxGeometry(1.2,6,.6),glow('#9b5cff',1.2),0,9,.6));g.add(mesh(new T.BoxGeometry(4,1.2,.6),glow('#9b5cff',1.2),0,10.4,.6));g.add(mesh(new T.BoxGeometry(14.4,1,9.4),mat(col),0,2.2,0))}
   else if(k==='portal'){g.add(mesh(new T.BoxGeometry(16,2,6),sd,0,1,0));for(const s of[-1,1])g.add(mesh(new T.BoxGeometry(2.6,16,2.6),st,s*7,9,0));g.add(mesh(new T.BoxGeometry(16.4,2.6,3),st,0,17.6,0));const ring=mesh(new T.TorusGeometry(5.2,.9,6,24),glow(ec,1.4),0,9.4,0);g.add(ring);g.add(mesh(new T.CircleGeometry(4.6,20),mat(shade(ec,.5),{emissive:ec,emissiveIntensity:.6,side:T.DoubleSide}),0,9.4,0));g.userData.crystal=ring;g.add(mesh(new T.BoxGeometry(16.4,1,6.4),mat(col),0,2.4,0))}
   else if(k==='plant'){g.add(mesh(new T.CylinderGeometry(6,7,5,8),mat('#7a4a2a'),0,2.5,0));band(5.4);g.add(mesh(new T.CylinderGeometry(1.2,1.6,10,6),mat('#3f8f3a'),0,10,0));const head=new T.Group();head.position.set(0,16,0);head.add(mesh(new T.SphereGeometry(5,10,6,0,Math.PI*2,0,Math.PI/2),mat('#c0392b')));head.add(mesh(new T.SphereGeometry(5,10,6,0,Math.PI*2,Math.PI/2,Math.PI/2),mat('#8a2a1f'),0,-.4,0));for(let i=0;i<8;i++){const a=i/8*Math.PI*2;head.add(mesh(new T.ConeGeometry(.5,1.6,4),mat('#ffffff'),Math.cos(a)*4.4,-.6,Math.sin(a)*4.4))}g.add(head);g.userData.arm=head;g.userData.armRest=0;for(let i=0;i<4;i++){const a=i/4*Math.PI*2;g.add(mesh(new T.ConeGeometry(2,7,3),mat('#4caf5a'),Math.cos(a)*4,7,Math.sin(a)*4).rotateZ(Math.cos(a)*.8).rotateX(-Math.sin(a)*.8))}}
+  else if(k==='mine'){const wd=mat(WOOD);g.add(mesh(new T.CylinderGeometry(9,10.5,4,8),st,0,2,0));band(4.4);g.add(mesh(new T.CylinderGeometry(6,6,1,8),mat('#1e1428'),0,5.2,0));for(const s of[-1,1])g.add(mesh(new T.BoxGeometry(1.6,14,1.6),wd,s*6,11,0));g.add(mesh(new T.BoxGeometry(14.4,1.6,2),wd,0,18.4,0));g.add(mesh(new T.CylinderGeometry(.8,.8,13,6),mat('#5b3c20'),0,15,0).rotateZ(Math.PI/2));g.add(mesh(new T.CylinderGeometry(.2,.2,8,4),mat('#3d3f46'),0,11,0));g.add(mesh(new T.BoxGeometry(3,2.4,3),wd,0,7.6,0));for(const[x,z,r]of[[-5,4,1.6],[5,-4,1.3],[4,5,1.1]])g.add(mesh(new T.OctahedronGeometry(r,0),glow('#c77dff',1.4),x,6.4,z));const cr=mesh(new T.OctahedronGeometry(2.6,0),glow('#c77dff',1.7),0,23,0);cr.scale.y=1.5;g.add(cr);g.userData.crystal=cr}
   else if(k==='fountain'){g.add(mesh(new T.CylinderGeometry(10,11,4,10),st,0,2,0));g.add(mesh(new T.CylinderGeometry(8.6,8.6,1,10),glow('#9fd0ff',.7),0,4.2,0));band(1);g.add(mesh(new T.CylinderGeometry(1.6,2.4,9,8),sd,0,8,0));g.add(mesh(new T.CylinderGeometry(4,2,2,10),st,0,13,0));const o2=mesh(new T.IcosahedronGeometry(2,0),glow('#ffe9a0',1.6),0,17,0);g.add(o2);g.userData.crystal=o2}
   else if(k==='ballista'){g.add(mesh(new T.CylinderGeometry(8,10,5,8),st,0,2.5,0));band(5.4);const bar=new T.Group();bar.position.set(0,9,0);bar.add(mesh(new T.BoxGeometry(2,2,16),mat(WOOD),0,0,2));bar.add(mesh(new T.BoxGeometry(16,1.4,1.4),mat('#5b3c20'),0,0,7));bar.add(mesh(new T.ConeGeometry(1.2,4,4),glow('#ffe9a0',1.2),0,0,11).rotateX(Math.PI/2));g.add(bar);g.userData.arm=bar;g.userData.armRest=0}
   else if(k==='tree'){g.add(mesh(new T.CylinderGeometry(3.6,6,18,7),mat('#5a3d22'),0,9,0));for(const[x,y,z,r]of[[0,24,0,9],[-6,20,2,6],[6,21,-2,6.5],[0,18,-6,5.5]])g.add(mesh(new T.IcosahedronGeometry(r,1),mat('#3f8f3a',{emissive:'#2a6a2a',emissiveIntensity:.3}),x,y,z));for(let i=0;i<6;i++){const a=i/6*Math.PI*2;g.add(mesh(new T.OctahedronGeometry(1.2,0),glow('#c8ff7a',1.5),Math.cos(a)*11,14+Math.sin(i)*3,Math.sin(a)*11))}g.add(mesh(new T.CylinderGeometry(6.4,6.4,1.6,7),mat(col),0,3,0))}
@@ -2017,7 +2023,7 @@ function makeThumbs(){
   const shot=(obj,look,dist,lift)=>{s.add(obj);obj.updateMatrixWorld(true);const box=new T.Box3().setFromObject(obj);const c=look||box.getCenter(new T.Vector3());const sz=box.getSize(new T.Vector3());const m=dist||Math.max(sz.x,sz.y,sz.z)*2.1;cam.position.set(c.x+m*.42,c.y+m*(lift??.32),c.z+m*.84);cam.lookAt(c);r.render(s,cam);const url=r.domElement.toDataURL();s.remove(obj);return url};
   for(const k in CARDS){const o=cardModel(k,PLAYER_COL);o.rotation.y=-.35;THUMB[k]=shot(o)}
   const wizShot=c=>{const o=makeWizard(c);o.userData.staff.visible=false;o.rotation.y=-.25;return shot(o,new T.Vector3(0,31,0),46,.06)};
-  PORTRAIT.player=wizShot(PLAYER_WIZ);CHAPTERS.forEach((c,i)=>PORTRAIT[i]=wizShot(c.wiz));ELEM_KEYS.forEach((e,i)=>PORTRAIT['el_'+e]=wizShot({robe:ELEM[e].col,trim:'#ffffff',style:STAGE_STYLE[i%STAGE_STYLE.length]}));
+  PORTRAIT.player=wizShot(PLAYER_WIZ);CHAPTERS.forEach((c,i)=>PORTRAIT[i]=wizShot(c.wiz));ELEM_KEYS.forEach((e,i)=>PORTRAIT['el_'+e]=wizShot(stageWiz(e)));
   for(const k in CHESTS){const o=makeChest(k);o.rotation.y=-.45;CHEST_IMG[k]=shot(o,null,null,.45)}
   r.setSize(240,240);ICON.altar=shot(makeAltar(),null,128,.4);r.setSize(160,160);
   ICON.banner=shot(makeBanner());
@@ -2645,7 +2651,6 @@ function aiDeck(t){
   take(c=>c.type==='troop'&&c.s.targetsAir&&c.s.dmg>0,2);take(c=>c.type==='troop',8);
   return deck;
 }
-let OPP=null;
 function startBattle(mode,ch){
   MODE=mode;chIdx=ch;track('battle_start',{m:mode,ch});const c=OPP=mode==='stage'?stageOpp(ch):Object.assign({img:ch},CHAPTERS[ch]);
   // stage opponents never fall more than one level behind your deck, so they stay a challenge
@@ -3117,6 +3122,7 @@ $('#nav-cards img').src=THUMB.knight;$('#nav-gacha img').src=ICON.altar;$('#nav-
 // Every minute (and when the tab comes back) fetch index.html uncached and compare its build stamp window.SB_VER
 // with the one this page loaded. A new version shows a notice; the player chooses when to reload, never mid-battle.
 const CHANGELOG=[
+  {d:'10/30',t:'魔力礦井，第 3 關修好了',items:['新卡魔力礦井：蓋在場上會一直挖魔力，撐滿 60 秒共多 7 點魔力','修好關卡挑戰第 3 關以後一開打就卡住的問題']},
   {d:'10/30',t:'關卡挑戰，牌組卡升級更快',items:['冒險裡新增 30 關關卡挑戰，每一關換一種元素的對手，越後面越強，每 5 關有首領','首次過關送寶石和寶箱，首領關送黃金或魔法寶箱','寶箱和召喚抽到的卡，會優先給你牌組裡的卡，升級更快']},
   {d:'10/30',t:'四個新角色，重複的卡各有新能力',items:['修理工匠：幫我方的塔和建築修回血','鐵壁守衛：逼附近的敵人改打它','復活祭司：讓倒下的隊友帶半血站起來','挖地礦工：可以放在場上任何地方','38 張原本玩法重複的卡各加了不同能力：擊退、燃燒、麻痺、詛咒、暴擊、反傷、獵殺殘血、剋大型等']},
   {d:'10/29',t:'新卡：分身術',items:['史詩咒文，3 魔力','範圍內每個隊友各多出一個半透明分身，攻擊力一樣但只有 1 點血']},
